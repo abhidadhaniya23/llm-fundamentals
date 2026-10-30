@@ -1,0 +1,633 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fan-out vs Coordinator</title>
+<style>
+/* Layout: same case-file reader as the subagents page; each section is one slide. "You decide" (fan-out, code) is ochre, "the model decides" (coordinator) is teal, everywhere. */
+:root {
+  --paper: #f6f7f8;
+  --sheet: #ffffff;
+  --ink: #1b2430;
+  --ink-soft: #4a5868;
+  --rule: #d6dce3;
+  --model: #0d7368;
+  --model-tint: #e2f2ef;
+  --you: #9a5b00;
+  --you-tint: #f8eedc;
+  --flag: #b4322a;
+  --flag-tint: #f9e3e1;
+  --pre-bg: #eef1f4;
+  --display: Charter, "Bitstream Charter", "Sitka Text", Cambria, Georgia, serif;
+  --body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: "Cascadia Code", "Cascadia Mono", Consolas, ui-monospace, "SF Mono", Menlo, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #12171d; --sheet: #192028; --ink: #e4e9ee; --ink-soft: #a3b0bd; --rule: #2e3944;
+    --model: #4cc2b3; --model-tint: #15312e; --you: #e0a443; --you-tint: #33271a;
+    --flag: #ef7f75; --flag-tint: #3a1f1d; --pre-bg: #0f1419; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #12171d; --sheet: #192028; --ink: #e4e9ee; --ink-soft: #a3b0bd; --rule: #2e3944;
+  --model: #4cc2b3; --model-tint: #15312e; --you: #e0a443; --you-tint: #33271a;
+  --flag: #ef7f75; --flag-tint: #3a1f1d; --pre-bg: #0f1419; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  margin: 0; background: var(--paper); color: var(--ink);
+  font: 16px/1.6 var(--body);
+  padding-inline: 16px;
+}
+a { color: var(--model); }
+a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid var(--model); outline-offset: 2px; }
+
+.bar {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  margin-inline: -16px; padding: 8px 16px;
+  background: var(--paper); border-bottom: 1px solid var(--rule);
+  display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+  font-size: 13px;
+}
+.bar strong { font-family: var(--display); font-size: 15px; }
+.bar nav { display: flex; gap: 4px 10px; flex-wrap: wrap; min-width: 0; }
+.bar nav a { color: var(--ink-soft); text-decoration: none; white-space: nowrap; }
+.bar nav a:hover, .bar nav a.here { color: var(--model); }
+.bar .keys { margin-left: auto; color: var(--ink-soft); }
+.bar button {
+  font: inherit; color: var(--ink); background: var(--sheet); border: 1px solid var(--rule);
+  border-radius: 6px; padding: 2px 10px; cursor: pointer;
+}
+
+main { max-width: 980px; margin: 0 auto; padding-block: 24px 96px; }
+
+section.slide {
+  scroll-margin-top: 56px;
+  min-height: calc(100vh - 56px);
+  padding-block: 40px;
+  border-bottom: 1px solid var(--rule);
+  display: flex; flex-direction: column; justify-content: center; gap: 20px;
+}
+section.slide > * { min-width: 0; }
+.eyebrow { font: 600 12px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft); }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; line-height: 1.2; margin: 0; }
+h1 { font-size: clamp(34px, 6.5vw, 58px); }
+h2 { font-size: clamp(26px, 4vw, 36px); }
+h3 { font-size: 19px; }
+p, li { max-width: 68ch; }
+p { margin: 0; }
+.lede { font-size: 19px; color: var(--ink-soft); }
+ul, ol { margin: 0; padding-left: 22px; display: grid; gap: 6px; }
+
+.you { color: var(--you); font-weight: 600; }
+.model { color: var(--model); font-weight: 600; }
+.tag {
+  display: inline-block; font: 600 11px/1 var(--mono); letter-spacing: .06em; text-transform: uppercase;
+  padding: 4px 7px; border-radius: 4px; vertical-align: 2px; justify-self: start;
+}
+.tag.y { background: var(--you-tint); color: var(--you); }
+.tag.m { background: var(--model-tint); color: var(--model); }
+.tag.f { background: var(--flag-tint); color: var(--flag); }
+
+/* the two definitions */
+.pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+.def {
+  background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: 18px 20px;
+  display: grid; gap: 8px; align-content: start;
+}
+.def.is-you { border-top: 4px solid var(--you); }
+.def.is-model { border-top: 4px solid var(--model); }
+.def p { font-family: var(--display); font-size: 19px; line-height: 1.5; }
+
+/* tables */
+.tbl { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 15.5px; }
+th, td { text-align: left; vertical-align: top; padding: 11px 14px; border-bottom: 1px solid var(--rule); }
+thead th { font: 600 12px/1.3 var(--mono); letter-spacing: .05em; text-transform: uppercase; }
+thead th.y { color: var(--you); }
+thead th.m { color: var(--model); }
+tbody th { font: 600 12px/1.5 var(--mono); letter-spacing: .04em; text-transform: uppercase; color: var(--ink-soft); white-space: nowrap; }
+td.y { background: var(--you-tint); }
+td.m { background: var(--model-tint); }
+td code, p code, li code { font: 0.88em var(--mono); background: var(--pre-bg); padding: 1px 5px; border-radius: 3px; }
+
+/* cards */
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+.card {
+  background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: 16px;
+  display: grid; gap: 8px; align-content: start;
+}
+.card.warn { border-color: var(--flag); background: var(--flag-tint); }
+.card .so { font-size: 14.5px; color: var(--ink-soft); border-top: 1px solid var(--rule); padding-top: 8px; }
+.card.warn .so { border-top-color: var(--flag); }
+
+figure { margin: 0; display: grid; gap: 6px; min-width: 0; }
+figcaption { font: 600 12px/1.4 var(--mono); letter-spacing: .05em; text-transform: uppercase; color: var(--ink-soft); }
+figcaption.y { color: var(--you); }
+figcaption.m { color: var(--model); }
+pre {
+  margin: 0; overflow-x: auto; background: var(--pre-bg); border-radius: 6px;
+  padding: 14px 16px; font: 14px/1.6 var(--mono); white-space: pre-wrap;
+}
+pre.y { border-left: 3px solid var(--you); }
+pre.m { border-left: 3px solid var(--model); }
+pre b { font-weight: 600; }
+pre.y b { color: var(--you); }
+pre.m b { color: var(--model); }
+
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; align-items: start; }
+.note { border: 1px solid var(--rule); border-radius: 6px; padding: 14px 16px; background: var(--sheet); display: grid; gap: 6px; align-content: start; }
+.note.key { border-color: var(--model); }
+.note.mine { border-color: var(--you); }
+.say {
+  font-family: var(--display); font-size: clamp(21px, 3vw, 26px); line-height: 1.45; padding-left: 18px;
+  border-left: 3px solid var(--model); max-width: 52ch;
+}
+.say.y { border-left-color: var(--you); }
+.diagram { overflow-x: auto; }
+.diagram svg { display: block; min-width: 720px; width: 100%; height: auto; }
+svg text { font-family: var(--body); }
+
+/* quiz */
+.quiz { display: grid; gap: 10px; }
+.quiz details { background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: 14px 16px; }
+.quiz summary { cursor: pointer; font-family: var(--display); font-size: 18px; list-style: none; }
+.quiz summary::-webkit-details-marker { display: none; }
+.quiz summary::before { content: "＋"; display: inline-block; width: 1.4em; color: var(--ink-soft); font-family: var(--mono); }
+.quiz details[open] summary::before { content: "－"; }
+.quiz details p { margin-top: 10px; padding-left: 1.4em; }
+
+.counter {
+  position: fixed; right: 16px; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); z-index: 5;
+  font: 12px/1 var(--mono); color: var(--ink-soft); background: var(--sheet);
+  border: 1px solid var(--rule); border-radius: 999px; padding: 6px 12px;
+}
+@media (max-width: 1100px) { .bar .keys { display: none; } }
+@media (max-width: 640px) { section.slide { min-height: 0; padding-block: 28px; } }
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <strong>Fan-out vs Coordinator</strong>
+  <nav id="nav" aria-label="Sections"></nav>
+  <span class="keys">← → or Space to move · F for full screen</span>
+  <button type="button" id="theme">Theme</button>
+</header>
+
+<main>
+
+<section class="slide" id="intro" data-short="Idea">
+  <div class="eyebrow">Multi-agent patterns · Concept</div>
+  <h1>Same question, different person answering it</h1>
+  <p class="lede">Both patterns answer one question: how should this work be split? What differs is who answers it, and when. Everything else on this page follows from that.</p>
+  <div class="pair">
+    <div class="def is-you">
+      <span class="tag y">Fan-out</span>
+      <p><span class="you">You</span> decide the split once, when you build it. Every run sends the same pieces out in parallel and merges what comes back.</p>
+    </div>
+    <div class="def is-model">
+      <span class="tag m">Coordinator &amp; specialist</span>
+      <p><span class="model">A model</span> decides the split on every run. It reads each result and chooses what to do next.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="who" data-short="Who decides">
+  <div class="eyebrow">The one idea that makes it click</div>
+  <h2>Who decides the split, and when</h2>
+  <div class="tbl"><table>
+    <thead><tr><th></th><th>Who decides the split</th><th>When</th></tr></thead>
+    <tbody>
+      <tr><th>Fan-out</th><td class="y">You, the designer</td><td class="y">Once, when you build it</td></tr>
+      <tr><th>Coordinator</th><td class="m">The coordinator model</td><td class="m">On every run, for each input</td></tr>
+    </tbody>
+  </table></div>
+  <p class="say y">The agents in a fan-out still do real work. They just don't decide what work exists. You did.</p>
+</section>
+
+<section class="slide" id="fanout" data-short="Fan-out">
+  <div class="eyebrow">Pattern · Fan-out</div>
+  <h2>Scatter, gather, done</h2>
+  <div class="diagram" role="img" aria-label="A customer letter is sent at the same time to five policy checks: tone, legal disclaimers, refund policy, accessibility and privacy notice. All five results go to a merge step written in code, which produces one verdict.">
+    <svg viewBox="0 0 900 300" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arY" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--you)"/></marker>
+        <marker id="arI" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--ink-soft)"/></marker>
+      </defs>
+      <text x="390" y="14" text-anchor="middle" font-size="12" font-weight="600" letter-spacing=".06em" fill="var(--you)">YOU WROTE THIS SPLIT · THE SAME 5 EVERY RUN</text>
+
+      <rect x="20" y="128" width="150" height="54" rx="27" fill="var(--sheet)" stroke="var(--ink-soft)"/>
+      <text x="95" y="160" text-anchor="middle" font-size="15" font-weight="600" fill="var(--ink)">Customer letter</text>
+
+      <g fill="var(--sheet)" stroke="var(--you)">
+        <rect x="300" y="28" width="180" height="40" rx="6"/>
+        <rect x="300" y="82" width="180" height="40" rx="6"/>
+        <rect x="300" y="136" width="180" height="40" rx="6"/>
+        <rect x="300" y="190" width="180" height="40" rx="6"/>
+        <rect x="300" y="244" width="180" height="40" rx="6"/>
+      </g>
+      <g font-size="14" fill="var(--ink)" text-anchor="middle">
+        <text x="390" y="53">tone</text>
+        <text x="390" y="107">legal disclaimers</text>
+        <text x="390" y="161">refund policy</text>
+        <text x="390" y="215">accessibility</text>
+        <text x="390" y="269">privacy notice</text>
+      </g>
+
+      <g stroke="var(--you)" stroke-width="1.5" fill="none" marker-end="url(#arY)">
+        <line x1="172" y1="155" x2="297" y2="48"/>
+        <line x1="172" y1="155" x2="297" y2="102"/>
+        <line x1="172" y1="155" x2="297" y2="156"/>
+        <line x1="172" y1="155" x2="297" y2="210"/>
+        <line x1="172" y1="155" x2="297" y2="264"/>
+      </g>
+      <g stroke="var(--ink-soft)" stroke-width="1.5" fill="none" stroke-dasharray="5 4" marker-end="url(#arI)">
+        <line x1="482" y1="48" x2="597" y2="150"/>
+        <line x1="482" y1="102" x2="597" y2="152"/>
+        <line x1="482" y1="156" x2="597" y2="156"/>
+        <line x1="482" y1="210" x2="597" y2="160"/>
+        <line x1="482" y1="264" x2="597" y2="162"/>
+      </g>
+
+      <rect x="600" y="118" width="150" height="76" rx="6" fill="var(--you-tint)" stroke="var(--you)"/>
+      <text x="675" y="148" text-anchor="middle" font-size="15" font-weight="600" fill="var(--ink)">Merge step</text>
+      <text x="675" y="170" text-anchor="middle" font-size="12" fill="var(--you)">code: fail if any fails</text>
+
+      <line x1="752" y1="156" x2="787" y2="156" stroke="var(--you)" stroke-width="1.5" marker-end="url(#arY)"/>
+      <rect x="790" y="131" width="96" height="50" rx="6" fill="var(--sheet)" stroke="var(--ink-soft)"/>
+      <text x="838" y="161" text-anchor="middle" font-size="15" font-weight="600" fill="var(--ink)">Verdict</text>
+    </svg>
+  </div>
+  <div class="two">
+    <figure>
+      <figcaption class="y">The whole pattern, in code</figcaption>
+      <pre class="y">results = parallel(check(letter, p) for p in POLICIES)
+verdict = merge(results)</pre>
+    </figure>
+    <ul>
+      <li>No model decides the split. It's a loop.</li>
+      <li>Workers are usually the same prompt with different input.</li>
+      <li>It runs once: scatter, gather, done.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="slide" id="coordinator" data-short="Coordinator">
+  <div class="eyebrow">Pattern · Coordinator &amp; specialist</div>
+  <h2>Each step depends on what the last one found</h2>
+  <div class="diagram" role="img" aria-label="A ticket saying no water, bill doubled goes to the coordinator. Step 1, it asks the account specialist, who finds a meter swapped last week. Step 2, it asks field ops, who confirm an install fault. Step 3, it asks billing to draft an adjustment. The outage specialist is never called.">
+    <svg viewBox="0 0 900 300" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arM" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--model)"/></marker>
+        <marker id="arK" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--ink-soft)"/></marker>
+      </defs>
+
+      <rect x="10" y="118" width="160" height="64" rx="8" fill="var(--sheet)" stroke="var(--ink-soft)"/>
+      <text x="90" y="145" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)">Ticket</text>
+      <text x="90" y="166" text-anchor="middle" font-size="12" fill="var(--ink-soft)">"no water, bill doubled"</text>
+      <line x1="172" y1="150" x2="217" y2="150" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#arK)"/>
+
+      <rect x="220" y="100" width="200" height="100" rx="6" fill="var(--model-tint)" stroke="var(--model)"/>
+      <text x="320" y="140" text-anchor="middle" font-size="16" font-weight="600" fill="var(--ink)">Coordinator</text>
+      <text x="320" y="162" text-anchor="middle" font-size="12" fill="var(--model)">reads each result,</text>
+      <text x="320" y="179" text-anchor="middle" font-size="12" fill="var(--model)">picks the next step</text>
+
+      <g fill="var(--sheet)" stroke="var(--model)">
+        <rect x="560" y="12" width="320" height="56" rx="6"/>
+        <rect x="560" y="84" width="320" height="56" rx="6"/>
+        <rect x="560" y="156" width="320" height="56" rx="6"/>
+      </g>
+      <rect x="560" y="228" width="320" height="56" rx="6" fill="none" stroke="var(--rule)" stroke-dasharray="5 4"/>
+      <g font-size="14" font-weight="600" fill="var(--ink)">
+        <text x="578" y="36">1 · Account specialist</text>
+        <text x="578" y="108">2 · Field ops specialist</text>
+        <text x="578" y="180">3 · Billing specialist</text>
+      </g>
+      <text x="578" y="252" font-size="14" font-weight="600" fill="var(--ink-soft)">Outage specialist · not called</text>
+      <g font-size="13" fill="var(--model)">
+        <text x="578" y="57">→ meter swapped last week</text>
+        <text x="578" y="129">→ install fault confirmed</text>
+        <text x="578" y="201">→ drafts the bill adjustment</text>
+      </g>
+      <text x="578" y="273" font-size="12" fill="var(--ink-soft)">would have been step 2 if the meter was fine</text>
+
+      <g stroke="var(--model)" stroke-width="1.5" fill="none" marker-end="url(#arM)">
+        <line x1="422" y1="120" x2="557" y2="36"/>
+        <line x1="422" y1="140" x2="557" y2="108"/>
+        <line x1="422" y1="160" x2="557" y2="180"/>
+      </g>
+      <g stroke="var(--ink-soft)" stroke-width="1.5" fill="none" stroke-dasharray="5 4" marker-end="url(#arK)">
+        <line x1="557" y1="50" x2="424" y2="132"/>
+        <line x1="557" y1="122" x2="424" y2="150"/>
+        <line x1="557" y1="194" x2="424" y2="170"/>
+      </g>
+      <line x1="422" y1="185" x2="556" y2="252" stroke="var(--rule)" stroke-width="1.5" stroke-dasharray="3 5"/>
+    </svg>
+  </div>
+  <ul>
+    <li>Nobody could list these steps before reading the ticket. The coordinator works them out as it goes.</li>
+    <li>Specialists are genuinely different: their own prompts, tools and data.</li>
+    <li>It loops until the coordinator decides it's done.</li>
+  </ul>
+</section>
+
+<section class="slide" id="merge" data-short="Merge">
+  <div class="eyebrow">Fan-out · the step people forget</div>
+  <h2>Who merges in a fan-out?</h2>
+  <p class="lede">Fan-out only scatters the work. Something you add on purpose combines it: a merge step that runs once, after every worker has finished.</p>
+  <div class="cards">
+    <div class="card">
+      <span class="tag y">Prefer this</span>
+      <h3>Plain code</h3>
+      <p>Fail if any check fails. Average 3 judge scores. Deduplicate and rank search hits.</p>
+      <p class="so">Cheap, predictable and testable. Needs structured worker output.</p>
+    </div>
+    <div class="card">
+      <span class="tag m">When outputs are free text</span>
+      <h3>One more model call</h3>
+      <p>Turn 40 transcript summaries into "top 5 complaint themes".</p>
+      <p class="so">Flexible, but it can smooth over a disagreement or add a claim no worker made.</p>
+    </div>
+    <div class="card warn">
+      <span class="tag f">Not a coordinator</span>
+      <h3>The merge step doesn't decide</h3>
+      <p>It doesn't choose what runs or loop. Once it says "these disagree, rerun worker B", it has become a coordinator.</p>
+    </div>
+  </div>
+  <p class="say y">In a fan-out, the quality of the final answer depends mostly on the merge step. Decide up front what happens on conflict.</p>
+</section>
+
+<section class="slide" id="whynot" data-short="Why not">
+  <div class="eyebrow">The question that comes up every time</div>
+  <h2>"Can't a coordinator just do this with subagents?"</h2>
+  <p class="lede">Yes, it can. The real question is whether you need a model to make that decision every time.</p>
+  <div class="two">
+    <figure>
+      <figcaption class="y">Hard-coded fan-out</figcaption>
+      <pre class="y"><b>Split</b>   5 checks, written in code
+<b>Runs</b>    all 5, every time
+<b>Merge</b>   code: fail if any fails
+<b>Cost</b>    5 calls, known in advance</pre>
+    </figure>
+    <figure>
+      <figcaption class="m">Coordinator with subagents</figcaption>
+      <pre class="m"><b>Split</b>   model reads the letter, decides
+<b>Runs</b>    whichever checks it thinks apply
+<b>Merge</b>   model reads all results, writes one
+<b>Cost</b>    5 calls + coordinator, varies</pre>
+    </figure>
+  </div>
+  <div class="cards">
+    <div class="card warn"><h3>Runs vary</h3><p>Some days it decides accessibility isn't relevant and skips it. For a compliance check, that's a bug.</p></div>
+    <div class="card"><h3>Extra tokens</h3><p>You pay for a model to rediscover "check these 5" on every run.</p></div>
+    <div class="card"><h3>Context bloat</h3><p>Every result passes through the coordinator's context.</p></div>
+    <div class="card"><h3>Harder testing</h3><p>You can't check "did all 5 run?" without reading its reasoning.</p></div>
+  </div>
+  <p class="say">Fan-out is a coordinator whose decision never changes, written down as code.</p>
+</section>
+
+<section class="slide" id="rule" data-short="Rule">
+  <div class="eyebrow">Rule of thumb</div>
+  <h2>If you can write the split as a <code>for</code> loop, fan out</h2>
+  <p class="lede">If step 2 depends on what step 1 found, use a coordinator.</p>
+  <div class="two">
+    <div class="note mine">
+      <span class="tag y">Fan out</span>
+      <ul>
+        <li>Check one letter against 5 policies</li>
+        <li>Summarise 40 call transcripts</li>
+        <li>Translate a notice into 6 languages</li>
+        <li>Search the policy store, the FAQ and old tickets at once</li>
+      </ul>
+    </div>
+    <div class="note key">
+      <span class="tag m">Coordinator earns its cost</span>
+      <ul>
+        <li>"Check the contracts that mention the new clause." Which ones, and how many? Something has to look first.</li>
+        <li>"Investigate this incident." It can't know which specialist matters until it sees the first result.</li>
+        <li>"Why did complaints rise in Q3?" The second question comes from the first answer.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="compare" data-short="Compare">
+  <div class="eyebrow">Side by side</div>
+  <h2>How each one breaks</h2>
+  <div class="tbl"><table>
+    <thead><tr><th></th><th class="y">Fan-out</th><th class="m">Coordinator &amp; specialist</th></tr></thead>
+    <tbody>
+      <tr><th>Who decides</th><td>You, once</td><td class="m">The model, every run</td></tr>
+      <tr><th>Speed</th><td>Fast, parallel</td><td class="m">Slower, mostly one step at a time</td></tr>
+      <tr><th>Cost</th><td>Predictable (N calls)</td><td class="m">Varies with the coordinator's choices</td></tr>
+      <tr><th>Typical failure</th><td>Merge: conflicts hidden, duplicate work</td><td class="m">Routing: wrong specialist, loops, context bloat</td></tr>
+      <tr><th>Wasted work</th><td>Runs branches that weren't needed</td><td class="m">Skips branches it should have run</td></tr>
+      <tr><th>Workers see each other</th><td>No</td><td class="m">Only through the coordinator</td></tr>
+      <tr><th>Testing</th><td>Easy, each worker on its own</td><td class="m">Hard, the path changes every run</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="slide" id="hybrid" data-short="Hybrid">
+  <div class="eyebrow">They combine</div>
+  <h2>The coordinator decides, fan-out does the bulk work</h2>
+  <div class="diagram" role="img" aria-label="A coordinator reads an audit request and fetches the contract list. It fans out 12 contract checks in parallel. Two of them are flagged. The coordinator sends only those two to the legal specialist.">
+    <svg viewBox="0 0 900 250" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arH1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--model)"/></marker>
+        <marker id="arH2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--flag)"/></marker>
+      </defs>
+      <g font-size="12" font-weight="600" letter-spacing=".06em" text-anchor="middle">
+        <text x="105" y="22" fill="var(--model)">MODEL DECIDES</text>
+        <text x="405" y="22" fill="var(--you)">FAN-OUT · 12 IN PARALLEL</text>
+        <text x="785" y="22" fill="var(--model)">MODEL DECIDES</text>
+      </g>
+
+      <rect x="20" y="90" width="170" height="80" rx="6" fill="var(--model-tint)" stroke="var(--model)"/>
+      <text x="105" y="122" text-anchor="middle" font-size="16" font-weight="600" fill="var(--ink)">Coordinator</text>
+      <text x="105" y="144" text-anchor="middle" font-size="12" fill="var(--model)">gets contract list,</text>
+      <text x="105" y="160" text-anchor="middle" font-size="12" fill="var(--model)">decides: check all 12</text>
+
+      <line x1="192" y1="130" x2="262" y2="130" stroke="var(--model)" stroke-width="1.5" marker-end="url(#arH1)"/>
+
+      <g fill="var(--sheet)" stroke="var(--you)">
+        <rect x="270" y="50" width="60" height="44" rx="5"/><rect x="340" y="50" width="60" height="44" rx="5"/><rect x="410" y="50" width="60" height="44" rx="5"/><rect x="480" y="50" width="60" height="44" rx="5"/>
+        <rect x="270" y="108" width="60" height="44" rx="5"/><rect x="410" y="108" width="60" height="44" rx="5"/><rect x="480" y="108" width="60" height="44" rx="5"/>
+        <rect x="270" y="166" width="60" height="44" rx="5"/><rect x="340" y="166" width="60" height="44" rx="5"/><rect x="410" y="166" width="60" height="44" rx="5"/>
+      </g>
+      <g fill="var(--flag-tint)" stroke="var(--flag)" stroke-width="1.5">
+        <rect x="340" y="108" width="60" height="44" rx="5"/>
+        <rect x="480" y="166" width="60" height="44" rx="5"/>
+      </g>
+      <g font-size="12" text-anchor="middle" fill="var(--ink-soft)">
+        <text x="300" y="77">ok</text><text x="370" y="77">ok</text><text x="440" y="77">ok</text><text x="510" y="77">ok</text>
+        <text x="300" y="135">ok</text><text x="440" y="135">ok</text><text x="510" y="135">ok</text>
+        <text x="300" y="193">ok</text><text x="370" y="193">ok</text><text x="440" y="193">ok</text>
+      </g>
+      <g font-size="12" font-weight="600" text-anchor="middle" fill="var(--flag)">
+        <text x="370" y="135">flag</text><text x="510" y="193">flag</text>
+      </g>
+      <text x="405" y="236" text-anchor="middle" font-size="12" fill="var(--ink-soft)">same check, different contract · merged in code</text>
+
+      <line x1="548" y1="130" x2="697" y2="130" stroke="var(--flag)" stroke-width="1.5" marker-end="url(#arH2)"/>
+      <text x="622" y="120" text-anchor="middle" font-size="12" font-weight="600" fill="var(--flag)">only the 2 flagged</text>
+
+      <rect x="700" y="90" width="170" height="80" rx="6" fill="var(--model-tint)" stroke="var(--model)"/>
+      <text x="785" y="126" text-anchor="middle" font-size="16" font-weight="600" fill="var(--ink)">Legal specialist</text>
+      <text x="785" y="150" text-anchor="middle" font-size="12" fill="var(--model)">called because of the result</text>
+    </svg>
+  </div>
+  <p>This is the most common shape in real systems. The decisions that depend on the input stay with the model. The repetitive part runs as a plain fan-out.</p>
+</section>
+
+<section class="slide" id="big" data-short="Big picture">
+  <div class="eyebrow">Zoom out</div>
+  <h2>Four questions every multi-agent design answers</h2>
+  <ol>
+    <li><strong>Who decides the steps?</strong> You, or a model.</li>
+    <li><strong>How do the steps relate?</strong> Parallel, or one after another.</li>
+    <li><strong>Who combines the results?</strong> Code, or a model.</li>
+    <li><strong>Who decides it's done?</strong> Fixed, or a model.</li>
+  </ol>
+  <div class="tbl"><table>
+    <thead><tr><th>Pattern</th><th>Decides steps</th><th>Shape</th><th>Done when</th></tr></thead>
+    <tbody>
+      <tr><th>Pipeline</th><td class="y">You</td><td>One after another</td><td>Last step finishes</td></tr>
+      <tr><th>Fan-out</th><td class="y">You</td><td>Parallel</td><td>All workers return</td></tr>
+      <tr><th>Router</th><td class="m">Model, once</td><td>Picks one path</td><td>That path finishes</td></tr>
+      <tr><th>Coordinator</th><td class="m">Model, every step</td><td>Its choice</td><td>Coordinator says so</td></tr>
+    </tbody>
+  </table></div>
+  <p class="say">If a decision comes out the same on every run, take it away from the model and write it in code.</p>
+  <p>See both in the labs: <code>labs/03_parallel_fanout.py</code> and <code>labs/02_coordinator_specialists.py</code>.</p>
+</section>
+
+<section class="slide" id="quiz" data-short="Quiz">
+  <div class="eyebrow">Check yourself</div>
+  <h2>Which pattern is this?</h2>
+  <div class="quiz">
+    <details>
+      <summary>A router sends each ticket to one of 5 queues.</summary>
+      <p><span class="model">Router, not coordinator.</span> It makes one decision with no loop and never reads a result back.</p>
+    </details>
+    <details>
+      <summary>Researcher, then writer, then editor.</summary>
+      <p><span class="you">Pipeline.</span> The order is fixed in code. Nothing is decided at runtime and nothing runs in parallel.</p>
+    </details>
+    <details>
+      <summary>A coordinator always calls all 4 specialists in the same order.</summary>
+      <p><span class="you">A pipeline in disguise.</span> The decision never changes, so drop the coordinator and save the calls.</p>
+    </details>
+    <details>
+      <summary>Fan out to 5 agents, but agent 3 needs agent 1's output.</summary>
+      <p><span class="you">Not a fan-out.</span> That dependency makes it at least partly sequential.</p>
+    </details>
+  </div>
+</section>
+
+<section class="slide" id="takeaway" data-short="Takeaway">
+  <div class="eyebrow">One line to remember</div>
+  <div class="pair">
+    <div class="def is-you">
+      <span class="tag y">Fan-out = standing procedure</span>
+      <p>You wrote down the split once. Everyone follows it every time.</p>
+    </div>
+    <div class="def is-model">
+      <span class="tag m">Coordinator = manager on duty</span>
+      <p>Looks at each case and decides who to call next. Flexible, but it costs more and runs differently each time.</p>
+    </div>
+  </div>
+  <p class="say">If you can write the split as a for loop, fan out. Pay for a coordinator only when the work changes from one input to the next.</p>
+  <p>Related: <a href="../subagents/index.html">Subagents vs standalone agents</a> · <a href="../01b/index.html">Pattern 01b explained</a></p>
+</section>
+
+</main>
+
+<div class="counter" id="counter" aria-live="polite">1 / 12</div>
+
+<script>
+(function () {
+  "use strict";
+
+  // SVG presentation attributes don't reliably take CSS variables; move them into style so both themes apply.
+  document.querySelectorAll("svg [fill], svg [stroke]").forEach(function (el) {
+    ["fill", "stroke"].forEach(function (attr) {
+      var v = el.getAttribute(attr);
+      if (v && v.indexOf("var(") === 0) { el.style.setProperty(attr, v); el.removeAttribute(attr); }
+    });
+  });
+
+  // Section nav and slide mode.
+  var slides = Array.prototype.slice.call(document.querySelectorAll("section.slide"));
+  var nav = document.getElementById("nav"), counter = document.getElementById("counter");
+  slides.forEach(function (s) {
+    var a = document.createElement("a");
+    a.href = "#" + s.id; a.textContent = s.dataset.short || s.id;
+    nav.appendChild(a);
+  });
+  var links = nav.querySelectorAll("a");
+  function mark(i) {
+    counter.textContent = (i + 1) + " / " + slides.length;
+    links.forEach(function (l, j) { l.classList.toggle("here", j === i); });
+  }
+  function nearest() {
+    var best = 0, bestDist = Infinity;
+    slides.forEach(function (s, i) {
+      var d = Math.abs(s.getBoundingClientRect().top - 60);
+      if (d < bestDist) { bestDist = d; best = i; }
+    });
+    return best;
+  }
+  var ticking = false;
+  window.addEventListener("scroll", function () {
+    if (ticking) return; ticking = true;
+    requestAnimationFrame(function () { mark(nearest()); ticking = false; });
+  }, { passive: true });
+  function go(i) {
+    i = Math.max(0, Math.min(slides.length - 1, i));
+    slides[i].scrollIntoView({ block: "start" });
+    mark(i);
+  }
+  document.addEventListener("keydown", function (e) {
+    if (e.altKey || e.ctrlKey || e.metaKey) return;
+    // Space on a quiz question opens it instead of turning the slide.
+    if (e.key === " " && e.target && e.target.tagName === "SUMMARY") return;
+    var k = e.key;
+    if (k === "ArrowRight" || k === "PageDown" || (k === " " && !e.shiftKey)) { e.preventDefault(); go(nearest() + 1); }
+    else if (k === "ArrowLeft" || k === "PageUp" || (k === " " && e.shiftKey)) { e.preventDefault(); go(nearest() - 1); }
+    else if (k === "Home") { e.preventDefault(); go(0); }
+    else if (k === "End") { e.preventDefault(); go(slides.length - 1); }
+    else if (k === "f" || k === "F") {
+      try {
+        if (document.fullscreenElement) document.exitFullscreen();
+        else document.documentElement.requestFullscreen().catch(function () {});
+      } catch (err) { /* full screen is optional */ }
+    }
+  });
+
+  // Theme toggle: system by default, then light, then dark.
+  var root = document.documentElement, btn = document.getElementById("theme");
+  var order = ["system", "light", "dark"], mode = "system";
+  try { mode = localStorage.getItem("fanout-theme") || "system"; } catch (err) {}
+  function apply() {
+    if (mode === "system") root.removeAttribute("data-theme"); else root.setAttribute("data-theme", mode);
+    btn.textContent = "Theme: " + mode;
+  }
+  btn.addEventListener("click", function () {
+    mode = order[(order.indexOf(mode) + 1) % order.length];
+    try { localStorage.setItem("fanout-theme", mode); } catch (err) {}
+    apply();
+  });
+  apply();
+  mark(nearest());
+})();
+</script>
+</body>
+</html>

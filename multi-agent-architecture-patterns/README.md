@@ -25,6 +25,7 @@ Folder naming and linking are still to be decided.
 - `docs/design-exercises/index.html`: DAS multi-agent design session (exercises)
 - `docs/recap/recap-2026-10-29.html`: recap, agent fundamentals + multi-agent
 - `docs/subagents/index.html`: subagents vs standalone agents
+- `docs/fanout-vs-coordinator/index.html`: fan-out vs coordinator & specialist
 
 ## Setup
 
