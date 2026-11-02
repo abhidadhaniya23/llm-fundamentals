@@ -1,0 +1,990 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Workflows &amp; Agents</title>
+<style>
+/* Layout: same case-file reader as the fan-out page; each section is one slide. Ochre = your code decides, teal = the model decides (an agent), red = a check in code that can reject an answer. */
+:root {
+  --paper: #f6f7f8;
+  --sheet: #ffffff;
+  --ink: #1b2430;
+  --ink-soft: #4a5868;
+  --rule: #d6dce3;
+  --model: #0d7368;
+  --model-tint: #e2f2ef;
+  --you: #9a5b00;
+  --you-tint: #f8eedc;
+  --flag: #b4322a;
+  --flag-tint: #f9e3e1;
+  --pre-bg: #eef1f4;
+  --display: Charter, "Bitstream Charter", "Sitka Text", Cambria, Georgia, serif;
+  --body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: "Cascadia Code", "Cascadia Mono", Consolas, ui-monospace, "SF Mono", Menlo, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #12171d; --sheet: #192028; --ink: #e4e9ee; --ink-soft: #a3b0bd; --rule: #2e3944;
+    --model: #4cc2b3; --model-tint: #15312e; --you: #e0a443; --you-tint: #33271a;
+    --flag: #ef7f75; --flag-tint: #3a1f1d; --pre-bg: #0f1419; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #12171d; --sheet: #192028; --ink: #e4e9ee; --ink-soft: #a3b0bd; --rule: #2e3944;
+  --model: #4cc2b3; --model-tint: #15312e; --you: #e0a443; --you-tint: #33271a;
+  --flag: #ef7f75; --flag-tint: #3a1f1d; --pre-bg: #0f1419; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  margin: 0; background: var(--paper); color: var(--ink);
+  font: 16px/1.6 var(--body);
+  padding-inline: 16px;
+}
+a { color: var(--model); }
+a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid var(--model); outline-offset: 2px; }
+
+.bar {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  margin-inline: -16px; padding: 8px 16px;
+  background: var(--paper); border-bottom: 1px solid var(--rule);
+  display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+  font-size: 13px;
+}
+.bar strong { font-family: var(--display); font-size: 15px; }
+.bar nav { display: flex; gap: 4px 10px; flex-wrap: wrap; min-width: 0; }
+.bar nav a { color: var(--ink-soft); text-decoration: none; white-space: nowrap; }
+.bar nav a:hover, .bar nav a.here { color: var(--model); }
+.bar .keys { margin-left: auto; color: var(--ink-soft); }
+.bar button {
+  font: inherit; color: var(--ink); background: var(--sheet); border: 1px solid var(--rule);
+  border-radius: 6px; padding: 2px 10px; cursor: pointer;
+}
+
+main { max-width: 980px; margin: 0 auto; padding-block: 24px 96px; }
+
+section.slide {
+  scroll-margin-top: 56px;
+  min-height: calc(100vh - 56px);
+  padding-block: 40px;
+  border-bottom: 1px solid var(--rule);
+  display: flex; flex-direction: column; justify-content: center; gap: 20px;
+}
+section.slide > * { min-width: 0; }
+.eyebrow { font: 600 12px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft); }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; line-height: 1.2; margin: 0; }
+h1 { font-size: clamp(34px, 6.5vw, 58px); }
+h2 { font-size: clamp(26px, 4vw, 36px); }
+h3 { font-size: 19px; }
+p, li { max-width: 68ch; }
+p { margin: 0; }
+.lede { font-size: 19px; color: var(--ink-soft); }
+ul, ol { margin: 0; padding-left: 22px; display: grid; gap: 6px; }
+
+.you { color: var(--you); font-weight: 600; }
+.model { color: var(--model); font-weight: 600; }
+.flagged { color: var(--flag); font-weight: 600; }
+.tag {
+  display: inline-block; font: 600 11px/1 var(--mono); letter-spacing: .06em; text-transform: uppercase;
+  padding: 4px 7px; border-radius: 4px; vertical-align: 2px; justify-self: start;
+}
+.tag.y { background: var(--you-tint); color: var(--you); }
+.tag.m { background: var(--model-tint); color: var(--model); }
+.tag.f { background: var(--flag-tint); color: var(--flag); }
+
+.pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+.def {
+  background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: 18px 20px;
+  display: grid; gap: 8px; align-content: start;
+}
+.def.is-you { border-top: 4px solid var(--you); }
+.def.is-model { border-top: 4px solid var(--model); }
+.def p { font-family: var(--display); font-size: 19px; line-height: 1.5; }
+
+.tbl { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 15.5px; }
+th, td { text-align: left; vertical-align: top; padding: 11px 14px; border-bottom: 1px solid var(--rule); }
+thead th { font: 600 12px/1.3 var(--mono); letter-spacing: .05em; text-transform: uppercase; }
+thead th.y { color: var(--you); }
+thead th.m { color: var(--model); }
+tbody th { font: 600 12px/1.5 var(--mono); letter-spacing: .04em; text-transform: uppercase; color: var(--ink-soft); white-space: nowrap; }
+td.y { background: var(--you-tint); }
+td.m { background: var(--model-tint); }
+td.num { font-family: var(--mono); font-size: 14px; white-space: nowrap; }
+td code, p code, li code, h2 code { font: 0.88em var(--mono); background: var(--pre-bg); padding: 1px 5px; border-radius: 3px; }
+
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+.card {
+  background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: 16px;
+  display: grid; gap: 8px; align-content: start;
+}
+.card.warn { border-color: var(--flag); background: var(--flag-tint); }
+.card .so { font-size: 14.5px; color: var(--ink-soft); border-top: 1px solid var(--rule); padding-top: 8px; }
+
+figure { margin: 0; display: grid; gap: 6px; min-width: 0; }
+figcaption { font: 600 12px/1.4 var(--mono); letter-spacing: .05em; text-transform: uppercase; color: var(--ink-soft); }
+figcaption.y { color: var(--you); }
+figcaption.m { color: var(--model); }
+figcaption.f { color: var(--flag); }
+pre {
+  margin: 0; overflow-x: auto; background: var(--pre-bg); border-radius: 6px;
+  padding: 14px 16px; font: 14px/1.6 var(--mono); white-space: pre-wrap;
+}
+pre.y { border-left: 3px solid var(--you); }
+pre.m { border-left: 3px solid var(--model); }
+pre.cmd { border-left: 3px solid var(--ink-soft); }
+pre.trace { font-size: 13px; line-height: 1.55; }
+pre b { font-weight: 600; }
+pre.y b { color: var(--you); }
+pre.m b, pre.trace b { color: var(--model); }
+pre .r { color: var(--flag); font-weight: 600; }
+pre .c, td .c { color: var(--ink-soft); }
+
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; align-items: start; }
+.note { border: 1px solid var(--rule); border-radius: 6px; padding: 14px 16px; background: var(--sheet); display: grid; gap: 6px; align-content: start; }
+.note.key { border-color: var(--model); }
+.note.mine { border-color: var(--you); }
+.note.check { border-color: var(--flag); }
+.note.try { border-style: dashed; }
+.say {
+  font-family: var(--display); font-size: clamp(21px, 3vw, 26px); line-height: 1.45; padding-left: 18px;
+  border-left: 3px solid var(--model); max-width: 52ch;
+}
+.say.y { border-left-color: var(--you); }
+.diagram { overflow-x: auto; }
+.diagram svg { display: block; min-width: 720px; width: 100%; height: auto; }
+svg text { font-family: var(--body); }
+
+.quiz { display: grid; gap: 10px; }
+.quiz details { background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: 14px 16px; }
+.quiz summary { cursor: pointer; font-family: var(--display); font-size: 18px; list-style: none; }
+.quiz summary::-webkit-details-marker { display: none; }
+.quiz summary::before { content: "＋"; display: inline-block; width: 1.4em; color: var(--ink-soft); font-family: var(--mono); }
+.quiz details[open] summary::before { content: "－"; }
+.quiz details p { margin-top: 10px; padding-left: 1.4em; }
+
+.counter {
+  position: fixed; right: 16px; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); z-index: 5;
+  font: 12px/1 var(--mono); color: var(--ink-soft); background: var(--sheet);
+  border: 1px solid var(--rule); border-radius: 999px; padding: 6px 12px;
+}
+@media (max-width: 1100px) { .bar .keys { display: none; } }
+@media (max-width: 640px) { section.slide { min-height: 0; padding-block: 28px; } }
+</style>
+</head>
+<body>
+
+<!-- Arrow heads shared by every diagram on the page. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <marker id="aY" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--you)"/></marker>
+    <marker id="aM" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--model)"/></marker>
+    <marker id="aK" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--ink-soft)"/></marker>
+    <marker id="aR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--flag)"/></marker>
+  </defs>
+</svg>
+
+<header class="bar">
+  <strong>Workflows &amp; Agents</strong>
+  <nav id="nav" aria-label="Sections"></nav>
+  <span class="keys">← → or Space to move · F for full screen</span>
+  <button type="button" id="theme">Theme</button>
+</header>
+
+<main>
+
+<!-- ── 1 · Intro ─────────────────────────────────────────────────────────── -->
+<section class="slide" id="intro" data-short="Idea">
+  <div class="eyebrow">Workflows &amp; Agents · hand-rolled, no framework</div>
+  <h1>Seven exercises, and every step is an agent</h1>
+  <p class="lede">These are the exercises from <em>Building Effective Agents with LangGraph</em>, with the same inputs: cats, LLM scaling laws, "3 and 4". They're rebuilt in plain Python on <code>labs/shared.py</code>, with no LangGraph or LangChain.</p>
+  <div class="pair">
+    <div class="def is-you">
+      <span class="tag y">Workflow</span>
+      <p><span class="you">Your code</span> sets the path. LLM calls fill in the steps along it.</p>
+    </div>
+    <div class="def is-model">
+      <span class="tag m">Agent</span>
+      <p><span class="model">The model</span> chooses its next action, sees the result and chooses again until it's done.</p>
+    </div>
+  </div>
+  <div class="tbl"><table>
+    <thead><tr><th>Exercise</th><th>In the notes</th><th class="m">Here</th></tr></thead>
+    <tbody>
+      <tr><th>00 Augmented LLM</th><td>1 call (structured output, 1 tool call)</td><td class="m">plus a research agent that searches, reads and refines its query</td></tr>
+      <tr><th>01 Prompt chaining</th><td>3 single calls + a code gate</td><td class="m">3 agents + the code gate</td></tr>
+      <tr><th>02 Parallelization</th><td>3 single calls + string join</td><td class="m">3 writer agents + an aggregator agent</td></tr>
+      <tr><th>03 Routing</th><td>1 classify call + 1 call</td><td class="m">a router agent with reader profiles + writer agents</td></tr>
+      <tr><th>04 Orchestrator-worker</th><td>1 plan call + N single calls</td><td class="m">a planner agent + worker agents citing papers</td></tr>
+      <tr><th>05 Evaluator-optimizer</th><td>a code loop over 2 single calls</td><td class="m">a code loop over 2 agents</td></tr>
+      <tr><th>06 Agent</th><td>the only agent</td><td class="m">still an agent, with a harder task</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ── 2 · Harness ───────────────────────────────────────────────────────── -->
+<section class="slide" id="harness" data-short="The loop">
+  <div class="eyebrow">The harness · <code>shared.run_agent</code></div>
+  <h2>An agent is a loop you can read in one screen</h2>
+  <div class="diagram" role="img" aria-label="The task and a list of tools go to the model. The model replies with JSON. If it asks for a tool, your Python function runs and its result goes back to the model. If it gives a final answer, a validate function in code checks it: if rejected, the error goes back to the model; if accepted, it is the answer.">
+    <svg viewBox="0 0 900 275" xmlns="http://www.w3.org/2000/svg">
+      <rect x="10" y="100" width="160" height="62" rx="8" fill="var(--sheet)" stroke="var(--ink-soft)"/>
+      <text x="90" y="127" text-anchor="middle" font-size="15" font-weight="600" fill="var(--ink)">Task</text>
+      <text x="90" y="148" text-anchor="middle" font-size="12" fill="var(--ink-soft)">+ tool list from docstrings</text>
+      <line x1="172" y1="131" x2="217" y2="131" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#aK)"/>
+
+      <rect x="220" y="92" width="170" height="78" rx="6" fill="var(--model-tint)" stroke="var(--model)"/>
+      <text x="305" y="125" text-anchor="middle" font-size="16" font-weight="600" fill="var(--ink)">Model</text>
+      <text x="305" y="147" text-anchor="middle" font-size="12" fill="var(--model)">replies with one JSON</text>
+
+      <rect x="490" y="14" width="190" height="58" rx="6" fill="var(--you-tint)" stroke="var(--you)"/>
+      <text x="585" y="39" text-anchor="middle" font-size="15" font-weight="600" fill="var(--ink)">Tool</text>
+      <text x="585" y="59" text-anchor="middle" font-size="12" fill="var(--you)">your Python function runs</text>
+      <line x1="392" y1="105" x2="487" y2="40" stroke="var(--model)" stroke-width="1.5" marker-end="url(#aM)"/>
+      <text x="418" y="60" font-size="12" font-weight="600" fill="var(--model)">{"tool": …}</text>
+      <line x1="490" y1="66" x2="394" y2="122" stroke="var(--ink-soft)" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#aK)"/>
+      <text x="452" y="108" font-size="12" fill="var(--ink-soft)">&lt;tool_result&gt;</text>
+
+      <rect x="490" y="176" width="190" height="62" rx="6" fill="var(--flag-tint)" stroke="var(--flag)"/>
+      <text x="585" y="202" text-anchor="middle" font-size="15" font-weight="600" fill="var(--ink)">validate (code)</text>
+      <text x="585" y="223" text-anchor="middle" font-size="12" fill="var(--flag)">checks the final answer</text>
+      <line x1="392" y1="160" x2="487" y2="200" stroke="var(--model)" stroke-width="1.5" marker-end="url(#aM)"/>
+      <text x="400" y="200" font-size="12" font-weight="600" fill="var(--model)">{"final": …}</text>
+      <path d="M520,238 Q420,262 330,172" fill="none" stroke="var(--flag)" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#aR)"/>
+      <text x="430" y="268" text-anchor="middle" font-size="12" font-weight="600" fill="var(--flag)">rejected: the error goes back to the model</text>
+
+      <line x1="682" y1="207" x2="737" y2="207" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#aK)"/>
+      <rect x="740" y="182" width="140" height="50" rx="25" fill="var(--sheet)" stroke="var(--ink-soft)"/>
+      <text x="810" y="212" text-anchor="middle" font-size="15" font-weight="600" fill="var(--ink)">Answer</text>
+      <text x="785" y="44" text-anchor="middle" font-size="12" fill="var(--ink-soft)">repeat, at most</text>
+      <text x="785" y="62" text-anchor="middle" font-size="12" fill="var(--ink-soft)">max_steps times</text>
+    </svg>
+  </div>
+  <div class="two">
+    <figure>
+      <figcaption class="m">The core of labs/shared.py, simplified</figcaption>
+      <pre class="m">for _ in range(max_steps):
+    reply = _chat(messages, label)
+    action = _parse_json(reply)
+    if "final" in action:
+        try:
+            return <b>validate</b>(action["final"])
+        except ValueError as error:
+            send(<span class="r">f"rejected: {error}"</span>)
+            continue
+    tool = <b>tools</b>[action["tool"]]
+    result = tool(**action["args"])
+    send(f"&lt;tool_result&gt;{result}&lt;/tool_result&gt;")</pre>
+    </figure>
+    <ul>
+      <li><strong>Tools are plain functions.</strong> Their signature and docstring are the description the model reads.</li>
+      <li><strong>The protocol is JSON in the prompt</strong>, not a provider's native tool API, so it works the same on Nexus and Claude.</li>
+      <li><strong><code>validate</code> is how code gets the last word.</strong> If an agent skips a check, it gets the error back and tries again.</li>
+      <li>Tool errors are sent back to the model too, so a bad call doesn't crash the run.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ── 3 · Mapping ───────────────────────────────────────────────────────── -->
+<section class="slide" id="mapping" data-short="LangGraph → Python">
+  <div class="eyebrow">What the framework was doing</div>
+  <h2>Every LangGraph construct has a few lines of Python behind it</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>LangGraph / LangChain</th><th class="y">Hand-rolled here</th><th>Where to look</th></tr></thead>
+    <tbody>
+      <tr><th>StateGraph(State)</th><td class="y">a <code>state</code> dict passed to plain functions</td><td>every lab's <code>run_workflow</code></td></tr>
+      <tr><th>add_edge</th><td class="y">call the next function</td><td>wf01</td></tr>
+      <tr><th>add_conditional_edges</th><td class="y"><code>if</code> / <code>elif</code> / <code>while</code></td><td>wf01 gate, wf03 route, wf05 loop</td></tr>
+      <tr><th>edges from START · Send()</th><td class="y"><code>ThreadPoolExecutor</code></td><td>wf02, wf04</td></tr>
+      <tr><th>with_structured_output</th><td class="y">schema in the prompt + pydantic in <code>validate=</code></td><td>wf00, wf03, wf04, wf05</td></tr>
+      <tr><th>bind_tools + tool node + MessagesState</th><td class="y"><code>shared.run_agent</code>'s loop</td><td>everywhere</td></tr>
+      <tr><th>Annotated[list, operator.add]</th><td class="y"><code>pool.map</code> returns the list</td><td>wf04</td></tr>
+    </tbody>
+  </table></div>
+  <p class="say y">What the framework adds on top is infrastructure: persistence, streaming, human-in-the-loop, deployment. None of these patterns needs it.</p>
+</section>
+
+<!-- ── 4 · Two modes ─────────────────────────────────────────────────────── -->
+<section class="slide" id="modes" data-short="Two modes">
+  <div class="eyebrow">Labs 01–05 run two ways</div>
+  <h2>Every step is an agent. Who decides the order?</h2>
+  <div class="diagram" role="img" aria-label="Left, workflow mode: inside a frame labelled your code, three agents run one after another in a fixed order. Right, agentic mode: one lead agent calls three sub-agents as tools, in whatever order it chooses, and code validates only its final answer.">
+    <svg viewBox="0 0 900 270" xmlns="http://www.w3.org/2000/svg">
+      <text x="220" y="18" text-anchor="middle" font-size="12" font-weight="600" letter-spacing=".06em" fill="var(--you)">--mode workflow · YOUR CODE SETS THE ORDER</text>
+      <rect x="10" y="34" width="420" height="220" rx="10" fill="none" stroke="var(--you)" stroke-dasharray="6 5"/>
+      <g fill="var(--model-tint)" stroke="var(--model)">
+        <rect x="30" y="110" width="110" height="56" rx="6"/>
+        <rect x="165" y="110" width="110" height="56" rx="6"/>
+        <rect x="300" y="110" width="110" height="56" rx="6"/>
+      </g>
+      <g font-size="14" font-weight="600" fill="var(--ink)" text-anchor="middle">
+        <text x="85" y="143">agent A</text><text x="220" y="143">agent B</text><text x="355" y="143">agent C</text>
+      </g>
+      <g stroke="var(--you)" stroke-width="1.5" marker-end="url(#aY)">
+        <line x1="142" y1="138" x2="162" y2="138"/><line x1="277" y1="138" x2="297" y2="138"/>
+      </g>
+      <g font-size="11" fill="var(--flag)" text-anchor="middle" font-weight="600">
+        <text x="85" y="186">validate</text><text x="220" y="186">validate</text><text x="355" y="186">validate</text>
+      </g>
+      <text x="220" y="230" text-anchor="middle" font-size="12" fill="var(--you)">if / while / threads in code</text>
+
+      <text x="680" y="18" text-anchor="middle" font-size="12" font-weight="600" letter-spacing=".06em" fill="var(--model)">--mode agentic · AN AGENT SETS THE ORDER</text>
+      <rect x="470" y="100" width="160" height="76" rx="6" fill="var(--model-tint)" stroke="var(--model)"/>
+      <text x="550" y="133" text-anchor="middle" font-size="15" font-weight="600" fill="var(--ink)">Lead agent</text>
+      <text x="550" y="154" text-anchor="middle" font-size="12" fill="var(--model)">picks, repeats, stops</text>
+      <g fill="var(--sheet)" stroke="var(--model)">
+        <rect x="720" y="40" width="160" height="44" rx="6"/><rect x="720" y="116" width="160" height="44" rx="6"/><rect x="720" y="192" width="160" height="44" rx="6"/>
+      </g>
+      <g font-size="13" fill="var(--ink)" text-anchor="middle">
+        <text x="800" y="67">tool = agent A</text><text x="800" y="143">tool = agent B</text><text x="800" y="219">tool = agent C</text>
+      </g>
+      <g stroke="var(--model)" stroke-width="1.5" marker-end="url(#aM)">
+        <line x1="632" y1="120" x2="717" y2="64"/><line x1="632" y1="138" x2="717" y2="138"/><line x1="632" y1="156" x2="717" y2="212"/>
+      </g>
+      <text x="550" y="200" text-anchor="middle" font-size="11" font-weight="600" fill="var(--flag)">validate on the final answer</text>
+    </svg>
+  </div>
+  <div class="cards">
+    <div class="card">
+      <span class="tag y">workflow</span>
+      <p>Predictable: every run takes the same path, and you can test each step on its own.</p>
+      <p class="so">Use it when you can write the order down in advance.</p>
+    </div>
+    <div class="card">
+      <span class="tag m">agentic</span>
+      <p>Flexible: the lead agent can skip a step, redo one or ask again with a better brief.</p>
+      <p class="so">Use it when the next step depends on what the last one returned.</p>
+    </div>
+    <div class="card warn">
+      <span class="tag f">Either way</span>
+      <p>Code checks the final answer. In agentic mode, code also records what the sub-agents really returned, so the lead can't claim results that never happened.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── 5 · Setup ─────────────────────────────────────────────────────────── -->
+<section class="slide" id="setup" data-short="Setup &amp; run">
+  <div class="eyebrow">Setup &amp; run · from multi-agent-architecture-patterns/</div>
+  <h2>One <code>.env</code>, one self-check, then run any lab</h2>
+  <div class="two">
+    <figure>
+      <figcaption>1 · .env (copy .env.example)</figcaption>
+      <pre class="cmd">LLM_PROVIDER=nexus        <span class="c"># or: anthropic</span>
+NEXUS_BASE_URL=...
+NEXUS_API_KEY=...
+NEXUS_MODEL=...
+ANTHROPIC_API_KEY=...     <span class="c"># only for anthropic</span></pre>
+    </figure>
+    <figure>
+      <figcaption>2 · check the tools, no LLM needed</figcaption>
+      <pre class="cmd">uv run labs/wf_tools.py
+<span class="c"># wf_tools self-check passed</span></pre>
+    </figure>
+  </div>
+  <figure>
+    <figcaption>3 · run the exercises</figcaption>
+    <pre class="cmd">uv run labs/wf00_augmented_llm.py
+uv run labs/wf01_prompt_chaining.py          <span class="c"># --mode agentic</span>
+uv run labs/wf02_parallelization.py          <span class="c"># --mode agentic</span>
+uv run labs/wf03_routing.py                  <span class="c"># --mode agentic · --request 1..5</span>
+uv run labs/wf04_orchestrator_worker.py      <span class="c"># --mode agentic</span>
+uv run labs/wf05_evaluator_optimizer.py      <span class="c"># --mode agentic</span>
+uv run labs/wf06_agent.py</pre>
+  </figure>
+  <div class="tbl"><table>
+    <thead><tr><th>File</th><th>What's in it</th></tr></thead>
+    <tbody>
+      <tr><th>labs/shared.py</th><td>the LLM call (Nexus or Claude), <code>run_agent</code>, <code>print_usage</code></td></tr>
+      <tr><th>labs/wf_tools.py</th><td>every tool: facts, puns, originality, limerick check, readers, papers, search, café prices, arithmetic</td></tr>
+      <tr><th>labs/wf_writers.py</th><td>the joke, story and poem writer agents used by 02 and 03, with their validators</td></tr>
+      <tr><th>data/workflows/</th><td>30 cat facts, 40 known jokes, puns, 6 readers, 9 papers, 12 search results, café catalog</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ── 6 · wf00 ──────────────────────────────────────────────────────────── -->
+<section class="slide" id="wf00" data-short="00 Augmented">
+  <div class="eyebrow">wf00 · Augmented LLM</div>
+  <h2>One call can format a query. Finding the answer takes a loop.</h2>
+  <div class="two">
+    <div class="note"><span class="tag">In the notes</span><p><code>with_structured_output(SearchQuery)</code> on "How does Calcium CT score relate to high cholesterol?", and <code>bind_tools([multiply])</code> on "2 times 3". Each is one call.</p></div>
+    <div class="note key"><span class="tag m">Here</span><p>Part 1 does both by hand. Part 2 gives the question to a research agent. A mock search returns a mix of on-topic and off-topic results, so it has to read, judge and sometimes search again.</p></div>
+  </div>
+  <div class="diagram" role="img" aria-label="Part 1: question to LLM to SearchQuery JSON parsed by pydantic. Part 2: question to research agent, which loops over web_search and read_result, then validate checks it cited at least two results it actually read.">
+    <svg viewBox="0 0 900 240" xmlns="http://www.w3.org/2000/svg">
+      <text x="10" y="20" font-size="12" font-weight="600" letter-spacing=".06em" fill="var(--ink-soft)">PART 1 · ONE CALL EACH</text>
+      <rect x="10" y="34" width="190" height="44" rx="22" fill="var(--sheet)" stroke="var(--ink-soft)"/>
+      <text x="105" y="61" text-anchor="middle" font-size="13" fill="var(--ink)">question</text>
+      <line x1="202" y1="56" x2="257" y2="56" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#aK)"/>
+      <rect x="260" y="34" width="140" height="44" rx="6" fill="var(--model-tint)" stroke="var(--model)"/>
+      <text x="330" y="61" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)">LLM</text>
+      <line x1="402" y1="56" x2="457" y2="56" stroke="var(--you)" stroke-width="1.5" marker-end="url(#aY)"/>
+      <rect x="460" y="34" width="230" height="44" rx="6" fill="var(--you-tint)" stroke="var(--you)"/>
+      <text x="575" y="61" text-anchor="middle" font-size="13" fill="var(--ink)">SearchQuery · pydantic parse</text>
+
+      <text x="10" y="120" font-size="12" font-weight="600" letter-spacing=".06em" fill="var(--model)">PART 2 · AN AGENT</text>
+      <rect x="10" y="150" width="150" height="50" rx="25" fill="var(--sheet)" stroke="var(--ink-soft)"/>
+      <text x="85" y="180" text-anchor="middle" font-size="13" fill="var(--ink)">question</text>
+      <line x1="162" y1="175" x2="207" y2="175" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#aK)"/>
+      <rect x="210" y="145" width="160" height="60" rx="6" fill="var(--model-tint)" stroke="var(--model)"/>
+      <text x="290" y="172" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)">Research Agent</text>
+      <text x="290" y="191" text-anchor="middle" font-size="11" fill="var(--model)">search, read, refine</text>
+      <g fill="var(--sheet)" stroke="var(--you)">
+        <rect x="420" y="112" width="180" height="36" rx="6"/><rect x="420" y="198" width="180" height="36" rx="6"/>
+      </g>
+      <g font-size="13" fill="var(--ink)" text-anchor="middle" font-family="var(--mono)">
+        <text x="510" y="135">web_search(query)</text><text x="510" y="221">read_result(id)</text>
+      </g>
+      <g stroke="var(--model)" stroke-width="1.5" marker-end="url(#aM)">
+        <line x1="372" y1="155" x2="417" y2="132"/><line x1="372" y1="196" x2="417" y2="214"/>
+      </g>
+      <line x1="372" y1="175" x2="657" y2="175" stroke="var(--model)" stroke-width="1.5" marker-end="url(#aM)"/>
+      <rect x="660" y="145" width="230" height="60" rx="6" fill="var(--flag-tint)" stroke="var(--flag)"/>
+      <text x="775" y="171" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)">validate</text>
+      <text x="775" y="190" text-anchor="middle" font-size="11" fill="var(--flag)">≥2 sources, each one actually read</text>
+    </svg>
+  </div>
+  <div class="two">
+    <figure>
+      <figcaption>Run</figcaption>
+      <pre class="cmd">uv run labs/wf00_augmented_llm.py</pre>
+      <figcaption>Trace (test run)</figcaption>
+      <pre class="trace">[Tool LLM] asked for multiply({'a': 2, 'b': 3})
+<b>[Research Agent]</b> web_search('coronary artery calcium score and high cholesterol relationship')
+<b>[Research Agent]</b> read_result('W01') · W02 · W04 · W11
+<b>[Research Agent]</b> done (handoff validated)
+sources: W01, W02, W04, W11</pre>
+    </figure>
+    <div class="note check">
+      <span class="tag f">Code checks</span>
+      <ul>
+        <li>The answer matches the <code>ResearchAnswer</code> schema (pydantic).</li>
+        <li>Every cited id was really read: <code>read_result</code> is wrapped so code records each read.</li>
+      </ul>
+      <span class="tag" style="margin-top:8px">Try this</span>
+      <p>Ask about "calcium and bones" instead. The search returns W05, an off-topic result. Watch whether the agent cites it.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── 7 · wf01 ──────────────────────────────────────────────────────────── -->
+<section class="slide" id="wf01" data-short="01 Chaining">
+  <div class="eyebrow">wf01 · Prompt chaining</div>
+  <h2>A chain of agents, with a gate in code between them</h2>
+  <div class="two">
+    <div class="note"><span class="tag">In the notes</span><p>Topic → write a joke → gate: does it contain "?" or "!"? → add wordplay → add a twist. Three single calls.</p></div>
+    <div class="note key"><span class="tag m">Here</span><p>Same chain, but the joke must use a real cat fact, be <strong>original</strong> (word overlap with 40 known jokes under 0.5), stay kid-safe and be at most 40 words. The model can't check any of that without tools.</p></div>
+  </div>
+  <div class="diagram" role="img" aria-label="Topic to Writer agent, then a code gate checking for a punchline; if it fails the run stops. If it passes, Wordplay agent, then Polisher agent, then validate checks length, originality and kid-safety.">
+    <svg viewBox="0 0 900 220" xmlns="http://www.w3.org/2000/svg">
+      <rect x="6" y="70" width="80" height="50" rx="25" fill="var(--sheet)" stroke="var(--ink-soft)"/>
+      <text x="46" y="100" text-anchor="middle" font-size="13" fill="var(--ink)">"cats"</text>
+      <g fill="var(--model-tint)" stroke="var(--model)">
+        <rect x="120" y="70" width="130" height="50" rx="6"/><rect x="450" y="70" width="130" height="50" rx="6"/><rect x="610" y="70" width="130" height="50" rx="6"/>
+      </g>
+      <rect x="285" y="70" width="130" height="50" rx="6" fill="var(--you-tint)" stroke="var(--you)"/>
+      <g font-size="14" font-weight="600" fill="var(--ink)" text-anchor="middle">
+        <text x="185" y="100">Writer</text><text x="350" y="92">gate (code)</text><text x="515" y="100">Wordplay</text><text x="675" y="100">Polisher</text>
+      </g>
+      <text x="350" y="110" text-anchor="middle" font-size="11" fill="var(--you)">check_punchline</text>
+      <g stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#aK)"><line x1="88" y1="95" x2="117" y2="95"/></g>
+      <g stroke="var(--you)" stroke-width="1.5" marker-end="url(#aY)">
+        <line x1="252" y1="95" x2="282" y2="95"/><line x1="417" y1="95" x2="447" y2="95"/><line x1="582" y1="95" x2="607" y2="95"/><line x1="742" y1="95" x2="767" y2="95"/>
+      </g>
+      <text x="432" y="86" text-anchor="middle" font-size="11" fill="var(--you)">Pass</text>
+      <rect x="770" y="66" width="124" height="58" rx="6" fill="var(--flag-tint)" stroke="var(--flag)"/>
+      <text x="832" y="91" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)">validate</text>
+      <text x="832" y="109" text-anchor="middle" font-size="10.5" fill="var(--flag)">≤40 · original · safe</text>
+      <line x1="350" y1="122" x2="350" y2="167" stroke="var(--you)" stroke-width="1.5" marker-end="url(#aY)"/>
+      <text x="358" y="150" font-size="11" fill="var(--you)">Fail</text>
+      <rect x="300" y="170" width="100" height="36" rx="18" fill="var(--sheet)" stroke="var(--ink-soft)"/>
+      <text x="350" y="193" text-anchor="middle" font-size="13" fill="var(--ink)">stop</text>
+      <g font-size="10.5" fill="var(--model)" text-anchor="middle" font-family="var(--mono)">
+        <text x="185" y="140">lookup_facts</text><text x="185" y="154">check_punchline</text>
+        <text x="515" y="140">find_puns</text><text x="515" y="154">check_originality</text>
+        <text x="675" y="140">count_words · kid_safe</text><text x="675" y="154">check_originality</text>
+      </g>
+      <text x="450" y="30" text-anchor="middle" font-size="12" fill="var(--ink-soft)">agentic mode: an Editor agent gets generate_joke · improve_joke · polish_joke as tools and chooses the order</text>
+    </svg>
+  </div>
+  <div class="two">
+    <figure>
+      <figcaption>Run</figcaption>
+      <pre class="cmd">uv run labs/wf01_prompt_chaining.py
+uv run labs/wf01_prompt_chaining.py --mode agentic</pre>
+      <figcaption>Trace (workflow mode, test run)</figcaption>
+      <pre class="trace"><b>[Writer]</b> lookup_facts('')
+Initial: Why don't adult cats meow at each other? Because meowing is reserved for complaining to the staff!
+<b>[Wordplay]</b> find_puns('complaining') … find_puns('perfect')
+<b>[Wordplay]</b> check_originality(…purr-fectly reserved…)
+<b>[Polisher]</b> count_words · kid_safe · check_originality · check_punchline
+Final: …Plot twist: the staff is the dog, and he's been taking notes for the union!</pre>
+    </figure>
+    <div class="note check">
+      <span class="tag f">Code checks</span>
+      <ul>
+        <li>The gate stays in code, exactly as in the notes: no punchline means the run stops.</li>
+        <li>Wordplay's output must still be original. The Polisher's output must pass every final check.</li>
+        <li>In agentic mode, the Editor's final joke must pass the same checks.</li>
+      </ul>
+      <span class="tag" style="margin-top:8px">Try this</span>
+      <p>Change the Writer's prompt to "retell a classic cat joke". Watch <code>check_originality</code> push back.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── 8 · wf02 ──────────────────────────────────────────────────────────── -->
+<section class="slide" id="wf02" data-short="02 Parallel">
+  <div class="eyebrow">wf02 · Parallelization</div>
+  <h2>Three writer agents at once, then an agent that checks their facts</h2>
+  <div class="two">
+    <div class="note"><span class="tag">In the notes</span><p>Topic → joke, story and poem in parallel → an aggregator that concatenates the strings.</p></div>
+    <div class="note key"><span class="tag m">Here</span><p>Each piece has its own rules: the story is 150–200 words with ≥2 real facts, the poem is a limerick (AABBA, checked in code), the joke is original. The aggregator is an agent that checks every fact id the pieces claim with <code>get_fact</code>.</p></div>
+  </div>
+  <div class="diagram" role="img" aria-label="The topic fans out in code to three writer agents running in parallel: story, joke and poem, each with its own rules. Their results go to an aggregator agent that checks each fact id, then to the combined output.">
+    <svg viewBox="0 0 900 260" xmlns="http://www.w3.org/2000/svg">
+      <text x="300" y="14" text-anchor="middle" font-size="12" font-weight="600" letter-spacing=".06em" fill="var(--you)">ThreadPoolExecutor · CODE FANS OUT</text>
+      <rect x="10" y="105" width="100" height="50" rx="25" fill="var(--sheet)" stroke="var(--ink-soft)"/>
+      <text x="60" y="135" text-anchor="middle" font-size="13" fill="var(--ink)">"cats"</text>
+      <g fill="var(--model-tint)" stroke="var(--model)">
+        <rect x="200" y="24" width="220" height="56" rx="6"/><rect x="200" y="102" width="220" height="56" rx="6"/><rect x="200" y="180" width="220" height="56" rx="6"/>
+        <rect x="510" y="95" width="180" height="70" rx="6"/>
+      </g>
+      <g font-size="14" font-weight="600" fill="var(--ink)" text-anchor="middle">
+        <text x="310" y="48">Story Writer</text><text x="310" y="126">Joke Writer</text><text x="310" y="204">Poem Writer</text><text x="600" y="125">Aggregator</text>
+      </g>
+      <g font-size="11" fill="var(--flag)" text-anchor="middle">
+        <text x="310" y="67">150–200 words · ≥2 facts</text><text x="310" y="145">original · punchline · ≤50</text><text x="310" y="223">limerick AABBA · ≥1 fact</text>
+      </g>
+      <text x="600" y="146" text-anchor="middle" font-size="11" fill="var(--model)">get_fact on every id</text>
+      <g stroke="var(--you)" stroke-width="1.5" marker-end="url(#aY)">
+        <line x1="112" y1="125" x2="197" y2="52"/><line x1="112" y1="130" x2="197" y2="130"/><line x1="112" y1="135" x2="197" y2="208"/>
+      </g>
+      <g stroke="var(--ink-soft)" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#aK)">
+        <line x1="422" y1="52" x2="507" y2="115"/><line x1="422" y1="130" x2="507" y2="130"/><line x1="422" y1="208" x2="507" y2="145"/>
+      </g>
+      <line x1="692" y1="130" x2="737" y2="130" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#aK)"/>
+      <rect x="740" y="100" width="150" height="60" rx="6" fill="var(--sheet)" stroke="var(--ink-soft)"/>
+      <text x="815" y="126" text-anchor="middle" font-size="13" font-weight="600" fill="var(--ink)">STORY / JOKE /</text>
+      <text x="815" y="144" text-anchor="middle" font-size="13" font-weight="600" fill="var(--ink)">POEM / ISSUES</text>
+      <text x="600" y="232" text-anchor="middle" font-size="12" fill="var(--ink-soft)">agentic: a Coordinator calls dispatch(jobs),</text>
+      <text x="600" y="250" text-anchor="middle" font-size="12" fill="var(--ink-soft)">which runs the writers in parallel; it can send weak pieces back</text>
+    </svg>
+  </div>
+  <div class="two">
+    <figure>
+      <figcaption>Run</figcaption>
+      <pre class="cmd">uv run labs/wf02_parallelization.py
+uv run labs/wf02_parallelization.py --mode agentic</pre>
+      <figcaption>Trace (workflow mode, test run)</figcaption>
+      <pre class="trace"><b>[Poem Writer]</b> check_limerick("There once was a cat named Lou…")
+<b>[Poem Writer]</b> check_limerick("There once was a cat who would stay…")
+<b>[Joke Writer]</b> check_originality · check_punchline → done
+<b>[Story Writer]</b> count_words · kid_safe → done
+<b>[Aggregator]</b> get_fact F14 · F04 · F12 · F09 · F01
+ISSUES: none</pre>
+    </figure>
+    <div class="note check">
+      <span class="tag f">Code checks</span>
+      <ul>
+        <li>Each writer's validator: word range, limerick rhymes, originality, real fact ids, kid-safe.</li>
+        <li>The combined output must have all three headings.</li>
+        <li><code>dispatch</code> isolates failures: one writer failing doesn't stop the others.</li>
+      </ul>
+      <span class="tag" style="margin-top:8px">Try this</span>
+      <p>The Poem Writer rewrote its first limerick before handing it in. Make the rhyme check stricter in <code>wf_tools.rhymes</code> and count the retries.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── 9 · wf03 ──────────────────────────────────────────────────────────── -->
+<section class="slide" id="wf03" data-short="03 Routing">
+  <div class="eyebrow">wf03 · Routing</div>
+  <h2>"Cats lol" can't be routed until the router knows who sent it</h2>
+  <div class="two">
+    <div class="note"><span class="tag">In the notes</span><p>"Write me a joke about cats" is classified as joke, story or poem. The request already names its route.</p></div>
+    <div class="note key"><span class="tag m">Here</span><p>Five requests from different readers, most of them vague ("something for tonight, they love our cat"). The router agent looks up each reader's age, likes and things to avoid, picks a route and writes a brief for the writer.</p></div>
+  </div>
+  <div class="diagram" role="img" aria-label="A reader id and request go to the router agent, which calls get_reader. It returns a Route with step and brief. A code if/elif sends the brief to the story, joke or poem writer agent.">
+    <svg viewBox="0 0 900 250" xmlns="http://www.w3.org/2000/svg">
+      <rect x="10" y="95" width="150" height="60" rx="8" fill="var(--sheet)" stroke="var(--ink-soft)"/>
+      <text x="85" y="120" text-anchor="middle" font-size="13" font-weight="600" fill="var(--ink)">reader id</text>
+      <text x="85" y="140" text-anchor="middle" font-size="12" fill="var(--ink-soft)">+ request</text>
+      <line x1="162" y1="125" x2="207" y2="125" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#aK)"/>
+      <rect x="210" y="90" width="170" height="70" rx="6" fill="var(--model-tint)" stroke="var(--model)"/>
+      <text x="295" y="120" text-anchor="middle" font-size="15" font-weight="600" fill="var(--ink)">Router</text>
+      <text x="295" y="142" text-anchor="middle" font-size="11" fill="var(--model)" font-family="var(--mono)">get_reader</text>
+      <line x1="382" y1="125" x2="457" y2="125" stroke="var(--you)" stroke-width="1.5" marker-end="url(#aY)"/>
+      <text x="420" y="112" text-anchor="middle" font-size="11" fill="var(--flag)">Route{step, brief}</text>
+      <rect x="460" y="95" width="120" height="60" rx="6" fill="var(--you-tint)" stroke="var(--you)"/>
+      <text x="520" y="122" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)">if / elif</text>
+      <text x="520" y="141" text-anchor="middle" font-size="11" fill="var(--you)">code</text>
+      <g fill="var(--model-tint)" stroke="var(--model)">
+        <rect x="660" y="22" width="200" height="48" rx="6"/><rect x="660" y="101" width="200" height="48" rx="6"/><rect x="660" y="180" width="200" height="48" rx="6"/>
+      </g>
+      <g font-size="14" font-weight="600" fill="var(--ink)" text-anchor="middle">
+        <text x="760" y="51">Story Writer</text><text x="760" y="130">Joke Writer</text><text x="760" y="209">Poem Writer</text>
+      </g>
+      <g stroke="var(--you)" stroke-width="1.5" marker-end="url(#aY)">
+        <line x1="582" y1="115" x2="657" y2="46"/><line x1="582" y1="125" x2="657" y2="125"/><line x1="582" y1="135" x2="657" y2="204"/>
+      </g>
+      <text x="295" y="210" text-anchor="middle" font-size="12" fill="var(--ink-soft)">agentic: the Router gets the writers as tools</text>
+      <text x="295" y="228" text-anchor="middle" font-size="12" fill="var(--ink-soft)">and hands off itself; code checks it really called one</text>
+    </svg>
+  </div>
+  <div class="two">
+    <figure>
+      <figcaption>Run</figcaption>
+      <pre class="cmd">uv run labs/wf03_routing.py                          <span class="c"># all 5</span>
+uv run labs/wf03_routing.py --request 4
+uv run labs/wf03_routing.py --mode agentic --request 4</pre>
+      <figcaption>Routes chosen (test run)</figcaption>
+      <pre class="trace">r1 Sam, adult, likes wordplay    "joke about cats"     → <b>joke</b>
+r2 Lena, 7, likes rhymes         "…with rhymes!"       → <b>poem</b>
+r3 Omar, likes history           "cats in the old days" → <b>story</b>
+r6 Mira, reads to her kids       "…for tonight…"       → <b>story</b> (calm bedtime)
+r5 Theo, 14, quick laughs        "cats lol"            → <b>joke</b></pre>
+    </figure>
+    <div class="note check">
+      <span class="tag f">Code checks</span>
+      <ul>
+        <li><code>step</code> must be one of <code>poem | story | joke</code> (a pydantic Literal).</li>
+        <li>In agentic mode, the piece the user gets comes from the writer that was called, not from the router retelling it.</li>
+      </ul>
+      <span class="tag" style="margin-top:8px">Known limit</span>
+      <p>Omar "likes long reads", but the story writer is capped at 200 words. Try making the length part of the brief.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── 10 · wf04 ─────────────────────────────────────────────────────────── -->
+<section class="slide" id="wf04" data-short="04 Orchestrator">
+  <div class="eyebrow">wf04 · Orchestrator-worker</div>
+  <h2>The plan comes from what the library holds, and every claim needs a source</h2>
+  <div class="two">
+    <div class="note"><span class="tag">In the notes</span><p>"Create a report on LLM scaling laws": plan the sections, use <code>Send()</code> to start one worker per section, join the results. The workers write from memory.</p></div>
+    <div class="note key"><span class="tag m">Here</span><p>A library of 9 papers (Kaplan, Chinchilla, emergence, the "mirage" paper, data-constrained, inference-aware, test-time compute, …). The planner looks at what's there. Each worker reads its papers and cites them as <code>[paper-id]</code>.</p></div>
+  </div>
+  <div class="diagram" role="img" aria-label="Topic to orchestrator agent with list_papers and search_papers, which produces sections. Code starts one worker agent per section in parallel; each reads papers. A synthesizer in code joins the sections and checks every citation.">
+    <svg viewBox="0 0 900 270" xmlns="http://www.w3.org/2000/svg">
+      <rect x="6" y="105" width="120" height="60" rx="8" fill="var(--sheet)" stroke="var(--ink-soft)"/>
+      <text x="66" y="131" text-anchor="middle" font-size="13" font-weight="600" fill="var(--ink)">report on</text>
+      <text x="66" y="150" text-anchor="middle" font-size="13" font-weight="600" fill="var(--ink)">scaling laws</text>
+      <line x1="128" y1="135" x2="163" y2="135" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#aK)"/>
+      <rect x="166" y="98" width="180" height="74" rx="6" fill="var(--model-tint)" stroke="var(--model)"/>
+      <text x="256" y="128" text-anchor="middle" font-size="15" font-weight="600" fill="var(--ink)">Orchestrator</text>
+      <text x="256" y="150" text-anchor="middle" font-size="11" fill="var(--model)" font-family="var(--mono)">list/search_papers</text>
+      <text x="362" y="232" text-anchor="middle" font-size="11" fill="var(--flag)">Sections</text>
+      <text x="530" y="14" text-anchor="middle" font-size="12" font-weight="600" letter-spacing=".06em" fill="var(--you)">ONE THREAD PER SECTION · Send() BY HAND</text>
+      <g fill="var(--model-tint)" stroke="var(--model)">
+        <rect x="430" y="24" width="190" height="46" rx="6"/><rect x="430" y="84" width="190" height="46" rx="6"/><rect x="430" y="144" width="190" height="46" rx="6"/><rect x="430" y="204" width="190" height="46" rx="6"/>
+      </g>
+      <g font-size="13" fill="var(--ink)" text-anchor="middle">
+        <text x="525" y="52">Worker · read_paper</text><text x="525" y="112">Worker · read_paper</text><text x="525" y="172">Worker · read_paper</text><text x="525" y="232">Worker · read_paper</text>
+      </g>
+      <g stroke="var(--you)" stroke-width="1.5" marker-end="url(#aY)">
+        <line x1="348" y1="120" x2="427" y2="47"/><line x1="348" y1="130" x2="427" y2="107"/><line x1="348" y1="140" x2="427" y2="167"/><line x1="348" y1="150" x2="427" y2="227"/>
+      </g>
+      <g stroke="var(--ink-soft)" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#aK)">
+        <line x1="622" y1="47" x2="677" y2="120"/><line x1="622" y1="107" x2="677" y2="128"/><line x1="622" y1="167" x2="677" y2="142"/><line x1="622" y1="227" x2="677" y2="150"/>
+      </g>
+      <rect x="680" y="100" width="130" height="70" rx="6" fill="var(--flag-tint)" stroke="var(--flag)"/>
+      <text x="745" y="128" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)">Synthesizer</text>
+      <text x="745" y="148" text-anchor="middle" font-size="11" fill="var(--flag)">join + citations</text>
+      <line x1="812" y1="135" x2="827" y2="135" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#aK)"/>
+      <rect x="830" y="110" width="64" height="50" rx="6" fill="var(--sheet)" stroke="var(--ink-soft)"/>
+      <text x="862" y="140" text-anchor="middle" font-size="12" font-weight="600" fill="var(--ink)">Report</text>
+    </svg>
+  </div>
+  <div class="two">
+    <figure>
+      <figcaption>Run</figcaption>
+      <pre class="cmd">uv run labs/wf04_orchestrator_worker.py
+uv run labs/wf04_orchestrator_worker.py --mode agentic</pre>
+      <figcaption>Trace (workflow mode, test run)</figcaption>
+      <pre class="trace"><b>[Orchestrator]</b> planned 4 sections: Foundations, Compute-Optimal, Predictability and Emergent Abilities, New Frontiers
+<b>[Worker: Predictab]</b> <span class="r">handoff rejected: cites papers never read with read_paper: openai2023, schaeffer2023, wei2022</span>
+<b>[Worker: Predictab]</b> read_paper wei2022 · schaeffer2023 · openai2023
+<b>[Worker: Predictab]</b> done (handoff validated)</pre>
+    </figure>
+    <div class="note check">
+      <span class="tag f">Code checks</span>
+      <ul>
+        <li>The plan has 3–5 sections, and every paper id it uses exists.</li>
+        <li>Each section cites only papers that exist <em>and that this worker read</em>.</li>
+        <li>The references list is built in code from the citations.</li>
+      </ul>
+      <p class="say" style="font-size:19px">A worker that cites a paper it never opened is the multi-agent version of a hallucinated source. Here code catches it.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── 11 · wf05 ─────────────────────────────────────────────────────────── -->
+<section class="slide" id="wf05" data-short="05 Evaluator">
+  <div class="eyebrow">wf05 · Evaluator-optimizer</div>
+  <h2>"Funny" becomes a rubric the evaluator has to check with tools</h2>
+  <div class="two">
+    <div class="note"><span class="tag">In the notes</span><p>Generate a joke → grade it "funny" or "not funny" with feedback → loop until funny. The grade is pure taste.</p></div>
+    <div class="note key"><span class="tag m">Here</span><p>A five-rule rubric: original, based on a real fact, kid-safe, ≤40 words, a real surprise. The evaluator runs the checks with tools instead of guessing, and its feedback names the rule that failed.</p></div>
+  </div>
+  <div class="diagram" role="img" aria-label="Topic to generator agent to evaluator agent, then a code check: if funny, done. If not funny, the feedback goes back to the generator, at most 4 rounds.">
+    <svg viewBox="0 0 900 240" xmlns="http://www.w3.org/2000/svg">
+      <rect x="10" y="80" width="100" height="50" rx="25" fill="var(--sheet)" stroke="var(--ink-soft)"/>
+      <text x="60" y="110" text-anchor="middle" font-size="13" fill="var(--ink)">"Cats"</text>
+      <line x1="112" y1="105" x2="167" y2="105" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#aK)"/>
+      <rect x="170" y="70" width="180" height="70" rx="6" fill="var(--model-tint)" stroke="var(--model)"/>
+      <text x="260" y="100" text-anchor="middle" font-size="15" font-weight="600" fill="var(--ink)">Generator</text>
+      <text x="260" y="121" text-anchor="middle" font-size="11" fill="var(--model)" font-family="var(--mono)">lookup_facts · find_puns</text>
+      <line x1="352" y1="105" x2="417" y2="105" stroke="var(--you)" stroke-width="1.5" marker-end="url(#aY)"/>
+      <rect x="420" y="70" width="200" height="70" rx="6" fill="var(--model-tint)" stroke="var(--model)"/>
+      <text x="520" y="100" text-anchor="middle" font-size="15" font-weight="600" fill="var(--ink)">Evaluator</text>
+      <text x="520" y="121" text-anchor="middle" font-size="11" fill="var(--model)">rubric · 4 check tools</text>
+      <line x1="622" y1="105" x2="667" y2="105" stroke="var(--you)" stroke-width="1.5" marker-end="url(#aY)"/>
+      <rect x="670" y="80" width="110" height="50" rx="6" fill="var(--you-tint)" stroke="var(--you)"/>
+      <text x="725" y="104" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)">funny?</text>
+      <text x="725" y="121" text-anchor="middle" font-size="11" fill="var(--you)">code</text>
+      <line x1="782" y1="105" x2="817" y2="105" stroke="var(--you)" stroke-width="1.5" marker-end="url(#aY)"/>
+      <text x="799" y="95" text-anchor="middle" font-size="11" fill="var(--you)">yes</text>
+      <rect x="820" y="85" width="72" height="40" rx="20" fill="var(--sheet)" stroke="var(--ink-soft)"/>
+      <text x="856" y="110" text-anchor="middle" font-size="13" fill="var(--ink)">done</text>
+      <path d="M725,132 V190 H260 V143" fill="none" stroke="var(--flag)" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#aR)"/>
+      <text x="492" y="210" text-anchor="middle" font-size="12" font-weight="600" fill="var(--flag)">not funny + feedback · max 4 rounds</text>
+      <text x="450" y="30" text-anchor="middle" font-size="12" fill="var(--ink-soft)">agentic: the Generator gets grade_joke (the Evaluator) as a tool and owns the loop</text>
+    </svg>
+  </div>
+  <div class="two">
+    <figure>
+      <figcaption>Run</figcaption>
+      <pre class="cmd">uv run labs/wf05_evaluator_optimizer.py
+uv run labs/wf05_evaluator_optimizer.py --mode agentic</pre>
+      <figcaption>Trace (workflow mode, test run)</figcaption>
+      <pre class="trace">round 1 <b>[Evaluator]</b> <span class="r">not funny: overlap 0.62 with 'My cat sleeps sixteen hours a day. She calls it working from home.'</span>
+round 2 <b>[Evaluator]</b> <span class="r">not funny: still 0.62, same known joke</span>
+round 3 <b>[Evaluator]</b> funny: overlap 0.33, grounded on F01
+Vets say cats doze 12 to 16 hours daily. I called mine lazy. Then my mug hit the floor. Not naps, a stakeout: …</pre>
+    </figure>
+    <div class="note check">
+      <span class="tag f">Code checks</span>
+      <ul>
+        <li>The evaluator's answer must be <code>Feedback{grade, feedback}</code>.</li>
+        <li>Agentic mode, trust but verify: the joke handed in must be one that <code>grade_joke</code> graded "funny", word for word. Code keeps its own record of every grade.</li>
+      </ul>
+      <span class="tag" style="margin-top:8px">Try this</span>
+      <p>Remove the final check in agentic mode and ask the Generator to "just hand in your best one". Does it skip the grade?</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── 12 · wf06 ─────────────────────────────────────────────────────────── -->
+<section class="slide" id="wf06" data-short="06 Agent">
+  <div class="eyebrow">wf06 · Agent</div>
+  <h2>The model plans the steps; tools do every lookup and every sum</h2>
+  <div class="two">
+    <div class="note"><span class="tag">In the notes</span><p>"Add 3 and 4. Then, take the output and multiply by 4." The LLM node, the tool node and a should_continue edge. That's the warm-up here.</p></div>
+    <div class="note key"><span class="tag m">Here</span><p>A cat café in Bergen orders 3 bags of kibble and 2 scratching posts with code WHISKERS10. What's the total in EUR? The agent has to look up the rules, prices, discount, shipping, tax and exchange rate, then calculate in the right order.</p></div>
+  </div>
+  <div class="diagram" role="img" aria-label="The task goes to the café agent, which loops over lookup tools and arithmetic tools. Its final answer is validated: the number must have come out of a tool, and it must equal the total computed in code.">
+    <svg viewBox="0 0 900 250" xmlns="http://www.w3.org/2000/svg">
+      <rect x="10" y="95" width="140" height="60" rx="8" fill="var(--sheet)" stroke="var(--ink-soft)"/>
+      <text x="80" y="121" text-anchor="middle" font-size="13" font-weight="600" fill="var(--ink)">café order</text>
+      <text x="80" y="140" text-anchor="middle" font-size="12" fill="var(--ink-soft)">→ total in EUR?</text>
+      <line x1="152" y1="125" x2="197" y2="125" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#aK)"/>
+      <rect x="200" y="90" width="170" height="70" rx="6" fill="var(--model-tint)" stroke="var(--model)"/>
+      <text x="285" y="120" text-anchor="middle" font-size="15" font-weight="600" fill="var(--ink)">Café Agent</text>
+      <text x="285" y="141" text-anchor="middle" font-size="11" fill="var(--model)">one step at a time</text>
+      <g fill="var(--you-tint)" stroke="var(--you)">
+        <rect x="430" y="14" width="210" height="96" rx="6"/><rect x="430" y="150" width="210" height="86" rx="6"/>
+      </g>
+      <g font-size="12" fill="var(--ink)" font-family="var(--mono)">
+        <text x="444" y="38">get_rules · get_price</text><text x="444" y="58">get_discount</text><text x="444" y="78">get_shipping · get_tax_rate</text><text x="444" y="98">exchange_rate</text>
+        <text x="444" y="176">add · subtract</text><text x="444" y="196">multiply · divide</text>
+      </g>
+      <text x="444" y="222" font-size="11" fill="var(--you)">every result recorded by code</text>
+      <g stroke="var(--model)" stroke-width="1.5" marker-end="url(#aM)">
+        <line x1="372" y1="105" x2="427" y2="62"/><line x1="372" y1="145" x2="427" y2="190"/>
+      </g>
+      <line x1="372" y1="128" x2="667" y2="128" stroke="var(--model)" stroke-width="1.5" marker-end="url(#aM)"/>
+      <rect x="670" y="88" width="222" height="80" rx="6" fill="var(--flag-tint)" stroke="var(--flag)"/>
+      <text x="781" y="114" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)">validate</text>
+      <text x="781" y="134" text-anchor="middle" font-size="11" fill="var(--flag)">did a tool produce this number?</text>
+      <text x="781" y="152" text-anchor="middle" font-size="11" fill="var(--flag)">does it equal code's own total?</text>
+    </svg>
+  </div>
+  <div class="two">
+    <figure>
+      <figcaption>Run</figcaption>
+      <pre class="cmd">uv run labs/wf06_agent.py</pre>
+      <figcaption>Trace (test run)</figcaption>
+      <pre class="trace"><b>[Café Agent]</b> get_rules · get_price ×2 · get_discount · get_shipping · get_tax_rate · exchange_rate
+<b>[Café Agent]</b> multiply(389, 3) · multiply(549, 2) · add(1167, 1098)
+<b>[Café Agent]</b> multiply(2265, 0.1) · subtract(2265, 226.5) · add(2038.5, 149)
+<b>[Café Agent]</b> multiply(2187.5, 0.25) · add(2187.5, 546.875) · multiply(2734.375, 0.085)
+Café order total: <b>232.42 EUR</b>  (code's own total: 232.42)</pre>
+    </figure>
+    <div class="note check">
+      <span class="tag f">Code checks</span>
+      <ul>
+        <li>The final number must match a result an arithmetic tool returned. Mental arithmetic is rejected.</li>
+        <li>It must also equal <code>cafe_total()</code>, the same rules worked out in code.</li>
+      </ul>
+      <span class="tag" style="margin-top:8px">Try this</span>
+      <p>Change the code to NEWCAFE (15% off, minimum subtotal 3,000 NOK). The subtotal is 2,265, so the discount shouldn't apply. Does the agent notice?</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── 13 · Cost ─────────────────────────────────────────────────────────── -->
+<section class="slide" id="cost" data-short="Cost">
+  <div class="eyebrow">What it cost · one test run each</div>
+  <h2>Agents inside steps cost calls. Letting an agent set the order isn't automatically dearer.</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Lab</th><th class="y">workflow · calls / tokens in / s</th><th class="m">agentic · calls / tokens in / s</th></tr></thead>
+    <tbody>
+      <tr><th>00 Augmented</th><td class="num">8 / 5.5k / 19</td><td class="num">—</td></tr>
+      <tr><th>01 Chaining</th><td class="num">17 / 10.8k / 46</td><td class="num">15 / 13.9k / 45</td></tr>
+      <tr><th>02 Parallel</th><td class="num">18 / 27.1k / 65</td><td class="num">18 / 27.1k / 63</td></tr>
+      <tr><th>03 Routing</th><td class="num">33 / 38.2k / 131 <span class="c">(5 requests)</span></td><td class="num">7 / 9.8k / 34 <span class="c">(1 request)</span></td></tr>
+      <tr><th>04 Orchestrator</th><td class="num">20 / 24.9k / 77</td><td class="num">21 / 32.9k / 118</td></tr>
+      <tr><th>05 Evaluator</th><td class="num">22 / 18.3k / 74</td><td class="num">15 / 12.1k / 59</td></tr>
+      <tr><th>06 Agent</th><td class="num">20 / 19.9k / 31 <span class="c">(warm-up + café)</span></td><td class="num">—</td></tr>
+    </tbody>
+  </table></div>
+  <ul>
+    <li>The original exercises cost 1–6 calls each. Turning every step into an agent multiplies that several times over.</li>
+    <li>Agentic mode used fewer calls in wf05, because the Generator stopped as soon as a grade came back "funny". In wf04 it cost more, because the orchestrator then writes the whole report itself.</li>
+    <li>Every lab prints this table at the end (<code>print_usage</code>). Numbers change from run to run, so compare a few runs.</li>
+  </ul>
+</section>
+
+<!-- ── 14 · Quiz ─────────────────────────────────────────────────────────── -->
+<section class="slide" id="quiz" data-short="Quiz">
+  <div class="eyebrow">Check yourself</div>
+  <h2>Where is the decision made?</h2>
+  <div class="quiz">
+    <details>
+      <summary>wf01 workflow: who decides to stop when there's no punchline?</summary>
+      <p><span class="you">Your code.</span> The gate is an <code>if</code>, just as in the notes. The agents only write.</p>
+    </details>
+    <details>
+      <summary>wf03 workflow: the router picked "poem". Who runs the poem writer?</summary>
+      <p><span class="you">Code</span>, through <code>if/elif</code>. In agentic mode <span class="model">the router</span> calls the writer itself, and code checks that it really did.</p>
+    </details>
+    <details>
+      <summary>Is wf05's workflow loop an agent?</summary>
+      <p><span class="you">No.</span> The <code>for</code> loop and the "funny?" check are code. What's inside the loop are two agents. In agentic mode, the loop moves into the Generator agent.</p>
+    </details>
+    <details>
+      <summary>Why not just trust the agent's final answer?</summary>
+      <p><span class="flagged">Because it can skip its tools.</span> In the test runs, wf04 workers cited papers they hadn't read. <code>validate</code> sent them back to read before their sections were accepted.</p>
+    </details>
+    <details>
+      <summary>What would LangGraph give you that these labs don't have?</summary>
+      <p>Infrastructure, not patterns: checkpoints and memory, streaming, human-in-the-loop pauses, deployment. For checkpoints you could write your own; see <code>01b_sequential_agents_hardened.py</code>.</p>
+    </details>
+  </div>
+</section>
+
+<!-- ── 15 · Takeaway ─────────────────────────────────────────────────────── -->
+<section class="slide" id="takeaway" data-short="Takeaway">
+  <div class="eyebrow">One line to remember</div>
+  <div class="pair">
+    <div class="def is-you">
+      <span class="tag y">The pattern</span>
+      <p>The pattern is the order of the steps: chain, fan out, route, plan, loop. It's plain code.</p>
+    </div>
+    <div class="def is-model">
+      <span class="tag m">The agent</span>
+      <p>The agent is a loop inside a step: model, tool, result, repeat. It's about 50 lines of Python.</p>
+    </div>
+  </div>
+  <p class="say">Give a step an agent when it needs tools to get the answer right. Then check the answer in code.</p>
+  <p>Related: <a href="../fanout-vs-coordinator/index.html">Fan-out vs coordinator</a> · <a href="../subagents/index.html">Subagents vs standalone agents</a> · <a href="../01b/index.html">Pattern 01b explained</a></p>
+</section>
+
+</main>
+
+<div class="counter" id="counter" aria-live="polite">1 / 15</div>
+
+<script>
+(function () {
+  "use strict";
+
+  // SVG presentation attributes don't reliably take CSS variables; move them into style so both themes apply.
+  document.querySelectorAll("svg [fill], svg [stroke], svg [font-family]").forEach(function (el) {
+    ["fill", "stroke", "font-family"].forEach(function (attr) {
+      var v = el.getAttribute(attr);
+      if (v && v.indexOf("var(") === 0) { el.style.setProperty(attr, v); el.removeAttribute(attr); }
+    });
+  });
+
+  // Section nav and slide mode.
+  var slides = Array.prototype.slice.call(document.querySelectorAll("section.slide"));
+  var nav = document.getElementById("nav"), counter = document.getElementById("counter");
+  slides.forEach(function (s) {
+    var a = document.createElement("a");
+    a.href = "#" + s.id; a.textContent = s.dataset.short || s.id;
+    nav.appendChild(a);
+  });
+  var links = nav.querySelectorAll("a");
+  function mark(i) {
+    counter.textContent = (i + 1) + " / " + slides.length;
+    links.forEach(function (l, j) { l.classList.toggle("here", j === i); });
+  }
+  function nearest() {
+    var best = 0, bestDist = Infinity;
+    slides.forEach(function (s, i) {
+      var d = Math.abs(s.getBoundingClientRect().top - 60);
+      if (d < bestDist) { bestDist = d; best = i; }
+    });
+    return best;
+  }
+  var ticking = false;
+  window.addEventListener("scroll", function () {
+    if (ticking) return; ticking = true;
+    requestAnimationFrame(function () { mark(nearest()); ticking = false; });
+  }, { passive: true });
+  function go(i) {
+    i = Math.max(0, Math.min(slides.length - 1, i));
+    slides[i].scrollIntoView({ block: "start" });
+    mark(i);
+  }
+  document.addEventListener("keydown", function (e) {
+    if (e.altKey || e.ctrlKey || e.metaKey) return;
+    // Space on a quiz question opens it instead of turning the slide.
+    if (e.key === " " && e.target && e.target.tagName === "SUMMARY") return;
+    var k = e.key;
+    if (k === "ArrowRight" || k === "PageDown" || (k === " " && !e.shiftKey)) { e.preventDefault(); go(nearest() + 1); }
+    else if (k === "ArrowLeft" || k === "PageUp" || (k === " " && e.shiftKey)) { e.preventDefault(); go(nearest() - 1); }
+    else if (k === "Home") { e.preventDefault(); go(0); }
+    else if (k === "End") { e.preventDefault(); go(slides.length - 1); }
+    else if (k === "f" || k === "F") {
+      try {
+        if (document.fullscreenElement) document.exitFullscreen();
+        else document.documentElement.requestFullscreen().catch(function () {});
+      } catch (err) { /* full screen is optional */ }
+    }
+  });
+
+  // Theme toggle: system by default, then light, then dark.
+  var root = document.documentElement, btn = document.getElementById("theme");
+  var order = ["system", "light", "dark"], mode = "system";
+  try { mode = localStorage.getItem("wfa-theme") || "system"; } catch (err) {}
+  function apply() {
+    if (mode === "system") root.removeAttribute("data-theme"); else root.setAttribute("data-theme", mode);
+    btn.textContent = "Theme: " + mode;
+  }
+  btn.addEventListener("click", function () {
+    mode = order[(order.indexOf(mode) + 1) % order.length];
+    try { localStorage.setItem("wfa-theme", mode); } catch (err) {}
+    apply();
+  });
+  apply();
+  mark(nearest());
+})();
+</script>
+</body>
+</html>
