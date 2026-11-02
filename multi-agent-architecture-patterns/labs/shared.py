@@ -16,6 +16,7 @@ import inspect
 import json
 import os
 import sys
+import threading
 import time
 from pathlib import Path
 
@@ -68,17 +69,19 @@ else:
 
 # Cost per agent: label -> calls, tokens in/out, seconds. print_usage() shows it.
 USAGE: dict[str, dict] = {}
+_USAGE_LOCK = threading.Lock()
 
 
 def _chat(messages: list[dict], label: str = "") -> str:
     """One chat call. messages[0] is the system prompt, then user/assistant turns."""
     started = time.perf_counter()
     text, tokens_in, tokens_out = (_chat_anthropic if PROVIDER == "anthropic" else _chat_nexus)(messages)
-    entry = USAGE.setdefault(label or "(unlabelled)", {"calls": 0, "in": 0, "out": 0, "seconds": 0.0})
-    entry["calls"] += 1
-    entry["in"] += tokens_in
-    entry["out"] += tokens_out
-    entry["seconds"] += time.perf_counter() - started
+    with _USAGE_LOCK:  # agents may run in parallel threads
+        entry = USAGE.setdefault(label or "(unlabelled)", {"calls": 0, "in": 0, "out": 0, "seconds": 0.0})
+        entry["calls"] += 1
+        entry["in"] += tokens_in
+        entry["out"] += tokens_out
+        entry["seconds"] += time.perf_counter() - started
     return text
 
 

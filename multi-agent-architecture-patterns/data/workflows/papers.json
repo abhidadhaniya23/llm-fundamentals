@@ -1,0 +1,119 @@
+[
+  {
+    "id": "hestness2017",
+    "title": "Deep Learning Scaling is Predictable, Empirically",
+    "authors": "Hestness et al.",
+    "year": 2017,
+    "tags": ["power law", "history", "data", "generalization error"],
+    "summary": "Across machine translation, language modelling, image classification and speech recognition, generalization error falls as a power law of training-set size. Model size needed to fit the data also grows as a power law of data size.",
+    "key_claims": [
+      "Generalization error follows a power law in training data size across several domains.",
+      "The exponent depends on the task domain, and is less sensitive to model architecture.",
+      "Learning curves have a small-data region, a power-law region, and an irreducible-error region."
+    ]
+  },
+  {
+    "id": "kaplan2020",
+    "title": "Scaling Laws for Neural Language Models",
+    "authors": "Kaplan et al. (OpenAI)",
+    "year": 2020,
+    "tags": ["power law", "parameters", "data", "compute", "loss", "sample efficiency"],
+    "summary": "Language-model cross-entropy loss follows smooth power laws in model size (non-embedding parameters), dataset size and training compute, over more than seven orders of magnitude. Architectural details such as depth versus width matter little within a wide range.",
+    "key_claims": [
+      "Loss scales as a power law in parameters, data and compute when the other two are not a bottleneck.",
+      "Larger models are more sample-efficient: they reach the same loss with fewer tokens.",
+      "For a fixed compute budget, the paper recommended growing model size faster than dataset size and stopping training before convergence."
+    ]
+  },
+  {
+    "id": "hoffmann2022",
+    "title": "Training Compute-Optimal Large Language Models (Chinchilla)",
+    "authors": "Hoffmann et al. (DeepMind)",
+    "year": 2022,
+    "tags": ["compute-optimal", "chinchilla", "parameters", "data", "tokens", "undertrained"],
+    "summary": "For a fixed compute budget, model size and number of training tokens should be scaled in roughly equal proportion. Chinchilla (70B parameters, about 1.4 trillion tokens) outperformed the 280B-parameter Gopher trained with the same compute.",
+    "key_claims": [
+      "Parameters and training tokens should grow roughly equally as compute grows.",
+      "A rule of thumb that follows is about 20 training tokens per parameter.",
+      "Many large models of the time (such as Gopher and GPT-3) were undertrained for their size."
+    ]
+  },
+  {
+    "id": "wei2022",
+    "title": "Emergent Abilities of Large Language Models",
+    "authors": "Wei et al.",
+    "year": 2022,
+    "tags": ["emergence", "abilities", "few-shot", "chain-of-thought"],
+    "summary": "Some abilities are near random in smaller models and then appear sharply in larger ones, so they cannot be predicted by extrapolating small-model performance. Examples include multi-step arithmetic in few-shot prompting and the benefit of chain-of-thought prompting.",
+    "key_claims": [
+      "An ability is called emergent if it is absent in smaller models but present in larger ones.",
+      "Emergent abilities are not predictable by simple extrapolation from smaller scales.",
+      "Prompting techniques such as chain-of-thought only help beyond a certain model scale."
+    ]
+  },
+  {
+    "id": "schaeffer2023",
+    "title": "Are Emergent Abilities of Large Language Models a Mirage?",
+    "authors": "Schaeffer, Miranda, Koyejo",
+    "year": 2023,
+    "tags": ["emergence", "metrics", "mirage", "evaluation"],
+    "summary": "Apparent emergent abilities can be produced by the choice of metric. Nonlinear or discontinuous metrics such as exact-match accuracy turn smooth underlying improvement into a sudden jump; with continuous metrics, performance improves smoothly and predictably with scale.",
+    "key_claims": [
+      "Sharp jumps often come from all-or-nothing metrics, not from sudden changes in the model.",
+      "Switching to continuous metrics (such as token edit distance) shows smooth improvement.",
+      "Claims of emergence should be checked against the metric and the number of models evaluated."
+    ]
+  },
+  {
+    "id": "muennighoff2023",
+    "title": "Scaling Data-Constrained Language Models",
+    "authors": "Muennighoff et al.",
+    "year": 2023,
+    "tags": ["data", "repetition", "epochs", "data-constrained", "code"],
+    "summary": "When unique text runs out, repeating data helps up to a point. Training for up to about four epochs on repeated data is nearly as good as using unique data; beyond that, the value of extra repeated tokens decays towards zero.",
+    "key_claims": [
+      "Up to about 4 epochs of repetition costs very little compared with unique data.",
+      "With many more repetitions, adding compute stops helping.",
+      "Mixing in code data or relaxing quality filters are ways to stretch a limited text budget."
+    ]
+  },
+  {
+    "id": "sardana2023",
+    "title": "Beyond Chinchilla-Optimal: Accounting for Inference in Language Model Scaling Laws",
+    "authors": "Sardana and Frankle",
+    "year": 2023,
+    "tags": ["inference", "compute-optimal", "deployment", "cost", "smaller models"],
+    "summary": "Chinchilla-optimal training ignores the cost of serving the model. When a model will serve many inference requests, the total cost is lower if you train a smaller model on more tokens than the Chinchilla ratio suggests.",
+    "key_claims": [
+      "Total lifetime cost includes training and inference compute.",
+      "With high expected inference demand, smaller models trained longer are cheaper overall.",
+      "This helps explain why recent models are often trained far past 20 tokens per parameter."
+    ]
+  },
+  {
+    "id": "openai2023",
+    "title": "GPT-4 Technical Report",
+    "authors": "OpenAI",
+    "year": 2023,
+    "tags": ["predictable scaling", "forecasting", "loss", "capabilities"],
+    "summary": "The report describes infrastructure built to scale predictably. GPT-4's final loss, and its pass rate on a subset of a coding benchmark (HumanEval), were predicted in advance from much smaller runs using up to 1,000 to 10,000 times less compute.",
+    "key_claims": [
+      "Final training loss was predicted from small runs with a fitted power law.",
+      "Some capability metrics could also be forecast from small-scale runs.",
+      "Not every capability was predictable; some tasks showed unexpected trends."
+    ]
+  },
+  {
+    "id": "snell2024",
+    "title": "Scaling LLM Test-Time Compute Optimally can be More Effective than Scaling Model Parameters",
+    "authors": "Snell et al.",
+    "year": 2024,
+    "tags": ["test-time compute", "inference", "reasoning", "verifiers", "search"],
+    "summary": "Spending more compute at inference time, for example on sequential revisions or search guided by a verifier, can improve answers. Allocating that compute adaptively by question difficulty was more than four times more efficient than a best-of-N baseline, and on easier and medium questions a smaller model with extra test-time compute could beat a much larger model.",
+    "key_claims": [
+      "Test-time compute is a second scaling axis besides parameters and training data.",
+      "The best way to spend test-time compute depends on the difficulty of the question.",
+      "For the hardest questions, scaling pretraining was still more effective."
+    ]
+  }
+]

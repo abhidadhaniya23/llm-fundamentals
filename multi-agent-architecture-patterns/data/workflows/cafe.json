@@ -1,0 +1,30 @@
+{
+  "currency": "NOK",
+  "catalog": {
+    "salmon kibble (5 kg bag)": 389,
+    "scratching post": 549,
+    "litter box": 279,
+    "cat tunnel": 199,
+    "feather wand toy": 59,
+    "cat bed (large)": 699
+  },
+  "tax_rates": {
+    "oslo": 0.25,
+    "bergen": 0.25,
+    "svalbard": 0.0
+  },
+  "discount_codes": {
+    "WHISKERS10": {"percent": 10, "applies_to": "subtotal before tax"},
+    "NEWCAFE": {"percent": 15, "applies_to": "subtotal before tax", "min_subtotal": 3000}
+  },
+  "shipping": {
+    "oslo": 0,
+    "bergen": 149,
+    "svalbard": 490
+  },
+  "fx_to": {
+    "EUR": 0.085,
+    "USD": 0.092
+  },
+  "rules": "Order of operations: subtotal = sum(price x quantity); apply discount to subtotal; add shipping; add tax on (discounted subtotal + shipping); convert the total last. Round only the final total, to 2 decimals."
+}
