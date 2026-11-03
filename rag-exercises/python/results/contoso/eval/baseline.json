@@ -1,7 +1,7 @@
 {
  "chunks": 469,
  "dataset": "contoso",
- "date": "2026-10-15 09:15",
+ "date": "2026-10-15 09:56",
  "name": "baseline",
  "phase": "eval",
  "questions": [
@@ -3498,5 +3498,5 @@
   "n": 38,
   "nDCG@5": 0.7875
  },
- "took_s": 0.3
+ "took_s": 0.4
 }

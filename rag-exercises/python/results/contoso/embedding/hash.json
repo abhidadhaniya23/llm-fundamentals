@@ -1,7 +1,7 @@
 {
  "chunks": 469,
  "dataset": "contoso",
- "date": "2026-10-15 09:18",
+ "date": "2026-10-15 10:37",
  "name": "hash",
  "order": 0,
  "phase": "embedding",
@@ -3499,5 +3499,5 @@
   "n": 38,
   "nDCG@5": 0.4438
  },
- "took_s": 1.0
+ "took_s": 0.6
 }
