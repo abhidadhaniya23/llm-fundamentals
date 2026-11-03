@@ -26,67 +26,64 @@ def _words(text: str) -> list[str]:
     return re.findall(r"[a-z']+", text.lower())
 
 
-# ── Cat facts, puns, jokes ───────────────────────────────────────────────────
+# ── The office move: facts, plain-language checks ────────────────────────────
 
 def lookup_facts(topic: str) -> list[dict]:
-    """Cat facts matching a keyword (e.g. 'sleep', 'whiskers', 'egypt').
-    Returns [{id, fact}]. An empty topic lists every fact."""
+    """Facts about the office move matching a keyword (e.g. 'parking',
+    'packing', 'fire', 'date'). Returns [{id, fact}]. An empty topic lists all."""
     topic = topic.lower().strip()
-    hits = [f for f in _load("cat_facts.json")
+    hits = [f for f in _load("office_facts.json")
             if not topic or topic in f["fact"].lower() or any(topic in t for t in f["tags"])]
     return [{"id": f["id"], "fact": f["fact"]} for f in hits]
 
 
 def get_fact(fact_id: str) -> dict | None:
-    """One cat fact by its id (e.g. 'F07'), or null if there is no such fact."""
-    return next(({"id": f["id"], "fact": f["fact"]} for f in _load("cat_facts.json")
+    """One office-move fact by its id (e.g. 'O07'), or null if there is no such fact."""
+    return next(({"id": f["id"], "fact": f["fact"]} for f in _load("office_facts.json")
                  if f["id"] == fact_id.strip().upper()), None)
 
 
-def check_punchline(text: str) -> dict:
-    """Does the joke have a punchline? The same simple rule as the original
-    exercise: it must contain '?' or '!'."""
-    ok = "?" in text or "!" in text
-    return {"has_punchline": ok, "reason": "" if ok else "no '?' or '!' found"}
+_MONTHS = "january|february|march|april|may|june|july|august|september|october|november|december"
+_DAYS = "monday|tuesday|wednesday|thursday|friday|saturday|sunday"
 
 
-def find_puns(word: str) -> list[str]:
-    """Cat puns for an ordinary word, e.g. 'perfect' -> ['purr-fect']."""
-    puns = _load("puns.json")
-    word = word.lower().strip()
-    return puns.get(word) or [p for key, ps in puns.items() if word in key for p in ps]
+def check_essentials(text: str) -> dict:
+    """Does a notice say when (a date) and who to contact (an email address)?
+    Returns {ok, missing}."""
+    lower = text.lower()
+    missing = []
+    if not (re.search(rf"\b\d{{1,2}}\s+({_MONTHS})\b", lower) or re.search(rf"\b({_DAYS})\b", lower)):
+        missing.append("a date")
+    if not re.search(r"[\w.-]+@[\w.-]+\.\w+", text):
+        missing.append("a contact email address")
+    return {"ok": not missing, "missing": missing}
 
 
-_STOP = set("a an the of to in on at and or but is are was were be it its it's this that "
-            "with for as by from i you he she they we my your his her their our what why "
-            "how do does did so too very just can not no".split())
+def check_jargon(text: str) -> list[dict]:
+    """Jargon from the style guide found in the text, with the plain word to
+    use instead: [{term, use_instead}]. An empty list means none found."""
+    lower = text.lower()
+    return [{"term": term, "use_instead": plain or "(leave it out)"}
+            for term, plain in _load("style_guide.json")["jargon"].items()
+            if re.search(rf"\b{re.escape(term)}\b", lower)]
 
 
-def _content(text: str) -> set[str]:
-    return {w for w in _words(text) if w not in _STOP and len(w) > 2}
+def check_sentences(text: str) -> dict:
+    """Sentence length against the style guide (max 25 words). Returns
+    {max_words, limit, too_long: [the start of each long sentence]}."""
+    limit = _load("style_guide.json")["max_sentence_words"]
+    sentences = [s.strip() for s in re.split(r"(?<=[.!?])\s+|\n+", text) if s.strip()]
+    lengths = [(len(s.split()), s) for s in sentences]
+    return {"max_words": max((n for n, _ in lengths), default=0), "limit": limit,
+            "too_long": [s[:60] + "…" for n, s in lengths if n > limit]}
 
 
-def check_originality(text: str) -> dict:
-    """Compare a joke with a corpus of well-known cat jokes. Returns the
-    closest known joke and a word-overlap score 0..1; original means < 0.5."""
-    mine = _content(text)
-    best, best_score = "", 0.0
-    for joke in _load("known_jokes.json"):
-        theirs = _content(joke)
-        score = len(mine & theirs) / max(1, min(len(mine), len(theirs)))
-        if score > best_score:
-            best, best_score = joke, score
-    return {"original": best_score < 0.5, "overlap": round(best_score, 2), "closest_known_joke": best}
-
-
-_UNSAFE = {"kill", "killed", "dead", "death", "die", "dies", "blood", "gun", "drunk", "beer",
-           "hate", "stupid", "idiot", "damn", "hell", "sexy", "scary", "monster", "nightmare"}
-
-
-def kid_safe(text: str) -> dict:
-    """Check text for words not suitable for children. Returns {safe, flagged}."""
-    flagged = sorted(set(_words(text)) & _UNSAFE)
-    return {"safe": not flagged, "flagged": flagged}
+def plain_language_problems(text: str) -> list[str]:
+    """Every plain-language rule the text breaks, for validators."""
+    problems = [f"jargon '{j['term']}': use '{j['use_instead']}'" for j in check_jargon(text)]
+    problems += [f"sentence over {check_sentences(text)['limit']} words: {s!r}"
+                 for s in check_sentences(text)["too_long"]]
+    return problems
 
 
 def count_words(text: str) -> int:
@@ -94,66 +91,51 @@ def count_words(text: str) -> int:
     return len(text.split())
 
 
-# ── Poems ────────────────────────────────────────────────────────────────────
-
-def syllables(line: str) -> int:
-    """Approximate syllable count of a line (a heuristic, +-1 per word)."""
-    total = 0
-    for word in _words(line):
-        word = word.replace("'", "")
-        groups = re.findall(r"[aeiouy]+", word)
-        count = len(groups)
-        if word.endswith("e") and not word.endswith(("le", "ee")) and count > 1:
-            count -= 1
-        total += max(1, count)
-    return total
+def count_chars(text: str) -> int:
+    """Number of characters in the text, spaces included."""
+    return len(text)
 
 
-# Common words whose spelling hides their sound: word -> a spelling that rhymes like it.
-_SOUNDS_LIKE = {"done": "dun", "none": "nun", "one": "wun", "someone": "sumwun", "anyone": "enywun",
-                "love": "luv", "above": "abuv", "glove": "gluv", "dove": "duv", "of": "uv",
-                "come": "cum", "some": "sum", "eight": "ate", "great": "grate", "said": "sed",
-                "head": "hed", "bread": "bred", "four": "for", "more": "mor", "door": "dor",
-                "floor": "flor", "your": "yor", "through": "thru", "blue": "blu",
-                "two": "tu", "too": "tu", "you": "yu", "who": "hu", "shoe": "shu", "new": "nu",
-                "knew": "nu", "flew": "flu", "eyes": "ize", "flies": "flize", "lies": "lize"}
+_STOP = set("a an the of to in on at and or but is are was were be it its it's this that "
+            "with for as by from i you he she they we my your his her their our what why "
+            "how do does did so too very just can not no".split())
 
 
-def _rime(word: str) -> str:
-    word = re.sub(r"[^a-z]", "", word.lower())
-    word = _SOUNDS_LIKE.get(word, word)
-    if len(word) > 2 and word.endswith("e") and word[-2] not in "aeiouy":
-        word = word[:-1]  # silent e: time -> tim
-    match = re.search(r"[aeiouy]+[^aeiouy]*$", word)
-    return (match.group(0) if match else word).replace("y", "i")
+def _stem(word: str) -> str:
+    """A rough stem so 'park', 'parking' and 'parks' match."""
+    for suffix in ("ing", "ed", "es", "s"):
+        if word.endswith(suffix) and len(word) - len(suffix) >= 3:
+            return word[:-len(suffix)]
+    return word
 
 
-def rhymes(word_a: str, word_b: str) -> bool:
-    """Do two words rhyme? Heuristic on their spelling: same ending from the
-    last vowel sound, or the same last three letters. Prefer clear rhymes."""
-    a, b = word_a.lower().strip(" .,!?;:'\""), word_b.lower().strip(" .,!?;:'\"")
-    return _rime(a) == _rime(b) or (len(a) > 3 and len(b) > 3 and a[-3:] == b[-3:])
+def _content(text: str) -> set[str]:
+    return {_stem(w) for w in _words(text) if w not in _STOP and len(w) > 2}
 
 
-def check_limerick(poem: str) -> dict:
-    """Check a limerick: 5 lines, lines 1-2-5 rhyme and 3-4 rhyme (AABBA).
-    Returns {ok, problems, syllables_per_line}."""
-    lines = [ln.strip() for ln in poem.strip().splitlines() if ln.strip()]
-    problems = []
-    if len(lines) != 5:
-        return {"ok": False, "problems": [f"needs 5 lines, has {len(lines)}"], "syllables_per_line": []}
-    last = [(_words(ln) or [""])[-1] for ln in lines]
-    for i, j in ((0, 1), (0, 4), (2, 3)):
-        if not rhymes(last[i], last[j]):
-            problems.append(f"line {i + 1} '{last[i]}' and line {j + 1} '{last[j]}' do not rhyme")
-    return {"ok": not problems, "problems": problems, "syllables_per_line": [syllables(ln) for ln in lines]}
+# ── Employees and the help desk (routing) ────────────────────────────────────
+
+def get_employee(employee_id: str) -> dict | None:
+    """An employee's profile: name, role, team, zone, how they work, notes."""
+    return next((e for e in _load("employees.json") if e["id"] == employee_id.strip()), None)
 
 
-# ── Readers (routing) ────────────────────────────────────────────────────────
+def search_kb(dept: str, query: str) -> list[dict]:
+    """Search one department's help articles ('it', 'facilities' or 'hr').
+    Returns up to 3 {id, title}, best first. Read one with read_article."""
+    scored = [(_score(query, a["title"], a["text"]), a) for a in _load("helpdesk_kb.json")
+              if a["dept"] == dept.lower().strip()]
+    return [{"id": a["id"], "title": a["title"]} for s, a in sorted(scored, key=lambda x: -x[0]) if s > 0][:3]
 
-def get_reader(reader_id: str) -> dict | None:
-    """A reader's profile: age group, likes, things to avoid, past requests."""
-    return next((r for r in _load("readers.json") if r["id"] == reader_id.strip()), None)
+
+def read_article(article_id: str) -> dict | None:
+    """The full text of one help article, by id (e.g. 'FAC-01')."""
+    return next((a for a in _load("helpdesk_kb.json") if a["id"] == article_id.strip().upper()), None)
+
+
+def cited_articles(text: str) -> set[str]:
+    """Help-article ids cited as [ID] in a text, e.g. [IT-01]."""
+    return set(re.findall(r"\[((?:IT|FAC|HR)-\d\d)\]", text))
 
 
 # ── Papers (orchestrator-worker) ─────────────────────────────────────────────
@@ -276,15 +258,15 @@ def cafe_total(items: dict[str, int], city: str, code: str, currency: str) -> fl
 
 
 if __name__ == "__main__":
-    assert len(lookup_facts("sleep")) >= 1 and get_fact("f07")["id"] == "F07"
-    assert check_punchline("Why? Because.")["has_punchline"] and not check_punchline("A cat.")["has_punchline"]
-    assert not check_originality("What do you call a pile of cats? A meowtain.")["original"]
-    assert check_originality("My cat filed taxes; she claimed the sofa as a scratching expense!")["original"]
-    assert not kid_safe("a scary monster")["safe"]
-    assert rhymes("cat", "hat") and rhymes("night", "light") and rhymes("time", "rhyme") and not rhymes("cat", "dog")
-    limerick = ("A cat with a taste for the sun\nWould nap until napping was done\nShe'd stretch and she'd yawn\n"
-                "From dusk until dawn\nThen nap once again just for fun")
-    assert check_limerick(limerick)["ok"], check_limerick(limerick)
+    assert len(lookup_facts("parking")) >= 1 and get_fact("o07")["id"] == "O07"
+    assert check_essentials("We move on Monday 7 December. Ask move-team@example.com.")["ok"]
+    assert check_essentials("We move soon.")["missing"] == ["a date", "a contact email address"]
+    assert [j["term"] for j in check_jargon("Going forward we will leverage synergies.")] == \
+        ["leverage", "going forward", "synergies"]
+    assert check_sentences("Short one. " + "word " * 30 + ".")["too_long"]
+    assert get_employee("e3")["name"] == "Chloe Martin"
+    assert search_kb("facilities", "where can I park my car")[0]["id"] == "FAC-01"
+    assert cited_articles("See [IT-01] and [FAC-04].") == {"IT-01", "FAC-04"}
     assert search_papers("compute-optimal tokens per parameter")[0]["id"] == "hoffmann2022"
     assert cited_papers("as shown [kaplan2020] and [hoffmann2022].") == {"kaplan2020", "hoffmann2022"}
     assert web_search("calcium CT score cholesterol statin")[0]["id"] in {"W01", "W02", "W03", "W04"}

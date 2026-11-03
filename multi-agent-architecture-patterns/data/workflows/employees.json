@@ -1,0 +1,14 @@
+[
+  {"id": "e1", "name": "Ana Silva", "role": "Finance analyst", "team": "Finance", "zone": "B",
+   "works": "full time, hybrid", "notes": []},
+  {"id": "e2", "name": "Ben Okafor", "role": "Sales coordinator", "team": "Sales", "zone": "C",
+   "works": "full time", "notes": ["new starter: first day is Monday 7 December 2026"]},
+  {"id": "e3", "name": "Chloe Martin", "role": "Team manager", "team": "Customer Service", "zone": "A",
+   "works": "full time, hybrid", "notes": ["uses a wheelchair", "drives to work"]},
+  {"id": "e4", "name": "David Chen", "role": "Data engineer", "team": "IT", "zone": "D",
+   "works": "full time, hybrid", "notes": []},
+  {"id": "e5", "name": "Elif Yilmaz", "role": "Marketing specialist", "team": "Marketing", "zone": "C",
+   "works": "part time, Monday to Wednesday", "notes": []},
+  {"id": "e6", "name": "Femi Adeyemi", "role": "Operations planner", "team": "Operations", "zone": "D",
+   "works": "full time, hybrid", "notes": ["cycles to work"]}
+]

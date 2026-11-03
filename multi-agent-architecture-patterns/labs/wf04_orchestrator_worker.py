@@ -148,13 +148,14 @@ def synthesizer(state: dict) -> None:
     state["final_report"] = report + "\n\n---\n\n" + references(report)
 
 
-def run_workflow() -> None:
+def run_workflow() -> str:
     state = {"topic": TOPIC}
     orchestrator(state)
     with ThreadPoolExecutor() as pool:  # Send() by hand: one worker per section
         state["completed_sections"] = list(pool.map(llm_call, state["sections"]))
     synthesizer(state)
     print(f"\n{state['final_report']}")
+    return state["final_report"]
 
 
 # ── Mode 2: the Orchestrator assigns workers itself ──────────────────────────
@@ -184,7 +185,7 @@ AGENTIC_PROMPT = (
 )
 
 
-def run_agentic() -> None:
+def run_agentic() -> str:
     def validate(final) -> str:
         report = final.get("report") if isinstance(final, dict) else None
         if not isinstance(report, str):
@@ -200,13 +201,16 @@ def run_agentic() -> None:
         {"list_papers": t.list_papers, "search_papers": t.search_papers,
          "assign_workers": assign_workers}, max_steps=20, validate=validate)
     print(f"\n{report}\n\n---\n\n{references(report)}")
+    return report + "\n\n---\n\n" + references(report)
 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--mode", choices=["workflow", "agentic"], default="workflow")
-    (run_agentic if parser.parse_args().mode == "agentic" else run_workflow)()
+    mode = parser.parse_args().mode
+    output = (run_agentic if mode == "agentic" else run_workflow)()
     shared.print_usage()
+    shared.save_transcript("wf04", mode, TOPIC, output)
 
 
 if __name__ == "__main__":

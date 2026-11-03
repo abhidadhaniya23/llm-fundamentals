@@ -133,10 +133,12 @@ def _chat_nexus(messages: list[dict]) -> tuple[str, int, int]:
 
 def ask(role_prompt: str, user_text: str, label: str = "") -> str:
     """One chat call: a role's system prompt plus the text it's asked about."""
-    return _chat([
+    record = _record_start(label or "(unlabelled)", user_text)
+    record["final"] = _chat([
         {"role": "system", "content": role_prompt},
         {"role": "user", "content": user_text},
     ], label)
+    return record["final"]
 
 
 _AGENT_PROTOCOL = """
@@ -175,27 +177,32 @@ def run_agent(label: str, role_prompt: str, task: str, tools: dict, max_steps: i
         {"role": "system", "content": role_prompt + _AGENT_PROTOCOL % catalogue},
         {"role": "user", "content": task},
     ]
+    record = _record_start(label, task)
     for _ in range(max_steps):
         reply = _chat(messages, label)
         messages.append({"role": "assistant", "content": reply})
         try:
             action = _parse_json(reply)
         except ValueError:
+            record["steps"].append({"note": "reply was not one JSON object; asked again"})
             messages.append({"role": "user", "content": "Reply with one JSON object only."})
             continue
         if "final" in action:
             if validate is None:
                 step(label, "done")
+                record["final"] = action["final"]
                 return action["final"]
             try:
                 checked = validate(action["final"])
             except ValueError as error:
                 step(label, f"handoff rejected: {_short(error)}")
+                record["steps"].append({"rejected": str(error), "answer": action["final"]})
                 messages.append({"role": "user", "content":
                                  f"Your final answer was rejected at the handoff:\n{error}\n"
                                  "Fix it and send the corrected final answer."})
                 continue
             step(label, "done (handoff validated)")
+            record["final"] = action["final"]
             return checked
         name, args = action.get("tool"), action.get("args") or {}
         if name not in tools:
@@ -206,8 +213,44 @@ def run_agent(label: str, role_prompt: str, task: str, tools: dict, max_steps: i
                 result = tools[name](**args)
             except Exception as error:  # a bad tool call is fed back, not fatal
                 result = f"Tool error: {error}"
-        messages.append({"role": "user", "content": f"<tool_result>{json.dumps(result, default=str)}</tool_result>"})
+        result_text = json.dumps(result, default=str)
+        record["steps"].append({"tool": name, "args": args, "result": _clip(result_text)})
+        messages.append({"role": "user", "content": f"<tool_result>{result_text}</tool_result>"})
+    record["error"] = f"did not finish within {max_steps} steps"
     raise RuntimeError(f"{label} did not finish within {max_steps} steps")
+
+
+# ── Transcript: what every agent received, did and answered ──────────────────
+
+TRANSCRIPT: list[dict] = []
+
+
+def _record_start(label: str, task: str) -> dict:
+    """One transcript entry per agent run, in the order the agents started."""
+    record = {"agent": label, "thread": threading.current_thread().name, "task": task,
+              "steps": [], "final": None}
+    with _USAGE_LOCK:
+        TRANSCRIPT.append(record)
+    return record
+
+
+def _clip(text: str, limit: int = 600) -> str:
+    return text if len(text) <= limit else text[:limit] + f"… (+{len(text) - limit} chars)"
+
+
+def save_transcript(lab: str, mode: str, given, output) -> Path:
+    """Write runs/wf/<lab>_<mode>.json: the input, every agent's run, the
+    output and the cost. docs/workflows-and-agents/build_examples.py turns
+    these into the worked examples on the explainer page."""
+    folder = Path(__file__).parent.parent / "runs" / "wf"
+    folder.mkdir(parents=True, exist_ok=True)
+    path = folder / f"{lab}_{mode}.json"
+    path.write_text(json.dumps({
+        "lab": lab, "mode": mode, "provider": PROVIDER, "input": given, "output": output,
+        "agents": TRANSCRIPT, "usage": USAGE,
+    }, indent=1, default=str, ensure_ascii=False), encoding="utf-8")
+    print(f"\ntranscript: {path.relative_to(folder.parent.parent)}")
+    return path
 
 
 def _short(error: Exception) -> str:

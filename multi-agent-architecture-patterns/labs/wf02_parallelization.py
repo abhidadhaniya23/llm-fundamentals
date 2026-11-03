@@ -1,17 +1,19 @@
 """
 Workflows & Agents 02 · Parallelization, every step an agent
 
-The notes' exercise: take a topic, write a joke, a story and a poem in
-parallel, then combine them. Here each piece has a bar that needs tools:
-    joke   original (checked against known jokes), punchline, max 50 words
-    story  150-200 words, at least two real cat facts
-    poem   a limerick (5 lines, AABBA), checked with check_limerick
-and the Aggregator checks every fact the pieces claim before combining.
+The notes' exercise: take one topic, write three different pieces about it
+in parallel, then combine them. Here the topic is the office move and the
+three pieces are what a real communications team sends out:
+    email  120-200 words, at least three real facts, a date and a contact
+    chat   one team-chat post of at most 280 characters, with the key date
+    FAQ    3-5 questions and answers, each answer citing the fact it uses
+All three must pass the plain-language checks, and the Aggregator checks
+every fact the pieces claim before combining them.
 
 --mode workflow (default): code fans out and joins, as in the notes.
-    topic -+-> Joke Writer  (agent) -+
-           +-> Story Writer (agent) -+-> Aggregator (agent) -> combined output
-           +-> Poem Writer  (agent) -+
+    topic -+-> Email Writer (agent) -+
+           +-> Chat Writer  (agent) -+-> Aggregator (agent) -> combined output
+           +-> FAQ Writer   (agent) -+
     ThreadPoolExecutor is the hand-rolled version of three edges from START.
 
 --mode agentic: a Coordinator agent decides what to dispatch. Its
@@ -31,8 +33,8 @@ import shared
 import wf_tools as t
 import wf_writers
 
-TOPIC = "cats"
-HEADINGS = ("STORY:", "JOKE:", "POEM:")
+TOPIC = "the office move to Riverside House"
+HEADINGS = ("EMAIL:", "CHAT:", "FAQ:")
 
 
 def validate_combined(final) -> str:
@@ -45,18 +47,19 @@ def validate_combined(final) -> str:
 
 
 AGGREGATOR_PROMPT = (
-    "You combine a story, a joke and a poem about a topic into one output. Each piece "
-    "lists the cat fact ids it uses. Check each id with get_fact and make sure the piece "
-    "does not contradict that fact; if a piece states something about cats that the fact "
-    "base does not support, note it under ISSUES. Do not rewrite the pieces.\n"
-    "Format: a one-line intro, then STORY:, JOKE:, POEM: each followed by the piece, "
-    "then ISSUES: (or 'none').\n"
+    "You combine an email, a chat post and an FAQ about one topic into a single pack for the "
+    "communications team. Each piece lists the fact ids it uses. Check each id with get_fact "
+    "and make sure the piece says the same as the fact (dates, times, places). If a piece "
+    "contradicts a fact or the pieces contradict each other, note it under ISSUES. Do not "
+    "rewrite the pieces.\n"
+    "Format: a one-line intro, then EMAIL:, CHAT:, FAQ: each followed by the piece, then "
+    "ISSUES: (or 'none').\n"
     'Final answer: {"combined_output": "<the text>"}'
 )
 
 
 def aggregator(state: dict) -> str:
-    pieces = {k: state[k] for k in ("story", "joke", "poem")}
+    pieces = {k: state[k] for k in ("email", "chat", "faq")}
     return shared.run_agent("Aggregator", AGGREGATOR_PROMPT,
                             f"Topic: {state['topic']}\n{json.dumps(pieces, indent=1)}",
                             {"get_fact": t.get_fact}, validate=validate_combined)
@@ -64,23 +67,25 @@ def aggregator(state: dict) -> str:
 
 # ── Mode 1: code fans out and joins ──────────────────────────────────────────
 
-def run_workflow() -> None:
+def run_workflow() -> str:
     state = {"topic": TOPIC}
-    briefs = {"joke": f"Write a joke about {TOPIC}", "story": f"Write a story about {TOPIC}",
-              "poem": f"Write a poem about {TOPIC}"}
+    briefs = {"email": f"Write the staff email about {TOPIC}",
+              "chat": f"Write a team-chat post about {TOPIC}",
+              "faq": f"Write an FAQ about {TOPIC}"}
     with ThreadPoolExecutor() as pool:
         futures = {kind: pool.submit(wf_writers.write, kind, brief) for kind, brief in briefs.items()}
         for kind, future in futures.items():
             state[kind] = future.result()
     state["combined_output"] = aggregator(state)
     print(f"\n{state['combined_output']}")
+    return state["combined_output"]
 
 
 # ── Mode 2: a Coordinator agent dispatches ───────────────────────────────────
 
 def dispatch(jobs: list) -> list[dict]:
     """Run writer agents in parallel. jobs is a list like
-    [{"kind": "joke" | "story" | "poem", "brief": "what to write"}]. Returns one
+    [{"kind": "email" | "chat" | "faq", "brief": "what to write"}]. Returns one
     result per job: {"kind", "text", "fact_ids"} or {"kind", "error"}."""
     def one(job: dict) -> dict:
         try:
@@ -92,26 +97,30 @@ def dispatch(jobs: list) -> list[dict]:
 
 
 COORDINATOR_PROMPT = (
-    "You produce a story, a joke and a poem about a topic, combined into one output. "
-    "Use dispatch to have writer agents write pieces; dispatch several jobs in one call "
-    "so they run in parallel. Read what comes back: if a piece failed or is weak, "
-    "dispatch it again with a better brief. Check the fact ids pieces claim with get_fact.\n"
-    "Format: a one-line intro, then STORY:, JOKE:, POEM: each followed by the piece.\n"
+    "You produce the communications pack for a topic: a staff email, a team-chat post and an "
+    "FAQ, combined into one output. Use dispatch to have writer agents write the pieces; "
+    "dispatch several jobs in one call so they run in parallel. Read what comes back: if a "
+    "piece failed or contradicts another, dispatch it again with a better brief. Check the "
+    "fact ids the pieces claim with get_fact.\n"
+    "Format: a one-line intro, then EMAIL:, CHAT:, FAQ: each followed by the piece.\n"
     'Final answer: {"combined_output": "<the text>"}'
 )
 
 
-def run_agentic() -> None:
+def run_agentic() -> str:
     text = shared.run_agent("Coordinator", COORDINATOR_PROMPT, f"Topic: {TOPIC}",
                             {"dispatch": dispatch, "get_fact": t.get_fact}, validate=validate_combined)
     print(f"\n{text}")
+    return text
 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--mode", choices=["workflow", "agentic"], default="workflow")
-    (run_agentic if parser.parse_args().mode == "agentic" else run_workflow)()
+    mode = parser.parse_args().mode
+    output = (run_agentic if mode == "agentic" else run_workflow)()
     shared.print_usage()
+    shared.save_transcript("wf02", mode, TOPIC, output)
 
 
 if __name__ == "__main__":

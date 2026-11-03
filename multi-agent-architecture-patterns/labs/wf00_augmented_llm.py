@@ -105,6 +105,7 @@ def main() -> None:
     print(f"\nsearch_query:  {result.search_query}\njustification: {result.justification}")
     print(f"answer:        {result.answer}\nsources:       {', '.join(result.sources)}")
     shared.print_usage()
+    shared.save_transcript("wf00", "agent", QUESTION, result.model_dump())
 
 
 if __name__ == "__main__":

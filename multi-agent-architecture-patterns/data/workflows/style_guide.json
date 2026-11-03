@@ -1,0 +1,33 @@
+{
+  "max_sentence_words": 25,
+  "jargon": {
+    "leverage": "use",
+    "utilise": "use",
+    "utilize": "use",
+    "going forward": "from now on",
+    "synergy": "working together",
+    "synergies": "working together",
+    "touch base": "talk",
+    "circle back": "come back to",
+    "facilitate": "help",
+    "commence": "start",
+    "commencing": "starting",
+    "in order to": "to",
+    "prior to": "before",
+    "endeavour": "try",
+    "relocation": "move",
+    "deliverables": "work",
+    "asap": "as soon as possible",
+    "kindly": "please",
+    "approximately": "about",
+    "assistance": "help",
+    "with regard to": "about",
+    "in due course": "soon",
+    "seamless": "smooth",
+    "stakeholders": "people involved",
+    "action items": "tasks",
+    "hereby": "",
+    "aforementioned": "this"
+  },
+  "notice_must_say": ["what is happening", "when (a date)", "where", "what people need to do", "who to contact"]
+}

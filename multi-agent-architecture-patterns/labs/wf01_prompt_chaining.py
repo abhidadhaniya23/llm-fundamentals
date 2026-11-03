@@ -1,18 +1,20 @@
 """
 Workflows & Agents 01 · Prompt Chaining, every step an agent
 
-The notes' exercise: take a topic, write a joke, check it has a punchline,
-improve it with wordplay, then add a surprising twist. Here the bar is
-higher, so each step needs tools: the joke must rest on a real cat fact, be
-original (checked against known jokes), stay kid-safe and under 40 words.
+The notes' exercise: take a topic, write a first version, check it with a
+gate, improve it, then polish it. Here the topic is the office move: the
+move team's internal memo (full of jargon) has to become a staff
+announcement. Each step needs tools: the facts must be real (lookup_facts),
+the language plain (check_jargon, check_sentences), the notice complete
+(check_essentials) and at most 150 words.
 
 --mode workflow (default): code keeps the chain from the notes.
-    topic -> Writer (agent) -> gate: check_punchline (code) --Fail--> stop
-                               --Pass--> Wordplay (agent) -> Polisher (agent)
+    memo -> Drafter (agent) -> gate: check_essentials (code) --Fail--> stop
+                               --Pass--> Plain-language (agent) -> Final editor (agent)
 
---mode agentic: an Editor agent runs the chain itself. The three step
-    agents are its tools; it decides the order, repeats, and when to stop.
-    Code still validates the final joke.
+--mode agentic: an Editor-in-chief agent runs the chain itself. The three
+    step agents are its tools; it decides the order, repeats, and when to
+    stop. Code still validates the final notice.
 
 Run it:
     uv run labs/wf01_prompt_chaining.py
@@ -24,121 +26,139 @@ import argparse
 import shared
 import wf_tools as t
 
-TOPIC = "cats"
-MAX_WORDS = 40
-JOKE_FINAL = 'Final answer: {"joke": "<the joke>"}'
+MEMO = (
+    "Internal memo from the move team. Going forward, in order to facilitate a seamless "
+    "relocation, all stakeholders are kindly requested to utilise the crates provided and "
+    "action the packing of personal items prior to the close of business on the last day at "
+    "Station Road. IT will leverage its own resources for hardware. Further details re desks, "
+    "badges and the commencement date at the new premises will be communicated in due course."
+)
+MAX_WORDS = 150
+NOTICE_FINAL = 'Final answer: {"notice": "<the notice>"}'
 
 
-def final_checks(joke: str) -> list[str]:
-    """The bar every finished joke must clear, checked in code."""
-    problems = []
-    if not t.check_punchline(joke)["has_punchline"]:
-        problems.append("no punchline ('?' or '!')")
-    if not (o := t.check_originality(joke))["original"]:
-        problems.append(f"too close to a known joke ({o['overlap']}): {o['closest_known_joke']!r}")
-    if (n := t.count_words(joke)) > MAX_WORDS:
+def final_checks(notice: str) -> list[str]:
+    """The bar every finished notice must clear, checked in code."""
+    problems = [f"missing {m}" for m in t.check_essentials(notice)["missing"]]
+    problems += t.plain_language_problems(notice)
+    if (n := t.count_words(notice)) > MAX_WORDS:
         problems.append(f"{n} words, max {MAX_WORDS}")
-    if not (s := t.kid_safe(joke))["safe"]:
-        problems.append(f"not kid-safe: {s['flagged']}")
     return problems
 
 
-def joke_of(final) -> str:
-    if not isinstance(final, dict) or not isinstance(final.get("joke"), str):
-        raise ValueError('final must be {"joke": "<the joke>"}')
-    return final["joke"]
+def notice_of(final) -> str:
+    if not isinstance(final, dict) or not isinstance(final.get("notice"), str):
+        raise ValueError('final must be {"notice": "<the notice>"}')
+    return final["notice"]
 
 
-def validate_original(final) -> str:
-    joke = joke_of(final)
-    if not (o := t.check_originality(joke))["original"]:
-        raise ValueError(f"too close to a known joke: {o['closest_known_joke']!r}")
-    return joke
+def validate_draft(final) -> str:
+    notice = notice_of(final)
+    ids = final.get("fact_ids") or []
+    if len(ids) < 3 or any(t.get_fact(str(i)) is None for i in ids):
+        raise ValueError("list at least 3 real fact ids from lookup_facts in fact_ids")
+    return notice
+
+
+def validate_plain(final) -> str:
+    notice = notice_of(final)
+    if problems := t.plain_language_problems(notice):
+        raise ValueError("\n".join(problems))
+    return notice
 
 
 def validate_finished(final) -> str:
-    joke = joke_of(final)
-    if problems := final_checks(joke):
+    notice = notice_of(final)
+    if problems := final_checks(notice):
         raise ValueError("\n".join(problems))
-    return joke
+    return notice
 
 
 # ── The three step agents ────────────────────────────────────────────────────
 
-def generate_joke(topic: str) -> str:
-    """Writer agent: a first joke about the topic, built on a real cat fact."""
+def draft_notice(memo: str) -> str:
+    """Drafter agent: turn the memo into a first staff notice, using the real facts."""
     return shared.run_agent(
-        "Writer", "You write a short joke about the given topic. Look up real cat facts "
-        "with lookup_facts and build the joke on one of them. " + JOKE_FINAL,
-        f"Write a short joke about {topic}",
-        {"lookup_facts": t.lookup_facts, "check_punchline": t.check_punchline},
-        validate=joke_of)
+        "Drafter", "You turn an internal memo into a first draft of a staff notice. The memo is "
+        "vague: look up the real dates, places and contacts with lookup_facts and put them in "
+        "where the memo is vague. Keep the memo's own wording otherwise; later steps fix the "
+        "style. "
+        'Final answer: {"notice": "<the draft>", "fact_ids": ["O01", ...]}',
+        memo, {"lookup_facts": t.lookup_facts, "check_essentials": t.check_essentials},
+        validate=validate_draft)
 
 
-def improve_joke(joke: str) -> str:
-    """Wordplay agent: make the joke funnier with puns, without copying a known joke."""
+def make_plain(notice: str) -> str:
+    """Plain-language agent: rewrite the notice without jargon or long sentences."""
     return shared.run_agent(
-        "Wordplay", "Make this joke funnier by adding wordplay. Find cat puns for words "
-        "in the joke with find_puns. The result must stay original: check it with "
-        "check_originality. " + JOKE_FINAL,
-        joke, {"find_puns": t.find_puns, "check_originality": t.check_originality},
-        validate=validate_original)
+        "Plain-language", "Rewrite this notice in plain language. Replace every term that "
+        "check_jargon finds, and split any sentence that check_sentences says is too long. "
+        "Keep every fact. " + NOTICE_FINAL,
+        notice, {"check_jargon": t.check_jargon, "check_sentences": t.check_sentences},
+        validate=validate_plain)
 
 
-def polish_joke(joke: str) -> str:
-    """Polisher agent: add a surprising twist, keep it short, kid-safe and original."""
+def polish_notice(notice: str) -> str:
+    """Final editor agent: add a short 'What you need to do' list and finish the notice."""
     return shared.run_agent(
-        "Polisher", f"Add a surprising twist to this joke. Keep it under {MAX_WORDS} words, "
-        "kid-safe and original, and keep the punchline. Check with the tools before you "
-        "hand it in. " + JOKE_FINAL,
-        joke, {"count_words": t.count_words, "kid_safe": t.kid_safe,
-               "check_originality": t.check_originality, "check_punchline": t.check_punchline},
-        validate=validate_finished)
+        "Final editor", "Finish this staff notice. Add a short 'What you need to do' list, keep "
+        f"it at most {MAX_WORDS} words, make sure it says when and who to contact, and keep it "
+        "in plain language. Check every fact you keep with get_fact. " + NOTICE_FINAL,
+        notice, {"count_words": t.count_words, "check_essentials": t.check_essentials,
+                 "check_jargon": t.check_jargon, "check_sentences": t.check_sentences,
+                 "get_fact": t.get_fact, "lookup_facts": t.lookup_facts},
+        max_steps=25, validate=validate_finished)
 
 
 # ── Mode 1: code keeps the chain ─────────────────────────────────────────────
 
-def run_workflow() -> None:
-    state = {"topic": TOPIC}
-    state["joke"] = generate_joke(state["topic"])
-    print(f"\nInitial joke:\n{state['joke']}")
+def run_workflow() -> str | None:
+    state = {"memo": MEMO}
+    state["draft"] = draft_notice(state["memo"])
+    print(f"\nDraft:\n{state['draft']}")
 
-    # The gate is code, exactly as in the notes.
-    if not t.check_punchline(state["joke"])["has_punchline"]:
-        print("\nJoke failed quality gate - no punchline detected!")
-        return
-    state["improved_joke"] = improve_joke(state["joke"])
-    print(f"\n--- --- ---\nImproved joke:\n{state['improved_joke']}")
-    state["final_joke"] = polish_joke(state["improved_joke"])
-    print(f"\n--- --- ---\nFinal joke:\n{state['final_joke']}")
+    # The gate is code, as in the notes: a notice with no date or contact stops here.
+    if not t.check_essentials(state["draft"])["ok"]:
+        print("\nDraft failed the gate - no date or contact address!")
+        return None
+    state["plain"] = make_plain(state["draft"])
+    print(f"\n--- --- ---\nPlain language:\n{state['plain']}")
+    state["final"] = polish_notice(state["plain"])
+    print(f"\n--- --- ---\nFinal notice:\n{state['final']}")
+    return state["final"]
 
 
-# ── Mode 2: an Editor agent runs the chain ───────────────────────────────────
+# ── Mode 2: an Editor-in-chief agent runs the chain ──────────────────────────
 
 EDITOR_PROMPT = (
-    "You are a comedy editor. Produce one finished joke about the topic. You have "
-    "three writers as tools: generate_joke (first draft), improve_joke (wordplay) "
-    "and polish_joke (twist and final polish). Use them in whatever order helps, "
-    "repeat a step if the result is weak, and check drafts yourself. A finished "
-    f"joke has a punchline, is original, kid-safe and at most {MAX_WORDS} words.\n"
-    + JOKE_FINAL
+    "You are the editor-in-chief for staff communications. Produce one finished staff notice "
+    "from the memo. You have three agents as tools: draft_notice (first draft from the memo), "
+    "make_plain (plain language) and polish_notice (action list and final check). Use them in "
+    "whatever order helps, repeat a step if the result is weak, and check drafts yourself. Pass "
+    "each agent the full text it should work on. A finished notice says when and who to "
+    f"contact, is in plain language and at most {MAX_WORDS} words. Hand in the text an agent "
+    "returned; do not write the notice yourself.\n" + NOTICE_FINAL
 )
 
 
-def run_agentic() -> None:
-    tools = {"generate_joke": generate_joke, "improve_joke": improve_joke, "polish_joke": polish_joke,
-             "check_punchline": t.check_punchline, "check_originality": t.check_originality,
-             "count_words": t.count_words, "kid_safe": t.kid_safe}
-    joke = shared.run_agent("Editor", EDITOR_PROMPT, f"Topic: {TOPIC}", tools,
-                            validate=validate_finished)
-    print(f"\nFinal joke:\n{joke}")
+def run_agentic() -> str:
+    tools = {"draft_notice": draft_notice, "make_plain": make_plain, "polish_notice": polish_notice,
+             "check_essentials": t.check_essentials, "check_jargon": t.check_jargon,
+             "check_sentences": t.check_sentences, "count_words": t.count_words,
+             "lookup_facts": t.lookup_facts}
+    notice = shared.run_agent("Editor-in-chief", EDITOR_PROMPT, f"Memo:\n{MEMO}", tools,
+                              max_steps=20, validate=validate_finished)
+    print(f"\nFinal notice:\n{notice}")
+    return notice
 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--mode", choices=["workflow", "agentic"], default="workflow")
-    (run_agentic if parser.parse_args().mode == "agentic" else run_workflow)()
+    mode = parser.parse_args().mode
+    output = (run_agentic if mode == "agentic" else run_workflow)()
     shared.print_usage()
+    shared.save_transcript("wf01", mode, MEMO, output)
 
 
 if __name__ == "__main__":

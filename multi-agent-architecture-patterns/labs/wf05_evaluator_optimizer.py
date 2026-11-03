@@ -1,20 +1,20 @@
 """
 Workflows & Agents 05 · Evaluator-Optimizer, every step an agent
 
-The notes' exercise: generate a joke, have an evaluator grade it "funny" or
-"not funny" with feedback, loop until funny. A bare "grade this joke" is
-pure taste, so here the Evaluator grades against a rubric with checks it
-must run: originality against known jokes, a real cat fact, kid-safety,
-length. The Generator has its own tools: facts and puns.
+The notes' exercise: one LLM writes, another grades it and gives feedback,
+loop until it passes. Here the writer drafts the notice for the first fire
+drill at the new building, and the Reviewer grades it against a style-guide
+rubric it must check with tools: facts right, plain language, at most 120
+words, says what/when/where/what to do, and an accessibility note.
 
 --mode workflow (default): code runs the loop, as in the notes.
-    topic -> Generator (agent) -> Evaluator (agent) --funny--> done
-                 ^                     |
-                 +---- feedback -------+  (max 4 rounds)
+    task -> Writer (agent) -> Reviewer (agent) --approved--> done
+                ^                   |
+                +---- feedback -----+  (max 4 rounds)
 
---mode agentic: the Generator owns the loop. The Evaluator is its tool
-    grade_joke; it decides when to resubmit. Code still checks the joke it
-    hands in is one the Evaluator graded "funny" (trust, but verify).
+--mode agentic: the Writer owns the loop. The Reviewer is its tool
+    review_notice; it decides when to resubmit. Code still checks the notice
+    it hands in is one the Reviewer approved (trust, but verify).
 
 Run it:
     uv run labs/wf05_evaluator_optimizer.py
@@ -29,45 +29,44 @@ from pydantic import BaseModel, Field, ValidationError
 import shared
 import wf_tools as t
 
-TOPIC = "Cats"
+TASK = "Write the staff notice for the first fire drill at Riverside House"
 MAX_ROUNDS = 4
 
 
 class Feedback(BaseModel):
-    grade: Literal["funny", "not funny"] = Field(description="Decide if the joke is funny or not.")
-    feedback: str = Field(description="If the joke is not funny, provide feedback on how to improve it.")
+    grade: Literal["approved", "needs changes"] = Field(description="Decide if the notice can be sent.")
+    feedback: str = Field(description="If it needs changes, say which rule failed and how to fix it.")
 
 
-RUBRIC = """A joke is "funny" only if ALL of these hold:
-1. Original: check_originality says original (overlap below 0.5).
-2. Grounded: it rests on a real cat fact (find it with lookup_facts).
-3. Kid-safe: kid_safe says safe.
-4. Short: at most 40 words (count_words).
-5. Surprise: the punchline turns the setup in a way you did not see coming.
-Otherwise it is "not funny", and the feedback names which rule failed and how to fix it."""
+RUBRIC = """A notice is "approved" only if ALL of these hold:
+1. Correct: every date, time and place matches a fact (check with lookup_facts / get_fact).
+2. Complete: it says what is happening, when, where to go, and what people must do.
+3. Inclusive: it tells people who may need help leaving the building what to do.
+4. Plain: check_jargon finds nothing and check_sentences finds no sentence over 25 words.
+5. Short: at most 120 words (count_words).
+Otherwise it "needs changes", and the feedback names which rule failed and how to fix it."""
 
 
 # ── The two agents ───────────────────────────────────────────────────────────
 
+def notice_of(final) -> str:
+    if not isinstance(final, dict) or not isinstance(final.get("notice"), str):
+        raise ValueError('final must be {"notice": "<the notice>"}')
+    return final["notice"]
+
+
 def llm_call_generator(state: dict) -> None:
-    """Generator agent writes a joke, using the feedback if there is any."""
-    task = f"Write a joke about {state['topic']}"
+    """Writer agent drafts the notice, using the feedback if there is any."""
+    task = state["task"]
     if state.get("feedback"):
-        task += f" but take into account the feedback: {state['feedback']}\nPrevious joke: {state['joke']}"
-    state["joke"] = shared.run_agent(
-        "Generator", "You write one short joke. Ground it in a real cat fact (lookup_facts) "
-        "and use cat puns (find_puns) where they help.\n" + 'Final answer: {"joke": ""}',
-        task, {"lookup_facts": t.lookup_facts, "find_puns": t.find_puns},
-        validate=joke_of)
+        task += f", but take into account the feedback: {state['feedback']}\nPrevious notice: {state['notice']}"
+    state["notice"] = shared.run_agent(
+        "Writer", "You write short staff notices. Look up the facts with lookup_facts and use "
+        "only those.\n" + 'Final answer: {"notice": ""}',
+        task, {"lookup_facts": t.lookup_facts, "get_fact": t.get_fact}, validate=notice_of)
 
 
-def joke_of(final) -> str:
-    if not isinstance(final, dict) or not isinstance(final.get("joke"), str):
-        raise ValueError('final must be {"joke": "<the joke>"}')
-    return final["joke"]
-
-
-def evaluate(joke: str) -> Feedback:
+def review(notice: str) -> Feedback:
     def validate(final) -> Feedback:
         try:
             return Feedback.model_validate(final)
@@ -75,71 +74,75 @@ def evaluate(joke: str) -> Feedback:
             raise ValueError(str(error)) from None
 
     return shared.run_agent(
-        "Evaluator", "You are a strict comedy judge. Grade the joke against this rubric, "
+        "Reviewer", "You are the communications reviewer. Grade the notice against this rubric, "
         "running the checks with your tools rather than guessing.\n" + RUBRIC +
-        '\nFinal answer: {"grade": "funny" | "not funny", "feedback": ""}',
-        f"Grade the joke {joke}",
-        {"check_originality": t.check_originality, "lookup_facts": t.lookup_facts,
-         "kid_safe": t.kid_safe, "count_words": t.count_words}, validate=validate)
+        '\nFinal answer: {"grade": "approved" | "needs changes", "feedback": ""}',
+        f"Review the notice:\n{notice}",
+        {"lookup_facts": t.lookup_facts, "get_fact": t.get_fact, "check_jargon": t.check_jargon,
+         "check_sentences": t.check_sentences, "count_words": t.count_words,
+         "check_essentials": t.check_essentials}, validate=validate)
 
 
 def llm_call_evaluator(state: dict) -> None:
-    """Evaluator agent grades the joke."""
-    grade = evaluate(state["joke"])
-    state["funny_or_not"], state["feedback"] = grade.grade, grade.feedback
-    shared.step("Evaluator", f"{grade.grade}: {grade.feedback}")
+    """Reviewer agent grades the notice."""
+    grade = review(state["notice"])
+    state["grade"], state["feedback"] = grade.grade, grade.feedback
+    shared.step("Reviewer", f"{grade.grade}: {grade.feedback}")
 
 
 # ── Mode 1: code runs the loop ───────────────────────────────────────────────
 
-def run_workflow() -> None:
-    state = {"topic": TOPIC}
+def run_workflow() -> str:
+    state = {"task": TASK}
     for round_no in range(1, MAX_ROUNDS + 1):
         shared.step("Loop", f"round {round_no}")
         llm_call_generator(state)
         llm_call_evaluator(state)
-        if state["funny_or_not"] == "funny":  # Accepted
+        if state["grade"] == "approved":  # Accepted
             break
-        # Rejected + Feedback: go round again
+        # Needs changes + feedback: go round again
     else:
-        print(f"\nNo joke passed in {MAX_ROUNDS} rounds; the last one:")
-    print(f"\n{state['joke']}")
+        print(f"\nNo notice was approved in {MAX_ROUNDS} rounds; the last one:")
+    print(f"\n{state['notice']}")
+    return state["notice"]
 
 
-# ── Mode 2: the Generator owns the loop ──────────────────────────────────────
+# ── Mode 2: the Writer owns the loop ─────────────────────────────────────────
 
-def run_agentic() -> None:
-    graded: dict[str, str] = {}  # code's own record of every grade the Evaluator gave
+def run_agentic() -> str:
+    graded: dict[str, str] = {}  # code's own record of every grade the Reviewer gave
 
-    def grade_joke(joke: str) -> dict:
-        """Send a joke to the Evaluator agent. Returns {grade, feedback}."""
-        result = evaluate(joke)
-        graded[joke.strip()] = result.grade
-        shared.step("Evaluator", f"{result.grade}: {result.feedback}")
+    def review_notice(notice: str) -> dict:
+        """Send a notice to the Reviewer agent. Returns {grade, feedback}."""
+        result = review(notice)
+        graded[notice.strip()] = result.grade
+        shared.step("Reviewer", f"{result.grade}: {result.feedback}")
         return result.model_dump()
 
     def validate(final) -> str:
-        joke = final.get("joke", "").strip() if isinstance(final, dict) else ""
-        if graded.get(joke) != "funny":
-            raise ValueError("hand in only a joke that grade_joke graded 'funny', word for word")
-        return joke
+        notice = final.get("notice", "").strip() if isinstance(final, dict) else ""
+        if graded.get(notice) != "approved":
+            raise ValueError("hand in only a notice that review_notice approved, word for word")
+        return notice
 
-    joke = shared.run_agent(
-        "Generator", "You write one short joke about the topic and get it graded with "
-        "grade_joke. Improve it using the feedback and resubmit until it is graded funny. "
-        "Ground it in a real cat fact (lookup_facts) and use puns (find_puns) where they help.\n"
-        'Final answer: {"joke": "<the joke exactly as graded>"}',
-        f"Topic: {TOPIC}",
-        {"lookup_facts": t.lookup_facts, "find_puns": t.find_puns, "grade_joke": grade_joke},
+    notice = shared.run_agent(
+        "Writer", "You write the staff notice and get it reviewed with review_notice. Improve it "
+        "using the feedback and resubmit until it is approved. Look up the facts with "
+        "lookup_facts and use only those.\n"
+        'Final answer: {"notice": "<the notice exactly as approved>"}',
+        TASK, {"lookup_facts": t.lookup_facts, "get_fact": t.get_fact, "review_notice": review_notice},
         max_steps=20, validate=validate)
-    print(f"\n{joke}")
+    print(f"\n{notice}")
+    return notice
 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--mode", choices=["workflow", "agentic"], default="workflow")
-    (run_agentic if parser.parse_args().mode == "agentic" else run_workflow)()
+    mode = parser.parse_args().mode
+    output = (run_agentic if mode == "agentic" else run_workflow)()
     shared.print_usage()
+    shared.save_transcript("wf05", mode, TASK, output)
 
 
 if __name__ == "__main__":

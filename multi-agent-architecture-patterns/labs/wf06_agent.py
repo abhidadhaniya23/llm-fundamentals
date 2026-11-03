@@ -70,7 +70,7 @@ def warm_up() -> None:
     print(f"\nWarm-up answer: {total}  (tool results along the way: {results})")
 
 
-def cafe_order() -> None:
+def cafe_order() -> float:
     results: list[float] = []
     expected = t.cafe_total(ORDER, CITY, CODE, CURRENCY)
 
@@ -90,12 +90,14 @@ def cafe_order() -> None:
                              'Final answer: {"total": <number>, "working": "<one line per step>"}',
                              TASK, tools, max_steps=25, validate=validate)
     print(f"\nCafé order total: {total} {CURRENCY}  (code's own total: {expected})")
+    return total
 
 
 def main() -> None:
     warm_up()
-    cafe_order()
+    total = cafe_order()
     shared.print_usage()
+    shared.save_transcript("wf06", "agent", [WARM_UP, TASK], {"cafe_total_eur": total})
 
 
 if __name__ == "__main__":
