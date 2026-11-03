@@ -20,12 +20,14 @@ project: it only depends on this folder's own `archive.py` and `data/`.
 ## Workflows & Agents, hand-rolled (no LangGraph)
 
 The seven exercises from *Building Effective Agents with LangGraph*, with the
-same inputs (cats, LLM scaling laws, "3 and 4"), rebuilt in plain Python on
+same pattern shapes, rebuilt in plain Python on
 `labs/shared.py`. In the original only the last one is an agent; here **every
 step is an agent** (`shared.run_agent`). Each exercise is bigger than the
-original, so the tools are actually needed: facts to ground jokes, an
-originality check against known jokes, limerick and word-count checks, reader
-profiles, a paper library with citations, café prices. Code validates every
+original, so the tools are actually needed. The joke exercises (01, 02, 03, 05)
+use an office scenario instead: a team moving to a new building, with real facts
+to ground the text, plain-language checks, employee profiles and help-desk
+articles. 04 keeps the scaling-laws report (a paper library with citations) and
+06 the café prices. Code validates every
 final answer and hands errors back to the agent.
 
 **Explained without the code:** open [`docs/workflows-and-agents/index.html`](docs/workflows-and-agents/index.html)
@@ -38,16 +40,18 @@ Labs 01–05 run two ways:
 | Exercise | Lab |
 |---|---|
 | 00 Augmented LLM (one-shot, then a research agent) | `labs/wf00_augmented_llm.py` |
-| 01 Prompt chaining (joke → gate → wordplay → twist) | `labs/wf01_prompt_chaining.py` |
-| 02 Parallelization (story, joke, limerick → aggregator) | `labs/wf02_parallelization.py` |
-| 03 Routing (5 reader requests → story / joke / poem) | `labs/wf03_routing.py` |
+| 01 Prompt chaining (memo → draft → gate → plain language → final edit) | `labs/wf01_prompt_chaining.py` |
+| 02 Parallelization (email, chat post, FAQ → aggregator) | `labs/wf02_parallelization.py` |
+| 03 Routing (5 employee questions → IT / Facilities / HR desk) | `labs/wf03_routing.py` |
 | 04 Orchestrator-worker (report on LLM scaling laws) | `labs/wf04_orchestrator_worker.py` |
-| 05 Evaluator-optimizer (joke until graded funny) | `labs/wf05_evaluator_optimizer.py` |
+| 05 Evaluator-optimizer (fire-drill notice until the reviewer approves) | `labs/wf05_evaluator_optimizer.py` |
 | 06 Agent (calculator warm-up, then a café order) | `labs/wf06_agent.py` |
 
 Shared code: `labs/wf_tools.py` (tools; `uv run labs/wf_tools.py` self-checks
-them without an LLM), `labs/wf_writers.py` (the joke, story and poem writer
-agents). Data: `data/workflows/`.
+them without an LLM), `labs/wf_writers.py` (the email, chat and FAQ writer
+agents). Data: `data/workflows/`. Every lab saves a transcript to `runs/wf/`;
+`docs/workflows-and-agents/build_examples.py --from-runs` turns them into the
+worked examples on the page.
 
 | LangGraph | Hand-rolled |
 |---|---|

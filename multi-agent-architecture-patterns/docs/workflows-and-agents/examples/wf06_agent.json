@@ -1,0 +1,184 @@
+{
+ "lab": "wf06",
+ "mode": "agent",
+ "provider": "anthropic",
+ "input": [
+  "Add 3 and 4. Then, take the output and multiply by 4.",
+  "Our cat café in Bergen is ordering 3 bags of salmon kibble and 2 scratching posts, with discount code WHISKERS10. What do we pay in total, in EUR?"
+ ],
+ "output": {
+  "cafe_total_eur": 232.42
+ },
+ "agents": [
+  {
+   "agent": "Calculator",
+   "thread": "MainThread",
+   "task": "Add 3 and 4. Then, take the output and multiply by 4.",
+   "steps": [
+    {
+     "tool": "add",
+     "args": {
+      "a": 3,
+      "b": 4
+     },
+     "result": "7"
+    },
+    {
+     "tool": "multiply",
+     "args": {
+      "a": 7,
+      "b": 4
+     },
+     "result": "28"
+    }
+   ],
+   "final": {
+    "total": 28
+   }
+  },
+  {
+   "agent": "Café Agent",
+   "thread": "MainThread",
+   "task": "Our cat café in Bergen is ordering 3 bags of salmon kibble and 2 scratching posts, with discount code WHISKERS10. What do we pay in total, in EUR?",
+   "steps": [
+    {
+     "tool": "get_rules",
+     "args": {},
+     "result": "\"Order of operations: subtotal = sum(price x quantity); apply discount to subtotal; add shipping; add tax on (discounted subtotal + shipping); convert the total last. Round only the final total, to 2 decimals.\""
+    },
+    {
+     "tool": "get_price",
+     "args": {
+      "item": "salmon kibble"
+     },
+     "result": "{\"item\": \"salmon kibble (5 kg bag)\", \"price_nok\": 389}"
+    },
+    {
+     "tool": "get_price",
+     "args": {
+      "item": "scratching post"
+     },
+     "result": "{\"item\": \"scratching post\", \"price_nok\": 549}"
+    },
+    {
+     "tool": "multiply",
+     "args": {
+      "a": 389,
+      "b": 3
+     },
+     "result": "1167"
+    },
+    {
+     "tool": "multiply",
+     "args": {
+      "a": 549,
+      "b": 2
+     },
+     "result": "1098"
+    },
+    {
+     "tool": "add",
+     "args": {
+      "a": 1167,
+      "b": 1098
+     },
+     "result": "2265"
+    },
+    {
+     "tool": "get_discount",
+     "args": {
+      "code": "WHISKERS10"
+     },
+     "result": "{\"percent\": 10, \"applies_to\": \"subtotal before tax\"}"
+    },
+    {
+     "tool": "multiply",
+     "args": {
+      "a": 2265,
+      "b": 0.1
+     },
+     "result": "226.5"
+    },
+    {
+     "tool": "subtract",
+     "args": {
+      "a": 2265,
+      "b": 226.5
+     },
+     "result": "2038.5"
+    },
+    {
+     "tool": "get_shipping",
+     "args": {
+      "city": "Bergen"
+     },
+     "result": "{\"city\": \"Bergen\", \"shipping_nok\": 149}"
+    },
+    {
+     "tool": "add",
+     "args": {
+      "a": 2038.5,
+      "b": 149
+     },
+     "result": "2187.5"
+    },
+    {
+     "tool": "get_tax_rate",
+     "args": {
+      "city": "Bergen"
+     },
+     "result": "{\"city\": \"Bergen\", \"tax_rate\": 0.25}"
+    },
+    {
+     "tool": "multiply",
+     "args": {
+      "a": 2187.5,
+      "b": 0.25
+     },
+     "result": "546.875"
+    },
+    {
+     "tool": "add",
+     "args": {
+      "a": 2187.5,
+      "b": 546.875
+     },
+     "result": "2734.375"
+    },
+    {
+     "tool": "exchange_rate",
+     "args": {
+      "currency": "EUR"
+     },
+     "result": "{\"from\": \"NOK\", \"to\": \"EUR\", \"rate\": 0.085}"
+    },
+    {
+     "tool": "multiply",
+     "args": {
+      "a": 2734.375,
+      "b": 0.085
+     },
+     "result": "232.42187500000003"
+    }
+   ],
+   "final": {
+    "total": 232.42,
+    "working": "Rules: subtotal -> discount -> shipping -> tax on (discounted subtotal + shipping) -> convert last, round only the final total\nSalmon kibble: 389 x 3 = 1167 NOK\nScratching posts: 549 x 2 = 1098 NOK\nSubtotal: 1167 + 1098 = 2265 NOK\nDiscount WHISKERS10 (10%): 2265 x 0.1 = 226.5; 2265 - 226.5 = 2038.5 NOK\nShipping to Bergen: 2038.5 + 149 = 2187.5 NOK\nVAT Bergen 25%: 2187.5 x 0.25 = 546.875; 2187.5 + 546.875 = 2734.375 NOK\nConvert to EUR at 0.085: 2734.375 x 0.085 = 232.421875, rounded to 232.42 EUR"
+   }
+  }
+ ],
+ "usage": {
+  "Calculator": {
+   "calls": 3,
+   "in": 1031,
+   "out": 121,
+   "seconds": 4.621280200022738
+  },
+  "Café Agent": {
+   "calls": 17,
+   "in": 18399,
+   "out": 812,
+   "seconds": 24.80125600012252
+  }
+ }
+}

@@ -1,0 +1,210 @@
+{
+ "lab": "wf01",
+ "mode": "workflow",
+ "provider": "anthropic",
+ "input": "Internal memo from the move team. Going forward, in order to facilitate a seamless relocation, all stakeholders are kindly requested to utilise the crates provided and action the packing of personal items prior to the close of business on the last day at Station Road. IT will leverage its own resources for hardware. Further details re desks, badges and the commencement date at the new premises will be communicated in due course.",
+ "output": "Office move: Station Road to Riverside House\n\nWe are moving to Riverside House, 14 Canal Street. Wednesday 2 December 2026 is the last working day at Station Road. The office closes at 16:00. Monday 7 December 2026 is the first working day at Riverside House.\n\nWhat you need to do\n- Pack your personal items in your two crates by 16:00 on Wednesday 2 December. The crates arrive on Monday 30 November.\n- Label each crate with your name and team zone.\n- Do not pack monitors, docking stations or keyboards. IT moves them.\n- Take your laptop and charger home on 2 December.\n- From Monday 30 November, book a desk in the DeskBook app, in your team's zone (A to D, floor 2).\n- Collect your new badge at Riverside House reception from 08:00 on 7 December. Bring photo ID.\n\nQuestions? Email move-team@example.com.",
+ "agents": [
+  {
+   "agent": "Drafter",
+   "thread": "MainThread",
+   "task": "Internal memo from the move team. Going forward, in order to facilitate a seamless relocation, all stakeholders are kindly requested to utilise the crates provided and action the packing of personal items prior to the close of business on the last day at Station Road. IT will leverage its own resources for hardware. Further details re desks, badges and the commencement date at the new premises will be communicated in due course.",
+   "steps": [
+    {
+     "tool": "lookup_facts",
+     "args": {
+      "topic": ""
+     },
+     "result": "[{\"id\": \"O01\", \"fact\": \"The team moves from the Station Road office to Riverside House, 14 Canal Street. The first working day at Riverside House is Monday 7 December 2026.\"}, {\"id\": \"O02\", \"fact\": \"Wednesday 2 December 2026 is the last working day at Station Road. The office closes at 16:00 that day.\"}, {\"id\": \"O03\", \"fact\": \"On Thursday 3 and Friday 4 December everyone works from home while the movers pack and move the furniture.\"}, {\"id\": \"O04\", \"fact\": \"Each person gets two moving crates. Pack your crates by 16:00 on Wednesday 2 December and label them with your name and your team's zone.\"… (+2848 chars)"
+    }
+   ],
+   "final": {
+    "notice": "Internal memo from the move team. Going forward, in order to facilitate a seamless relocation from Station Road to Riverside House, 14 Canal Street, all stakeholders are kindly requested to utilise the two crates provided (delivered to Station Road on Monday 30 November) and action the packing of personal items prior to the close of business (16:00) on Wednesday 2 December 2026, the last day at Station Road. Please label your crates with your name and your team's zone. IT will leverage its own resources for hardware: IT packs and moves all monitors, docking stations and keyboards, so do not pack them yourself. Desks: Riverside House uses shared desks that you book in the DeskBook app. Booking opens on Monday 30 November. Each team has a home zone on floor 2, marked A to D, so book a desk in your team's zone when you can. Badges: new access badges are handed out at the Riverside House reception from 08:00 on Monday 7 December. Bring photo ID. The commencement date at the new premises is Monday 7 December 2026. Questions about the move go to the move team at move-team@example.com.",
+    "fact_ids": [
+     "O01",
+     "O02",
+     "O04",
+     "O05",
+     "O06",
+     "O08",
+     "O09",
+     "O10",
+     "O18"
+    ]
+   }
+  },
+  {
+   "agent": "Plain-language",
+   "thread": "MainThread",
+   "task": "Internal memo from the move team. Going forward, in order to facilitate a seamless relocation from Station Road to Riverside House, 14 Canal Street, all stakeholders are kindly requested to utilise the two crates provided (delivered to Station Road on Monday 30 November) and action the packing of personal items prior to the close of business (16:00) on Wednesday 2 December 2026, the last day at Station Road. Please label your crates with your name and your team's zone. IT will leverage its own resources for hardware: IT packs and moves all monitors, docking stations and keyboards, so do not pack them yourself. Desks: Riverside House uses shared desks that you book in the DeskBook app. Booking opens on Monday 30 November. Each team has a home zone on floor 2, marked A to D, so book a desk in your team's zone when you can. Badges: new access badges are handed out at the Riverside House reception from 08:00 on Monday 7 December. Bring photo ID. The commencement date at the new premises is Monday 7 December 2026. Questions about the move go to the move team at move-team@example.com.",
+   "steps": [
+    {
+     "tool": "check_jargon",
+     "args": {
+      "text": "Internal memo from the move team. Going forward, in order to facilitate a seamless relocation from Station Road to Riverside House, 14 Canal Street, all stakeholders are kindly requested to utilise the two crates provided (delivered to Station Road on Monday 30 November) and action the packing of personal items prior to the close of business (16:00) on Wednesday 2 December 2026, the last day at Station Road. Please label your crates with your name and your team's zone. IT will leverage its own resources for hardware: IT packs and moves all monitors, docking stations and keyboards, so do not pack them yourself. Desks: Riverside House uses shared desks that you book in the DeskBook app. Booking opens on Monday 30 November. Each team has a home zone on floor 2, marked A to D, so book a desk in your team's zone when you can. Badges: new access badges are handed out at the Riverside House reception from 08:00 on Monday 7 December. Bring photo ID. The commencement date at the new premises is Monday 7 December 2026. Questions about the move go to the move team at move-team@example.com."
+     },
+     "result": "[{\"term\": \"leverage\", \"use_instead\": \"use\"}, {\"term\": \"utilise\", \"use_instead\": \"use\"}, {\"term\": \"going forward\", \"use_instead\": \"from now on\"}, {\"term\": \"facilitate\", \"use_instead\": \"help\"}, {\"term\": \"in order to\", \"use_instead\": \"to\"}, {\"term\": \"prior to\", \"use_instead\": \"before\"}, {\"term\": \"relocation\", \"use_instead\": \"move\"}, {\"term\": \"kindly\", \"use_instead\": \"please\"}, {\"term\": \"seamless\", \"use_instead\": \"smooth\"}, {\"term\": \"stakeholders\", \"use_instead\": \"people involved\"}]"
+    },
+    {
+     "tool": "check_jargon",
+     "args": {
+      "text": "Internal memo from the move team. From now on, we want to help make the move from Station Road to Riverside House, 14 Canal Street, a smooth one. We ask all people involved to please use the two crates we have provided. The crates were delivered to Station Road on Monday 30 November. Pack your personal items in them before the end of the working day (16:00) on Wednesday 2 December 2026. This is the last day at Station Road. Please label your crates with your name and your team's zone. IT will use its own staff and equipment for hardware. IT packs and moves all monitors, docking stations and keyboards, so do not pack them yourself. Desks: Riverside House uses shared desks that you book in the DeskBook app. Booking opens on Monday 30 November. Each team has a home zone on floor 2, marked A to D, so book a desk in your team's zone when you can. Badges: new access badges are handed out at the Riverside House reception from 08:00 on Monday 7 December. Bring photo ID. The first day at the new office is Monday 7 December 2026. Questions about the move go to the move team at move-team@example.com."
+     },
+     "result": "[]"
+    },
+    {
+     "tool": "check_sentences",
+     "args": {
+      "text": "Internal memo from the move team. From now on, we want to help make the move from Station Road to Riverside House, 14 Canal Street, a smooth one. We ask all people involved to please use the two crates we have provided. The crates were delivered to Station Road on Monday 30 November. Pack your personal items in them before the end of the working day (16:00) on Wednesday 2 December 2026. This is the last day at Station Road. Please label your crates with your name and your team's zone. IT will use its own staff and equipment for hardware. IT packs and moves all monitors, docking stations and keyboards, so do not pack them yourself. Desks: Riverside House uses shared desks that you book in the DeskBook app. Booking opens on Monday 30 November. Each team has a home zone on floor 2, marked A to D, so book a desk in your team's zone when you can. Badges: new access badges are handed out at the Riverside House reception from 08:00 on Monday 7 December. Bring photo ID. The first day at the new office is Monday 7 December 2026. Questions about the move go to the move team at move-team@example.com."
+     },
+     "result": "{\"max_words\": 24, \"limit\": 25, \"too_long\": []}"
+    }
+   ],
+   "final": {
+    "notice": "Internal memo from the move team. From now on, we want to help make the move from Station Road to Riverside House, 14 Canal Street, a smooth one. We ask all people involved to please use the two crates we have provided. The crates were delivered to Station Road on Monday 30 November. Pack your personal items in them before the end of the working day (16:00) on Wednesday 2 December 2026. This is the last day at Station Road. Please label your crates with your name and your team's zone. IT will use its own staff and equipment for hardware. IT packs and moves all monitors, docking stations and keyboards, so do not pack them yourself. Desks: Riverside House uses shared desks that you book in the DeskBook app. Booking opens on Monday 30 November. Each team has a home zone on floor 2, marked A to D, so book a desk in your team's zone when you can. Badges: new access badges are handed out at the Riverside House reception from 08:00 on Monday 7 December. Bring photo ID. The first day at the new office is Monday 7 December 2026. Questions about the move go to the move team at move-team@example.com."
+   }
+  },
+  {
+   "agent": "Final editor",
+   "thread": "MainThread",
+   "task": "Internal memo from the move team. From now on, we want to help make the move from Station Road to Riverside House, 14 Canal Street, a smooth one. We ask all people involved to please use the two crates we have provided. The crates were delivered to Station Road on Monday 30 November. Pack your personal items in them before the end of the working day (16:00) on Wednesday 2 December 2026. This is the last day at Station Road. Please label your crates with your name and your team's zone. IT will use its own staff and equipment for hardware. IT packs and moves all monitors, docking stations and keyboards, so do not pack them yourself. Desks: Riverside House uses shared desks that you book in the DeskBook app. Booking opens on Monday 30 November. Each team has a home zone on floor 2, marked A to D, so book a desk in your team's zone when you can. Badges: new access badges are handed out at the Riverside House reception from 08:00 on Monday 7 December. Bring photo ID. The first day at the new office is Monday 7 December 2026. Questions about the move go to the move team at move-team@example.com.",
+   "steps": [
+    {
+     "tool": "lookup_facts",
+     "args": {
+      "topic": ""
+     },
+     "result": "[{\"id\": \"O01\", \"fact\": \"The team moves from the Station Road office to Riverside House, 14 Canal Street. The first working day at Riverside House is Monday 7 December 2026.\"}, {\"id\": \"O02\", \"fact\": \"Wednesday 2 December 2026 is the last working day at Station Road. The office closes at 16:00 that day.\"}, {\"id\": \"O03\", \"fact\": \"On Thursday 3 and Friday 4 December everyone works from home while the movers pack and move the furniture.\"}, {\"id\": \"O04\", \"fact\": \"Each person gets two moving crates. Pack your crates by 16:00 on Wednesday 2 December and label them with your name and your team's zone.\"… (+2848 chars)"
+    },
+    {
+     "tool": "count_words",
+     "args": {
+      "text": "Office move: Station Road to Riverside House\n\nWe are moving to Riverside House, 14 Canal Street. The last working day at Station Road is Wednesday 2 December 2026. The office closes at 16:00 that day. The first working day at Riverside House is Monday 7 December 2026.\n\nWhat you need to do\n- Pack your personal items in your two crates by 16:00 on Wednesday 2 December. The empty crates arrive at Station Road on Monday 30 November.\n- Label your crates with your name and your team's zone.\n- Do not pack monitors, docking stations or keyboards. IT packs and moves them.\n- Take your laptop and charger home with you on Wednesday 2 December.\n- Book a desk in the DeskBook app from Monday 30 November. Choose a desk in your team's zone (A to D, floor 2).\n- Collect your new access badge at Riverside House reception from 08:00 on Monday 7 December. Bring photo ID.\n\nQuestions? Email the move team at move-team@example.com."
+     },
+     "result": "166"
+    },
+    {
+     "tool": "count_words",
+     "args": {
+      "text": "Office move: Station Road to Riverside House\n\nWe are moving to Riverside House, 14 Canal Street. Wednesday 2 December 2026 is the last working day at Station Road. The office closes at 16:00. Monday 7 December 2026 is the first working day at Riverside House.\n\nWhat you need to do\n- Pack your personal items in your two crates by 16:00 on Wednesday 2 December. The crates arrive on Monday 30 November.\n- Label each crate with your name and team zone.\n- Do not pack monitors, docking stations or keyboards. IT moves them.\n- Take your laptop and charger home on 2 December.\n- From Monday 30 November, book a desk in the DeskBook app, in your team's zone (A to D, floor 2).\n- Collect your new badge at Riverside House reception from 08:00 on 7 December. Bring photo ID.\n\nQuestions? Email move-team@example.com."
+     },
+     "result": "145"
+    },
+    {
+     "tool": "check_essentials",
+     "args": {
+      "text": "Office move: Station Road to Riverside House\n\nWe are moving to Riverside House, 14 Canal Street. Wednesday 2 December 2026 is the last working day at Station Road. The office closes at 16:00. Monday 7 December 2026 is the first working day at Riverside House.\n\nWhat you need to do\n- Pack your personal items in your two crates by 16:00 on Wednesday 2 December. The crates arrive on Monday 30 November.\n- Label each crate with your name and team zone.\n- Do not pack monitors, docking stations or keyboards. IT moves them.\n- Take your laptop and charger home on 2 December.\n- From Monday 30 November, book a desk in the DeskBook app, in your team's zone (A to D, floor 2).\n- Collect your new badge at Riverside House reception from 08:00 on 7 December. Bring photo ID.\n\nQuestions? Email move-team@example.com."
+     },
+     "result": "{\"ok\": true, \"missing\": []}"
+    },
+    {
+     "tool": "check_jargon",
+     "args": {
+      "text": "Office move: Station Road to Riverside House\n\nWe are moving to Riverside House, 14 Canal Street. Wednesday 2 December 2026 is the last working day at Station Road. The office closes at 16:00. Monday 7 December 2026 is the first working day at Riverside House.\n\nWhat you need to do\n- Pack your personal items in your two crates by 16:00 on Wednesday 2 December. The crates arrive on Monday 30 November.\n- Label each crate with your name and team zone.\n- Do not pack monitors, docking stations or keyboards. IT moves them.\n- Take your laptop and charger home on 2 December.\n- From Monday 30 November, book a desk in the DeskBook app, in your team's zone (A to D, floor 2).\n- Collect your new badge at Riverside House reception from 08:00 on 7 December. Bring photo ID.\n\nQuestions? Email move-team@example.com."
+     },
+     "result": "[]"
+    },
+    {
+     "tool": "check_sentences",
+     "args": {
+      "text": "Office move: Station Road to Riverside House\n\nWe are moving to Riverside House, 14 Canal Street. Wednesday 2 December 2026 is the last working day at Station Road. The office closes at 16:00. Monday 7 December 2026 is the first working day at Riverside House.\n\nWhat you need to do\n- Pack your personal items in your two crates by 16:00 on Wednesday 2 December. The crates arrive on Monday 30 November.\n- Label each crate with your name and team zone.\n- Do not pack monitors, docking stations or keyboards. IT moves them.\n- Take your laptop and charger home on 2 December.\n- From Monday 30 November, book a desk in the DeskBook app, in your team's zone (A to D, floor 2).\n- Collect your new badge at Riverside House reception from 08:00 on 7 December. Bring photo ID.\n\nQuestions? Email move-team@example.com."
+     },
+     "result": "{\"max_words\": 21, \"limit\": 25, \"too_long\": []}"
+    },
+    {
+     "tool": "get_fact",
+     "args": {
+      "fact_id": "O01"
+     },
+     "result": "{\"id\": \"O01\", \"fact\": \"The team moves from the Station Road office to Riverside House, 14 Canal Street. The first working day at Riverside House is Monday 7 December 2026.\"}"
+    },
+    {
+     "tool": "get_fact",
+     "args": {
+      "fact_id": "O02"
+     },
+     "result": "{\"id\": \"O02\", \"fact\": \"Wednesday 2 December 2026 is the last working day at Station Road. The office closes at 16:00 that day.\"}"
+    },
+    {
+     "tool": "get_fact",
+     "args": {
+      "fact_id": "O04"
+     },
+     "result": "{\"id\": \"O04\", \"fact\": \"Each person gets two moving crates. Pack your crates by 16:00 on Wednesday 2 December and label them with your name and your team's zone.\"}"
+    },
+    {
+     "tool": "get_fact",
+     "args": {
+      "fact_id": "O05"
+     },
+     "result": "{\"id\": \"O05\", \"fact\": \"The empty crates are delivered to Station Road on Monday 30 November.\"}"
+    },
+    {
+     "tool": "get_fact",
+     "args": {
+      "fact_id": "O06"
+     },
+     "result": "{\"id\": \"O06\", \"fact\": \"IT packs and moves all monitors, docking stations and keyboards. Do not pack them yourself.\"}"
+    },
+    {
+     "tool": "get_fact",
+     "args": {
+      "fact_id": "O07"
+     },
+     "result": "{\"id\": \"O07\", \"fact\": \"Take your laptop and charger home with you on Wednesday 2 December.\"}"
+    },
+    {
+     "tool": "get_fact",
+     "args": {
+      "fact_id": "O08"
+     },
+     "result": "{\"id\": \"O08\", \"fact\": \"Riverside House uses shared desks that you book in the DeskBook app. Booking opens on Monday 30 November.\"}"
+    },
+    {
+     "tool": "get_fact",
+     "args": {
+      "fact_id": "O09"
+     },
+     "result": "{\"id\": \"O09\", \"fact\": \"Each team has a home zone on floor 2, marked A to D. Book a desk in your team's zone when you can.\"}"
+    },
+    {
+     "tool": "get_fact",
+     "args": {
+      "fact_id": "O10"
+     },
+     "result": "{\"id\": \"O10\", \"fact\": \"New access badges are handed out at the Riverside House reception from 08:00 on Monday 7 December. Bring photo ID.\"}"
+    },
+    {
+     "tool": "get_fact",
+     "args": {
+      "fact_id": "O18"
+     },
+     "result": "{\"id\": \"O18\", \"fact\": \"Questions about the move go to the move team at move-team@example.com.\"}"
+    }
+   ],
+   "final": {
+    "notice": "Office move: Station Road to Riverside House\n\nWe are moving to Riverside House, 14 Canal Street. Wednesday 2 December 2026 is the last working day at Station Road. The office closes at 16:00. Monday 7 December 2026 is the first working day at Riverside House.\n\nWhat you need to do\n- Pack your personal items in your two crates by 16:00 on Wednesday 2 December. The crates arrive on Monday 30 November.\n- Label each crate with your name and team zone.\n- Do not pack monitors, docking stations or keyboards. IT moves them.\n- Take your laptop and charger home on 2 December.\n- From Monday 30 November, book a desk in the DeskBook app, in your team's zone (A to D, floor 2).\n- Collect your new badge at Riverside House reception from 08:00 on 7 December. Bring photo ID.\n\nQuestions? Email move-team@example.com."
+   }
+  }
+ ],
+ "usage": {
+  "Drafter": {
+   "calls": 2,
+   "in": 2378,
+   "out": 954,
+   "seconds": 9.59285810001893
+  },
+  "Plain-language": {
+   "calls": 4,
+   "in": 5784,
+   "out": 1944,
+   "seconds": 18.26368170004571
+  },
+  "Final editor": {
+   "calls": 17,
+   "in": 67183,
+   "out": 4868,
+   "seconds": 61.017313200223725
+  }
+ }
+}

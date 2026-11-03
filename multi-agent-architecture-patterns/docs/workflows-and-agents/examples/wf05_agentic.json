@@ -1,0 +1,153 @@
+{
+ "lab": "wf05",
+ "mode": "agentic",
+ "provider": "anthropic",
+ "input": "Write the staff notice for the first fire drill at Riverside House",
+ "output": "Subject: First fire drill at Riverside House – Wednesday 9 December, 10:30\n\nThe first fire drill at Riverside House, 14 Canal Street, is on Wednesday 9 December 2026 at 10:30. It takes about 15 minutes.\n\nWhen the alarm sounds:\n- Leave by the nearest stairs, not the lift.\n- Do not stop to collect your belongings.\n- Follow the fire wardens (two per floor, in yellow vests).\n- Go to the assembly point: the car park on the Canal Street side, marked 'Assembly point B'.\n\nNeed help leaving the building? Ask facilities@example.com for a personal evacuation plan before Monday 7 December. Evacuation chairs are at every stairwell, and trained fire wardens help anyone with a personal evacuation plan.",
+ "agents": [
+  {
+   "agent": "Writer",
+   "thread": "MainThread",
+   "task": "Write the staff notice for the first fire drill at Riverside House",
+   "steps": [
+    {
+     "tool": "lookup_facts",
+     "args": {
+      "topic": ""
+     },
+     "result": "[{\"id\": \"O01\", \"fact\": \"The team moves from the Station Road office to Riverside House, 14 Canal Street. The first working day at Riverside House is Monday 7 December 2026.\"}, {\"id\": \"O02\", \"fact\": \"Wednesday 2 December 2026 is the last working day at Station Road. The office closes at 16:00 that day.\"}, {\"id\": \"O03\", \"fact\": \"On Thursday 3 and Friday 4 December everyone works from home while the movers pack and move the furniture.\"}, {\"id\": \"O04\", \"fact\": \"Each person gets two moving crates. Pack your crates by 16:00 on Wednesday 2 December and label them with your name and your team's zone.\"… (+2848 chars)"
+    },
+    {
+     "tool": "review_notice",
+     "args": {
+      "notice": "Subject: First fire drill at Riverside House – Wednesday 9 December, 10:30\n\nDear all,\n\nThe first fire drill at Riverside House, 14 Canal Street, takes place on Wednesday 9 December 2026 at 10:30. It takes about 15 minutes.\n\nWhat to do when the alarm sounds:\n- Leave by the nearest stairs. Do not use the lift.\n- Do not stop to collect your belongings.\n- Follow the instructions of the fire wardens. Each floor has two fire wardens in yellow vests.\n- Go to the assembly point: the car park on the Canal Street side, marked 'Assembly point B'.\n\nIf you may need help to leave the building:\nEvacuation chairs are kept at every stairwell, and trained fire wardens help anyone with a personal evacuation plan. If you may need help to leave the building in an emergency, please ask facilities for a personal evacuation plan before Monday 7 December. Contact facilities@example.com.\n\nBuilding questions go to facilities@example.com. Other questions about the move go to the move team at move-team@example.com.\n\nThank you."
+     },
+     "result": "{\"grade\": \"needs changes\", \"feedback\": \"Rule 5 (Short) failed. The notice is 171 words, and the limit is 120, so about 51 words need to go. All other rules pass. (1) Correct: the date, time, length, address, assembly point, wardens, stairs/lift rule, evacuation chairs and the 7 December deadline all match facts O01 and O21\\u2013O26. The email addresses match O18 and O19. (2) Complete: it says what, when, where to go and what to do. (3) Inclusive: it covers people who may need help leaving the building. (4) Plain: no jargon, and the longest sentence is 24 words. How to cut it: (a) Remove the re… (+673 chars)"
+    },
+    {
+     "tool": "review_notice",
+     "args": {
+      "notice": "Subject: First fire drill at Riverside House – Wednesday 9 December, 10:30\n\nThe first fire drill at Riverside House, 14 Canal Street, is on Wednesday 9 December 2026 at 10:30. It takes about 15 minutes.\n\nWhen the alarm sounds:\n- Leave by the nearest stairs, not the lift.\n- Do not stop to collect your belongings.\n- Follow the fire wardens (two per floor, in yellow vests).\n- Go to the assembly point: the car park on the Canal Street side, marked 'Assembly point B'.\n\nNeed help leaving the building? Ask facilities@example.com for a personal evacuation plan before Monday 7 December. Evacuation chairs are at every stairwell, and trained fire wardens help anyone with a personal evacuation plan."
+     },
+     "result": "{\"grade\": \"approved\", \"feedback\": \"All five rules pass. 1. Correct: the date, time and length (Wednesday 9 December 2026, 10:30, about 15 minutes) match O22. The address (14 Canal Street) matches O01. The assembly point matches O23, the wardens O24, the exit rules O25, the evacuation plan deadline (before Monday 7 December) O21, and the evacuation chairs O26. 2. Complete: it says what is happening (the first fire drill), when, where to go (Assembly point B) and what to do (nearest stairs, no lift, leave belongings, follow the wardens). 3. Inclusive: it tells people who need help leaving to ask… (+402 chars)"
+    }
+   ],
+   "final": {
+    "notice": "Subject: First fire drill at Riverside House – Wednesday 9 December, 10:30\n\nThe first fire drill at Riverside House, 14 Canal Street, is on Wednesday 9 December 2026 at 10:30. It takes about 15 minutes.\n\nWhen the alarm sounds:\n- Leave by the nearest stairs, not the lift.\n- Do not stop to collect your belongings.\n- Follow the fire wardens (two per floor, in yellow vests).\n- Go to the assembly point: the car park on the Canal Street side, marked 'Assembly point B'.\n\nNeed help leaving the building? Ask facilities@example.com for a personal evacuation plan before Monday 7 December. Evacuation chairs are at every stairwell, and trained fire wardens help anyone with a personal evacuation plan."
+   }
+  },
+  {
+   "agent": "Reviewer",
+   "thread": "MainThread",
+   "task": "Review the notice:\nSubject: First fire drill at Riverside House – Wednesday 9 December, 10:30\n\nDear all,\n\nThe first fire drill at Riverside House, 14 Canal Street, takes place on Wednesday 9 December 2026 at 10:30. It takes about 15 minutes.\n\nWhat to do when the alarm sounds:\n- Leave by the nearest stairs. Do not use the lift.\n- Do not stop to collect your belongings.\n- Follow the instructions of the fire wardens. Each floor has two fire wardens in yellow vests.\n- Go to the assembly point: the car park on the Canal Street side, marked 'Assembly point B'.\n\nIf you may need help to leave the building:\nEvacuation chairs are kept at every stairwell, and trained fire wardens help anyone with a personal evacuation plan. If you may need help to leave the building in an emergency, please ask facilities for a personal evacuation plan before Monday 7 December. Contact facilities@example.com.\n\nBuilding questions go to facilities@example.com. Other questions about the move go to the move team at move-team@example.com.\n\nThank you.",
+   "steps": [
+    {
+     "tool": "lookup_facts",
+     "args": {
+      "topic": "fire"
+     },
+     "result": "[{\"id\": \"O21\", \"fact\": \"Anyone who may need help to leave the building in an emergency should ask facilities for a personal evacuation plan before Monday 7 December.\"}, {\"id\": \"O22\", \"fact\": \"The first fire drill at Riverside House is on Wednesday 9 December 2026 at 10:30. It takes about 15 minutes.\"}, {\"id\": \"O23\", \"fact\": \"The assembly point is the car park on the Canal Street side, marked 'Assembly point B'.\"}, {\"id\": \"O24\", \"fact\": \"Each floor has two fire wardens in yellow vests. Follow their instructions during the drill.\"}, {\"id\": \"O25\", \"fact\": \"During a fire drill, leave by the neares… (+209 chars)"
+    },
+    {
+     "tool": "lookup_facts",
+     "args": {
+      "topic": "Riverside"
+     },
+     "result": "[{\"id\": \"O01\", \"fact\": \"The team moves from the Station Road office to Riverside House, 14 Canal Street. The first working day at Riverside House is Monday 7 December 2026.\"}, {\"id\": \"O08\", \"fact\": \"Riverside House uses shared desks that you book in the DeskBook app. Booking opens on Monday 30 November.\"}, {\"id\": \"O10\", \"fact\": \"New access badges are handed out at the Riverside House reception from 08:00 on Monday 7 December. Bring photo ID.\"}, {\"id\": \"O11\", \"fact\": \"Riverside House has 20 parking spaces, booked in the DeskBook app. 4 accessible spaces next to the entrance are kept for people … (+545 chars)"
+    },
+    {
+     "tool": "lookup_facts",
+     "args": {
+      "topic": "contact"
+     },
+     "result": "[{\"id\": \"O18\", \"fact\": \"Questions about the move go to the move team at move-team@example.com.\"}, {\"id\": \"O19\", \"fact\": \"IT questions go to it-help@example.com. Building questions go to facilities@example.com.\"}]"
+    },
+    {
+     "tool": "check_jargon",
+     "args": {
+      "text": "Subject: First fire drill at Riverside House – Wednesday 9 December, 10:30\n\nDear all,\n\nThe first fire drill at Riverside House, 14 Canal Street, takes place on Wednesday 9 December 2026 at 10:30. It takes about 15 minutes.\n\nWhat to do when the alarm sounds:\n- Leave by the nearest stairs. Do not use the lift.\n- Do not stop to collect your belongings.\n- Follow the instructions of the fire wardens. Each floor has two fire wardens in yellow vests.\n- Go to the assembly point: the car park on the Canal Street side, marked 'Assembly point B'.\n\nIf you may need help to leave the building:\nEvacuation chairs are kept at every stairwell, and trained fire wardens help anyone with a personal evacuation plan. If you may need help to leave the building in an emergency, please ask facilities for a personal evacuation plan before Monday 7 December. Contact facilities@example.com.\n\nBuilding questions go to facilities@example.com. Other questions about the move go to the move team at move-team@example.com.\n\nThank you."
+     },
+     "result": "[]"
+    },
+    {
+     "tool": "check_sentences",
+     "args": {
+      "text": "Subject: First fire drill at Riverside House – Wednesday 9 December, 10:30\n\nDear all,\n\nThe first fire drill at Riverside House, 14 Canal Street, takes place on Wednesday 9 December 2026 at 10:30. It takes about 15 minutes.\n\nWhat to do when the alarm sounds:\n- Leave by the nearest stairs. Do not use the lift.\n- Do not stop to collect your belongings.\n- Follow the instructions of the fire wardens. Each floor has two fire wardens in yellow vests.\n- Go to the assembly point: the car park on the Canal Street side, marked 'Assembly point B'.\n\nIf you may need help to leave the building:\nEvacuation chairs are kept at every stairwell, and trained fire wardens help anyone with a personal evacuation plan. If you may need help to leave the building in an emergency, please ask facilities for a personal evacuation plan before Monday 7 December. Contact facilities@example.com.\n\nBuilding questions go to facilities@example.com. Other questions about the move go to the move team at move-team@example.com.\n\nThank you."
+     },
+     "result": "{\"max_words\": 24, \"limit\": 25, \"too_long\": []}"
+    },
+    {
+     "tool": "count_words",
+     "args": {
+      "text": "Subject: First fire drill at Riverside House – Wednesday 9 December, 10:30\n\nDear all,\n\nThe first fire drill at Riverside House, 14 Canal Street, takes place on Wednesday 9 December 2026 at 10:30. It takes about 15 minutes.\n\nWhat to do when the alarm sounds:\n- Leave by the nearest stairs. Do not use the lift.\n- Do not stop to collect your belongings.\n- Follow the instructions of the fire wardens. Each floor has two fire wardens in yellow vests.\n- Go to the assembly point: the car park on the Canal Street side, marked 'Assembly point B'.\n\nIf you may need help to leave the building:\nEvacuation chairs are kept at every stairwell, and trained fire wardens help anyone with a personal evacuation plan. If you may need help to leave the building in an emergency, please ask facilities for a personal evacuation plan before Monday 7 December. Contact facilities@example.com.\n\nBuilding questions go to facilities@example.com. Other questions about the move go to the move team at move-team@example.com.\n\nThank you."
+     },
+     "result": "171"
+    }
+   ],
+   "final": {
+    "grade": "needs changes",
+    "feedback": "Rule 5 (Short) failed. The notice is 171 words, and the limit is 120, so about 51 words need to go. All other rules pass. (1) Correct: the date, time, length, address, assembly point, wardens, stairs/lift rule, evacuation chairs and the 7 December deadline all match facts O01 and O21–O26. The email addresses match O18 and O19. (2) Complete: it says what, when, where to go and what to do. (3) Inclusive: it covers people who may need help leaving the building. (4) Plain: no jargon, and the longest sentence is 24 words. How to cut it: (a) Remove the repeats. 'If you may need help to leave the building' appears as a heading and again in the next sentence, and facilities@example.com appears twice. (b) Merge the help section into one or two sentences, for example: 'Need help leaving the building? Ask facilities@example.com for a personal evacuation plan before Monday 7 December. Evacuation chairs are at every stairwell, and trained wardens will help you.' (c) Shorten the closing contacts to one line, or drop the move-team line, since it is not about the drill. (d) Drop 'Dear all' and 'Thank you', and tighten bullets, for example 'Follow the fire wardens (two per floor, in yellow vests).' Keep every fact the same."
+   }
+  },
+  {
+   "agent": "Reviewer",
+   "thread": "MainThread",
+   "task": "Review the notice:\nSubject: First fire drill at Riverside House – Wednesday 9 December, 10:30\n\nThe first fire drill at Riverside House, 14 Canal Street, is on Wednesday 9 December 2026 at 10:30. It takes about 15 minutes.\n\nWhen the alarm sounds:\n- Leave by the nearest stairs, not the lift.\n- Do not stop to collect your belongings.\n- Follow the fire wardens (two per floor, in yellow vests).\n- Go to the assembly point: the car park on the Canal Street side, marked 'Assembly point B'.\n\nNeed help leaving the building? Ask facilities@example.com for a personal evacuation plan before Monday 7 December. Evacuation chairs are at every stairwell, and trained fire wardens help anyone with a personal evacuation plan.",
+   "steps": [
+    {
+     "tool": "lookup_facts",
+     "args": {
+      "topic": "fire"
+     },
+     "result": "[{\"id\": \"O21\", \"fact\": \"Anyone who may need help to leave the building in an emergency should ask facilities for a personal evacuation plan before Monday 7 December.\"}, {\"id\": \"O22\", \"fact\": \"The first fire drill at Riverside House is on Wednesday 9 December 2026 at 10:30. It takes about 15 minutes.\"}, {\"id\": \"O23\", \"fact\": \"The assembly point is the car park on the Canal Street side, marked 'Assembly point B'.\"}, {\"id\": \"O24\", \"fact\": \"Each floor has two fire wardens in yellow vests. Follow their instructions during the drill.\"}, {\"id\": \"O25\", \"fact\": \"During a fire drill, leave by the neares… (+209 chars)"
+    },
+    {
+     "tool": "lookup_facts",
+     "args": {
+      "topic": "Riverside"
+     },
+     "result": "[{\"id\": \"O01\", \"fact\": \"The team moves from the Station Road office to Riverside House, 14 Canal Street. The first working day at Riverside House is Monday 7 December 2026.\"}, {\"id\": \"O08\", \"fact\": \"Riverside House uses shared desks that you book in the DeskBook app. Booking opens on Monday 30 November.\"}, {\"id\": \"O10\", \"fact\": \"New access badges are handed out at the Riverside House reception from 08:00 on Monday 7 December. Bring photo ID.\"}, {\"id\": \"O11\", \"fact\": \"Riverside House has 20 parking spaces, booked in the DeskBook app. 4 accessible spaces next to the entrance are kept for people … (+545 chars)"
+    },
+    {
+     "tool": "check_jargon",
+     "args": {
+      "text": "Subject: First fire drill at Riverside House – Wednesday 9 December, 10:30\n\nThe first fire drill at Riverside House, 14 Canal Street, is on Wednesday 9 December 2026 at 10:30. It takes about 15 minutes.\n\nWhen the alarm sounds:\n- Leave by the nearest stairs, not the lift.\n- Do not stop to collect your belongings.\n- Follow the fire wardens (two per floor, in yellow vests).\n- Go to the assembly point: the car park on the Canal Street side, marked 'Assembly point B'.\n\nNeed help leaving the building? Ask facilities@example.com for a personal evacuation plan before Monday 7 December. Evacuation chairs are at every stairwell, and trained fire wardens help anyone with a personal evacuation plan."
+     },
+     "result": "[]"
+    },
+    {
+     "tool": "check_sentences",
+     "args": {
+      "text": "Subject: First fire drill at Riverside House – Wednesday 9 December, 10:30\n\nThe first fire drill at Riverside House, 14 Canal Street, is on Wednesday 9 December 2026 at 10:30. It takes about 15 minutes.\n\nWhen the alarm sounds:\n- Leave by the nearest stairs, not the lift.\n- Do not stop to collect your belongings.\n- Follow the fire wardens (two per floor, in yellow vests).\n- Go to the assembly point: the car park on the Canal Street side, marked 'Assembly point B'.\n\nNeed help leaving the building? Ask facilities@example.com for a personal evacuation plan before Monday 7 December. Evacuation chairs are at every stairwell, and trained fire wardens help anyone with a personal evacuation plan."
+     },
+     "result": "{\"max_words\": 18, \"limit\": 25, \"too_long\": []}"
+    },
+    {
+     "tool": "count_words",
+     "args": {
+      "text": "Subject: First fire drill at Riverside House – Wednesday 9 December, 10:30\n\nThe first fire drill at Riverside House, 14 Canal Street, is on Wednesday 9 December 2026 at 10:30. It takes about 15 minutes.\n\nWhen the alarm sounds:\n- Leave by the nearest stairs, not the lift.\n- Do not stop to collect your belongings.\n- Follow the fire wardens (two per floor, in yellow vests).\n- Go to the assembly point: the car park on the Canal Street side, marked 'Assembly point B'.\n\nNeed help leaving the building? Ask facilities@example.com for a personal evacuation plan before Monday 7 December. Evacuation chairs are at every stairwell, and trained fire wardens help anyone with a personal evacuation plan."
+     },
+     "result": "118"
+    }
+   ],
+   "final": {
+    "grade": "approved",
+    "feedback": "All five rules pass. 1. Correct: the date, time and length (Wednesday 9 December 2026, 10:30, about 15 minutes) match O22. The address (14 Canal Street) matches O01. The assembly point matches O23, the wardens O24, the exit rules O25, the evacuation plan deadline (before Monday 7 December) O21, and the evacuation chairs O26. 2. Complete: it says what is happening (the first fire drill), when, where to go (Assembly point B) and what to do (nearest stairs, no lift, leave belongings, follow the wardens). 3. Inclusive: it tells people who need help leaving to ask for a personal evacuation plan by 7 December, and mentions the evacuation chairs and trained wardens. 4. Plain: check_jargon found nothing, and the longest sentence is 18 words (limit 25). 5. Short: 118 words including the subject line (limit 120). One small point: the facts say 'ask facilities' but give no email address, so confirm that facilities@example.com is the right contact before sending."
+   }
+  }
+ ],
+ "usage": {
+  "Writer": {
+   "calls": 4,
+   "in": 8268,
+   "out": 1999,
+   "seconds": 24.155395399953704
+  },
+  "Reviewer": {
+   "calls": 13,
+   "in": 27067,
+   "out": 3759,
+   "seconds": 46.25905490008881
+  }
+ }
+}

@@ -1,0 +1,404 @@
+{
+ "lab": "wf03",
+ "mode": "workflow",
+ "provider": "anthropic",
+ "input": [
+  [
+   "e1",
+   "My second monitor is still at Station Road. Do I need to bring it over myself?"
+  ],
+  [
+   "e3",
+   "Where can I park on my first day, and how do I get out of the building if there's a fire?"
+  ],
+  [
+   "e5",
+   "I only work Monday to Wednesday. Can I still work from home two days a week?"
+  ],
+  [
+   "e2",
+   "I start on 7 December. What do I need to bring and where do I go?"
+  ],
+  [
+   "e6",
+   "Is there somewhere safe to leave my bike?"
+  ]
+ ],
+ "output": [
+  {
+   "dept": "it",
+   "reply": "Hi Ana, you don't need to carry your monitor. IT packs and moves every monitor, docking station and keyboard from Station Road to Riverside House [IT-01]. Because IT handles the move, there's nothing for Facilities to do here, and you don't need to tag, log or transport anything yourself.\n\nThe equipment is set up on the shared desks at Riverside House before Monday 7 December [IT-01]. The desks are shared, so your old monitor won't necessarily be at your zone B desk. That's fine: every desk has two monitors, and you don't need to track down the one you used before [IT-01].\n\nIf the desk you sit at is missing a monitor or something is broken, report it to it-help@example.com [IT-01]."
+  },
+  {
+   "dept": "facilities",
+   "reply": "Hi Chloe, here's what our help articles cover.\n\nParking: Riverside House has 4 accessible spaces next to the entrance for staff with a blue badge or a medical need. Email facilities@example.com to reserve one permanently. Other spaces are booked in the DeskBook app from Monday 30 November [FAC-01].\n\nFire evacuation: Facilities will make a personal evacuation plan with you. Ask before Monday 7 December at facilities@example.com. Evacuation chairs are kept at every stairwell, and trained fire wardens help people who have a plan [FAC-04].\n\nOur articles don't cover the step-free route to Zone A, refuge points, or the named Zone A wardens. They also don't cover the assembly point, how lifts work during an alarm, or your team's general evacuation procedure. Please ask about these in the same email.\n\nI can't contact you myself, so please email facilities@example.com to arrange both parking and your plan."
+  },
+  {
+   "dept": "hr",
+   "reply": "Hi Elif, the two-day allowance doesn't apply in full to you. Full-time staff can work from home up to 2 days a week, agreed with their manager [HR-01]. That rule hasn't changed with the move [HR-01]. Part-time staff can work from home for up to 40% of their working days each week, rounded down. For a three-day week (Monday to Wednesday), that means 1 day at home and 2 in the office [HR-03]. You also asked about required office days, such as team or anchor days. Our HR articles don't say whether any are set. They also don't say how such days apply to someone who doesn't work Thursday or Friday, so I can't confirm that part. Please check with your manager, who agrees home-working days [HR-01]. They should know whether any Marketing team or anchor days apply to you."
+  },
+  {
+   "dept": "hr",
+   "reply": "Hi Ben, here's what I can confirm for Monday 7 December. Arrive at reception at 09:00 and bring photo ID, which you'll use to collect your badge there. Your manager will meet you, and your laptop will be ready at your team's zone (zone C) [HR-02]. HR also sends a welcome email the week before [HR-02].\n\nMy articles don't say which building to go to that day. Both Station Road and Riverside House are mentioned in the move guidance [HR-04], but not which one applies on 7 December. Please check your welcome email or ask your manager. They also don't cover right-to-work documents, bank details or signed forms, so please confirm those directly with HR.\n\nI can't contact other desks from here. For badge setup, ask Facilities, and for laptop setup, ask IT."
+  },
+  {
+   "dept": "facilities",
+   "reply": "Hi Femi, yes, there's secure bike storage at the new office. It's covered, has room for 40 bikes, and sits behind the building, reached from Canal Street [FAC-02]. You open it with your access badge [FAC-02]. New badges are handed out at reception from 08:00 on Monday 7 December, and you'll need to bring photo ID [FAC-03]. The same badge also opens the doors, lockers and printers [FAC-03].\n\nMy articles don't say whether bike spaces need booking. Car parking is booked in DeskBook [FAC-01], but nothing says that applies to bikes, so please check with Facilities before relying on it.\n\nShowers and changing rooms are on the ground floor [FAC-02]. Lockers are on floor 2 and open with your badge, but you need to empty yours on Fridays [FAC-05]. Because you're hybrid, don't leave kit in a locker over the weekend."
+  }
+ ],
+ "agents": [
+  {
+   "agent": "Router",
+   "thread": "MainThread",
+   "task": "Employee id: e1\nQuestion: My second monitor is still at Station Road. Do I need to bring it over myself?",
+   "steps": [
+    {
+     "tool": "get_employee",
+     "args": {
+      "employee_id": "e1"
+     },
+     "result": "{\"id\": \"e1\", \"name\": \"Ana Silva\", \"role\": \"Finance analyst\", \"team\": \"Finance\", \"zone\": \"B\", \"works\": \"full time, hybrid\", \"notes\": []}"
+    }
+   ],
+   "final": {
+    "dept": "it",
+    "brief": "Question: Ana's second monitor is still at the old Station Road office. She wants to know whether she has to carry it to the new office herself, or whether it will be moved and set up for her. Who is asking: Ana Silva (e1), Finance analyst on the Finance team. She works full time on a hybrid pattern and sits in zone B at the new office. Her profile has no notes and no accessibility or equipment needs on record. What the answer should cover: (1) whether staff move monitors and other IT peripherals themselves or IT collects them; (2) if IT moves them, when hers will arrive and whether it will be set up at her zone B desk; (3) if she has to bring it herself, how to transport it safely and whether to tag it or log it with IT first. If the office movers handle equipment transport rather than IT, please pass the collection part to Facilities and keep the setup part with IT."
+   }
+  },
+  {
+   "agent": "IT Desk",
+   "thread": "MainThread",
+   "task": "Question: Ana's second monitor is still at the old Station Road office. She wants to know whether she has to carry it to the new office herself, or whether it will be moved and set up for her. Who is asking: Ana Silva (e1), Finance analyst on the Finance team. She works full time on a hybrid pattern and sits in zone B at the new office. Her profile has no notes and no accessibility or equipment needs on record. What the answer should cover: (1) whether staff move monitors and other IT peripherals themselves or IT collects them; (2) if IT moves them, when hers will arrive and whether it will be set up at her zone B desk; (3) if she has to bring it herself, how to transport it safely and whether to tag it or log it with IT first. If the office movers handle equipment transport rather than IT, please pass the collection part to Facilities and keep the setup part with IT.",
+   "steps": [
+    {
+     "tool": "search_kb",
+     "args": {
+      "query": "office move monitor peripherals collection"
+     },
+     "result": "[{\"id\": \"IT-01\", \"title\": \"Monitors and docking stations during the move\"}]"
+    },
+    {
+     "tool": "read_article",
+     "args": {
+      "article_id": "IT-01"
+     },
+     "result": "{\"id\": \"IT-01\", \"dept\": \"it\", \"title\": \"Monitors and docking stations during the move\", \"text\": \"IT packs and moves every monitor, docking station and keyboard from Station Road. They are set up on the shared desks at Riverside House before Monday 7 December. If a monitor you used is not there, you do not need to find it: every desk has two monitors. Report a missing or broken device to it-help@example.com.\"}"
+    }
+   ],
+   "final": {
+    "reply": "Hi Ana, you don't need to carry your monitor. IT packs and moves every monitor, docking station and keyboard from Station Road to Riverside House [IT-01]. Because IT handles the move, there's nothing for Facilities to do here, and you don't need to tag, log or transport anything yourself.\n\nThe equipment is set up on the shared desks at Riverside House before Monday 7 December [IT-01]. The desks are shared, so your old monitor won't necessarily be at your zone B desk. That's fine: every desk has two monitors, and you don't need to track down the one you used before [IT-01].\n\nIf the desk you sit at is missing a monitor or something is broken, report it to it-help@example.com [IT-01]."
+   }
+  },
+  {
+   "agent": "Router",
+   "thread": "MainThread",
+   "task": "Employee id: e3\nQuestion: Where can I park on my first day, and how do I get out of the building if there's a fire?",
+   "steps": [
+    {
+     "tool": "get_employee",
+     "args": {
+      "employee_id": "e3"
+     },
+     "result": "{\"id\": \"e3\", \"name\": \"Chloe Martin\", \"role\": \"Team manager\", \"team\": \"Customer Service\", \"zone\": \"A\", \"works\": \"full time, hybrid\", \"notes\": [\"uses a wheelchair\", \"drives to work\"]}"
+    }
+   ],
+   "final": {
+    "dept": "facilities",
+    "brief": "Question from Chloe Martin (e3), Team manager, Customer Service, Zone A, full time and hybrid: where can she park on her first day at the new office, and how does she get out of the building if there's a fire? She uses a wheelchair and drives to work. The answer needs to cover: (1) accessible/blue-badge parking at the new site, including how to reserve or register for a space before day one, its location, and the step-free route from the car park to her desk in Zone A (entrances, lifts, doors); (2) wheelchair-accessible fire evacuation, meaning a Personal Emergency Evacuation Plan (PEEP) set up before or on her first day, the locations of refuge points and evacuation chairs, who the trained evacuation assistants/fire wardens are for Zone A, the step-free route to the assembly point, and how lifts work during an alarm. As a team manager she may also want the general evacuation procedure for her Customer Service team in Zone A. Please contact her ahead of her first day to set up the PEEP and parking."
+   }
+  },
+  {
+   "agent": "Facilities Desk",
+   "thread": "MainThread",
+   "task": "Question from Chloe Martin (e3), Team manager, Customer Service, Zone A, full time and hybrid: where can she park on her first day at the new office, and how does she get out of the building if there's a fire? She uses a wheelchair and drives to work. The answer needs to cover: (1) accessible/blue-badge parking at the new site, including how to reserve or register for a space before day one, its location, and the step-free route from the car park to her desk in Zone A (entrances, lifts, doors); (2) wheelchair-accessible fire evacuation, meaning a Personal Emergency Evacuation Plan (PEEP) set up before or on her first day, the locations of refuge points and evacuation chairs, who the trained evacuation assistants/fire wardens are for Zone A, the step-free route to the assembly point, and how lifts work during an alarm. As a team manager she may also want the general evacuation procedure for her Customer Service team in Zone A. Please contact her ahead of her first day to set up the PEEP and parking.",
+   "steps": [
+    {
+     "tool": "search_kb",
+     "args": {
+      "query": "accessible blue badge parking reserve space"
+     },
+     "result": "[{\"id\": \"FAC-01\", \"title\": \"Parking at Riverside House\"}, {\"id\": \"FAC-02\", \"title\": \"Bikes and showers\"}, {\"id\": \"FAC-03\", \"title\": \"Access badges\"}]"
+    },
+    {
+     "tool": "read_article",
+     "args": {
+      "article_id": "FAC-01"
+     },
+     "result": "{\"id\": \"FAC-01\", \"dept\": \"facilities\", \"title\": \"Parking at Riverside House\", \"text\": \"There are 20 parking spaces, booked in the DeskBook app from Monday 30 November. 4 accessible spaces next to the entrance are kept for staff with a blue badge or a medical need; ask facilities@example.com to reserve one permanently.\"}"
+    },
+    {
+     "tool": "search_kb",
+     "args": {
+      "query": "fire evacuation PEEP wheelchair refuge"
+     },
+     "result": "[{\"id\": \"FAC-04\", \"title\": \"Personal evacuation plans\"}]"
+    },
+    {
+     "tool": "read_article",
+     "args": {
+      "article_id": "FAC-04"
+     },
+     "result": "{\"id\": \"FAC-04\", \"dept\": \"facilities\", \"title\": \"Personal evacuation plans\", \"text\": \"If you may need help to leave the building in an emergency, facilities makes a personal evacuation plan with you. Ask before Monday 7 December at facilities@example.com. Evacuation chairs are kept at every stairwell, and trained fire wardens help people with a plan.\"}"
+    },
+    {
+     "tool": "search_kb",
+     "args": {
+      "query": "step-free route lifts assembly point fire alarm procedure"
+     },
+     "result": "[{\"id\": \"FAC-04\", \"title\": \"Personal evacuation plans\"}]"
+    },
+    {
+     "tool": "search_kb",
+     "args": {
+      "query": "Zone A floor plan entrance lift"
+     },
+     "result": "[{\"id\": \"FAC-04\", \"title\": \"Personal evacuation plans\"}, {\"id\": \"FAC-01\", \"title\": \"Parking at Riverside House\"}, {\"id\": \"FAC-02\", \"title\": \"Bikes and showers\"}]"
+    },
+    {
+     "rejected": "sentence over 25 words: \"Our articles don't cover the step-free route to Zone A, refu…\"",
+     "answer": {
+      "reply": "Hi Chloe, here's what our help articles cover.\n\nParking: Riverside House has 4 accessible spaces next to the entrance for staff with a blue badge or a medical need. Email facilities@example.com to reserve one permanently. Other spaces are booked in the DeskBook app from Monday 30 November [FAC-01].\n\nFire evacuation: Facilities will make a personal evacuation plan with you. Ask before Monday 7 December at facilities@example.com. Evacuation chairs are kept at every stairwell, and trained fire wardens help people who have a plan [FAC-04].\n\nOur articles don't cover the step-free route to Zone A, refuge points, the named Zone A wardens, the assembly point, how lifts work during an alarm, or the general evacuation procedure for your team. Please ask about these in the same email.\n\nI can't contact you myself, so please email facilities@example.com to arrange both parking and your plan."
+     }
+    }
+   ],
+   "final": {
+    "reply": "Hi Chloe, here's what our help articles cover.\n\nParking: Riverside House has 4 accessible spaces next to the entrance for staff with a blue badge or a medical need. Email facilities@example.com to reserve one permanently. Other spaces are booked in the DeskBook app from Monday 30 November [FAC-01].\n\nFire evacuation: Facilities will make a personal evacuation plan with you. Ask before Monday 7 December at facilities@example.com. Evacuation chairs are kept at every stairwell, and trained fire wardens help people who have a plan [FAC-04].\n\nOur articles don't cover the step-free route to Zone A, refuge points, or the named Zone A wardens. They also don't cover the assembly point, how lifts work during an alarm, or your team's general evacuation procedure. Please ask about these in the same email.\n\nI can't contact you myself, so please email facilities@example.com to arrange both parking and your plan."
+   }
+  },
+  {
+   "agent": "Router",
+   "thread": "MainThread",
+   "task": "Employee id: e5\nQuestion: I only work Monday to Wednesday. Can I still work from home two days a week?",
+   "steps": [
+    {
+     "tool": "get_employee",
+     "args": {
+      "employee_id": "e5"
+     },
+     "result": "{\"id\": \"e5\", \"name\": \"Elif Yilmaz\", \"role\": \"Marketing specialist\", \"team\": \"Marketing\", \"zone\": \"C\", \"works\": \"part time, Monday to Wednesday\", \"notes\": []}"
+    }
+   ],
+   "final": {
+    "dept": "hr",
+    "brief": "Question: Elif Yilmaz asks whether, working only Monday to Wednesday, she can still work from home two days a week under the post-move arrangements. Who is asking: Elif Yilmaz (e5), Marketing specialist, Marketing team, assigned to zone C. How she works: part time, three days a week (Monday to Wednesday). No notes on file. What matters: this is a remote-work policy question, so HR should answer. The reply should say whether the two-day home-working allowance applies in full to part-time staff or is reduced pro rata for a three-day week (e.g. one home day and two office days). It should also cover any required office days that fall outside Monday to Wednesday, such as team or anchor days, and how those apply to her."
+   }
+  },
+  {
+   "agent": "HR Desk",
+   "thread": "MainThread",
+   "task": "Question: Elif Yilmaz asks whether, working only Monday to Wednesday, she can still work from home two days a week under the post-move arrangements. Who is asking: Elif Yilmaz (e5), Marketing specialist, Marketing team, assigned to zone C. How she works: part time, three days a week (Monday to Wednesday). No notes on file. What matters: this is a remote-work policy question, so HR should answer. The reply should say whether the two-day home-working allowance applies in full to part-time staff or is reduced pro rata for a three-day week (e.g. one home day and two office days). It should also cover any required office days that fall outside Monday to Wednesday, such as team or anchor days, and how those apply to her.",
+   "steps": [
+    {
+     "tool": "search_kb",
+     "args": {
+      "query": "remote work part-time home working days"
+     },
+     "result": "[{\"id\": \"HR-03\", \"title\": \"Part-time staff and home working\"}, {\"id\": \"HR-01\", \"title\": \"Hybrid working after the move\"}, {\"id\": \"HR-02\", \"title\": \"First day for new starters in December\"}]"
+    },
+    {
+     "tool": "read_article",
+     "args": {
+      "article_id": "HR-03"
+     },
+     "result": "{\"id\": \"HR-03\", \"dept\": \"hr\", \"title\": \"Part-time staff and home working\", \"text\": \"Part-time staff can work from home for up to 40% of their working days each week, rounded down. Someone working 3 days a week can work 1 of those days from home.\"}"
+    },
+    {
+     "tool": "read_article",
+     "args": {
+      "article_id": "HR-01"
+     },
+     "result": "{\"id\": \"HR-01\", \"dept\": \"hr\", \"title\": \"Hybrid working after the move\", \"text\": \"The hybrid-work rule does not change with the move. Full-time staff can work from home up to 2 days a week, agreed with their manager.\"}"
+    },
+    {
+     "tool": "search_kb",
+     "args": {
+      "query": "team anchor days required office days"
+     },
+     "result": "[{\"id\": \"HR-02\", \"title\": \"First day for new starters in December\"}, {\"id\": \"HR-01\", \"title\": \"Hybrid working after the move\"}, {\"id\": \"HR-03\", \"title\": \"Part-time staff and home working\"}]"
+    },
+    {
+     "rejected": "sentence over 25 words: 'On required office days, such as team or anchor days, our HR…'",
+     "answer": {
+      "reply": "Hi Elif, the two-day allowance doesn't apply in full to you. Full-time staff can work from home up to 2 days a week, agreed with their manager, and that rule hasn't changed with the move [HR-01]. Part-time staff can work from home for up to 40% of their working days each week, rounded down. For a three-day week (Monday to Wednesday), that means 1 day at home and 2 in the office [HR-03]. On required office days, such as team or anchor days, our HR articles don't say whether any are set or how they apply to someone who doesn't work Thursday or Friday. I can't confirm that part. Please check with your manager, who agrees home-working days [HR-01]. They should know whether any Marketing team or anchor days apply to you."
+     }
+    }
+   ],
+   "final": {
+    "reply": "Hi Elif, the two-day allowance doesn't apply in full to you. Full-time staff can work from home up to 2 days a week, agreed with their manager [HR-01]. That rule hasn't changed with the move [HR-01]. Part-time staff can work from home for up to 40% of their working days each week, rounded down. For a three-day week (Monday to Wednesday), that means 1 day at home and 2 in the office [HR-03]. You also asked about required office days, such as team or anchor days. Our HR articles don't say whether any are set. They also don't say how such days apply to someone who doesn't work Thursday or Friday, so I can't confirm that part. Please check with your manager, who agrees home-working days [HR-01]. They should know whether any Marketing team or anchor days apply to you."
+   }
+  },
+  {
+   "agent": "Router",
+   "thread": "MainThread",
+   "task": "Employee id: e2\nQuestion: I start on 7 December. What do I need to bring and where do I go?",
+   "steps": [
+    {
+     "tool": "get_employee",
+     "args": {
+      "employee_id": "e2"
+     },
+     "result": "{\"id\": \"e2\", \"name\": \"Ben Okafor\", \"role\": \"Sales coordinator\", \"team\": \"Sales\", \"zone\": \"C\", \"works\": \"full time\", \"notes\": [\"new starter: first day is Monday 7 December 2026\"]}"
+    }
+   ],
+   "final": {
+    "dept": "hr",
+    "brief": "Ben Okafor (e2), a new Sales coordinator on the Sales team, starts full time on Monday 7 December 2026. He is asking what he needs to bring on his first day and where he should go. His assigned zone is C. Because the office move is under way, please confirm which building or address he should go to on 7 December, where and when to arrive, and who will meet him. Please also cover what he needs to bring (ID and right-to-work documents, bank details, any signed forms) and when his access badge and equipment will be ready. If laptop or badge setup involves IT or Facilities, coordinate with them so his first-day instructions are complete."
+   }
+  },
+  {
+   "agent": "HR Desk",
+   "thread": "MainThread",
+   "task": "Ben Okafor (e2), a new Sales coordinator on the Sales team, starts full time on Monday 7 December 2026. He is asking what he needs to bring on his first day and where he should go. His assigned zone is C. Because the office move is under way, please confirm which building or address he should go to on 7 December, where and when to arrive, and who will meet him. Please also cover what he needs to bring (ID and right-to-work documents, bank details, any signed forms) and when his access badge and equipment will be ready. If laptop or badge setup involves IT or Facilities, coordinate with them so his first-day instructions are complete.",
+   "steps": [
+    {
+     "tool": "search_kb",
+     "args": {
+      "query": "first day what to bring new starter"
+     },
+     "result": "[{\"id\": \"HR-02\", \"title\": \"First day for new starters in December\"}, {\"id\": \"HR-01\", \"title\": \"Hybrid working after the move\"}, {\"id\": \"HR-03\", \"title\": \"Part-time staff and home working\"}]"
+    },
+    {
+     "tool": "read_article",
+     "args": {
+      "article_id": "HR-02"
+     },
+     "result": "{\"id\": \"HR-02\", \"dept\": \"hr\", \"title\": \"First day for new starters in December\", \"text\": \"New starters whose first day is Monday 7 December go to reception at 09:00, collect their badge with photo ID, and are met by their manager. Their laptop is ready at their team's zone. HR sends a welcome email the week before.\"}"
+    },
+    {
+     "tool": "search_kb",
+     "args": {
+      "query": "office move new building address"
+     },
+     "result": "[{\"id\": \"HR-04\", \"title\": \"Travel costs after the move\"}, {\"id\": \"HR-01\", \"title\": \"Hybrid working after the move\"}, {\"id\": \"HR-02\", \"title\": \"First day for new starters in December\"}]"
+    },
+    {
+     "tool": "read_article",
+     "args": {
+      "article_id": "HR-01"
+     },
+     "result": "{\"id\": \"HR-01\", \"dept\": \"hr\", \"title\": \"Hybrid working after the move\", \"text\": \"The hybrid-work rule does not change with the move. Full-time staff can work from home up to 2 days a week, agreed with their manager.\"}"
+    },
+    {
+     "tool": "read_article",
+     "args": {
+      "article_id": "HR-04"
+     },
+     "result": "{\"id\": \"HR-04\", \"dept\": \"hr\", \"title\": \"Travel costs after the move\", \"text\": \"Travel between home and the office is not paid for, at Station Road or at Riverside House. If the move makes your journey much longer, talk to your manager about your hours.\"}"
+    },
+    {
+     "tool": "search_kb",
+     "args": {
+      "query": "right to work documents bank details signed contract forms"
+     },
+     "result": "[{\"id\": \"HR-01\", \"title\": \"Hybrid working after the move\"}, {\"id\": \"HR-03\", \"title\": \"Part-time staff and home working\"}]"
+    },
+    {
+     "tool": "search_kb",
+     "args": {
+      "query": "which building Station Road Riverside House zone C December"
+     },
+     "result": "[{\"id\": \"HR-04\", \"title\": \"Travel costs after the move\"}, {\"id\": \"HR-02\", \"title\": \"First day for new starters in December\"}]"
+    }
+   ],
+   "final": {
+    "reply": "Hi Ben, here's what I can confirm for Monday 7 December. Arrive at reception at 09:00 and bring photo ID, which you'll use to collect your badge there. Your manager will meet you, and your laptop will be ready at your team's zone (zone C) [HR-02]. HR also sends a welcome email the week before [HR-02].\n\nMy articles don't say which building to go to that day. Both Station Road and Riverside House are mentioned in the move guidance [HR-04], but not which one applies on 7 December. Please check your welcome email or ask your manager. They also don't cover right-to-work documents, bank details or signed forms, so please confirm those directly with HR.\n\nI can't contact other desks from here. For badge setup, ask Facilities, and for laptop setup, ask IT."
+   }
+  },
+  {
+   "agent": "Router",
+   "thread": "MainThread",
+   "task": "Employee id: e6\nQuestion: Is there somewhere safe to leave my bike?",
+   "steps": [
+    {
+     "tool": "get_employee",
+     "args": {
+      "employee_id": "e6"
+     },
+     "result": "{\"id\": \"e6\", \"name\": \"Femi Adeyemi\", \"role\": \"Operations planner\", \"team\": \"Operations\", \"zone\": \"D\", \"works\": \"full time, hybrid\", \"notes\": [\"cycles to work\"]}"
+    }
+   ],
+   "final": {
+    "dept": "facilities",
+    "brief": "Question: Femi Adeyemi asks whether there is somewhere safe to leave their bike at the new office. Asker: Operations planner, Operations team, zone D, full time and hybrid. Their profile notes they cycle to work. Please cover: where secure bike storage is in the new building and how to get in (key, fob or registration), how many spaces there are and whether they need booking (hybrid, so they won't be in every day), and whether showers, changing rooms or lockers are available for cyclists."
+   }
+  },
+  {
+   "agent": "Facilities Desk",
+   "thread": "MainThread",
+   "task": "Question: Femi Adeyemi asks whether there is somewhere safe to leave their bike at the new office. Asker: Operations planner, Operations team, zone D, full time and hybrid. Their profile notes they cycle to work. Please cover: where secure bike storage is in the new building and how to get in (key, fob or registration), how many spaces there are and whether they need booking (hybrid, so they won't be in every day), and whether showers, changing rooms or lockers are available for cyclists.",
+   "steps": [
+    {
+     "tool": "search_kb",
+     "args": {
+      "query": "secure bike storage new building access"
+     },
+     "result": "[{\"id\": \"FAC-02\", \"title\": \"Bikes and showers\"}, {\"id\": \"FAC-03\", \"title\": \"Access badges\"}, {\"id\": \"FAC-04\", \"title\": \"Personal evacuation plans\"}]"
+    },
+    {
+     "tool": "read_article",
+     "args": {
+      "article_id": "FAC-02"
+     },
+     "result": "{\"id\": \"FAC-02\", \"dept\": \"facilities\", \"title\": \"Bikes and showers\", \"text\": \"Covered storage for 40 bikes is behind the building, reached from Canal Street. Showers and changing rooms are on the ground floor. Use your access badge to open the bike store.\"}"
+    },
+    {
+     "tool": "read_article",
+     "args": {
+      "article_id": "FAC-03"
+     },
+     "result": "{\"id\": \"FAC-03\", \"dept\": \"facilities\", \"title\": \"Access badges\", \"text\": \"New badges are handed out at reception from 08:00 on Monday 7 December. Bring photo ID. The badge opens the doors, the lockers, the bike store and the printers.\"}"
+    },
+    {
+     "tool": "search_kb",
+     "args": {
+      "query": "book bike space booking lockers"
+     },
+     "result": "[{\"id\": \"FAC-03\", \"title\": \"Access badges\"}, {\"id\": \"FAC-05\", \"title\": \"Lockers and kitchens\"}, {\"id\": \"FAC-01\", \"title\": \"Parking at Riverside House\"}]"
+    },
+    {
+     "tool": "read_article",
+     "args": {
+      "article_id": "FAC-05"
+     },
+     "result": "{\"id\": \"FAC-05\", \"dept\": \"facilities\", \"title\": \"Lockers and kitchens\", \"text\": \"Lockers are on floor 2 and open with your badge; empty yours on Fridays. Every floor has a kitchen, and the ground-floor canteen is open from 11:30 to 14:00.\"}"
+    },
+    {
+     "tool": "read_article",
+     "args": {
+      "article_id": "FAC-01"
+     },
+     "result": "{\"id\": \"FAC-01\", \"dept\": \"facilities\", \"title\": \"Parking at Riverside House\", \"text\": \"There are 20 parking spaces, booked in the DeskBook app from Monday 30 November. 4 accessible spaces next to the entrance are kept for staff with a blue badge or a medical need; ask facilities@example.com to reserve one permanently.\"}"
+    }
+   ],
+   "final": {
+    "reply": "Hi Femi, yes, there's secure bike storage at the new office. It's covered, has room for 40 bikes, and sits behind the building, reached from Canal Street [FAC-02]. You open it with your access badge [FAC-02]. New badges are handed out at reception from 08:00 on Monday 7 December, and you'll need to bring photo ID [FAC-03]. The same badge also opens the doors, lockers and printers [FAC-03].\n\nMy articles don't say whether bike spaces need booking. Car parking is booked in DeskBook [FAC-01], but nothing says that applies to bikes, so please check with Facilities before relying on it.\n\nShowers and changing rooms are on the ground floor [FAC-02]. Lockers are on floor 2 and open with your badge, but you need to empty yours on Fridays [FAC-05]. Because you're hybrid, don't leave kit in a locker over the weekend."
+   }
+  }
+ ],
+ "usage": {
+  "Router": {
+   "calls": 10,
+   "in": 3961,
+   "out": 1678,
+   "seconds": 31.141889900085516
+  },
+  "IT Desk": {
+   "calls": 3,
+   "in": 2083,
+   "out": 449,
+   "seconds": 10.455294199986383
+  },
+  "Facilities Desk": {
+   "calls": 15,
+   "in": 15004,
+   "out": 2453,
+   "seconds": 45.919578800036106
+  },
+  "HR Desk": {
+   "calls": 14,
+   "in": 12917,
+   "out": 1935,
+   "seconds": 31.402475200069603
+  }
+ }
+}

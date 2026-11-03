@@ -1,0 +1,106 @@
+{
+ "lab": "wf00",
+ "mode": "agent",
+ "provider": "anthropic",
+ "input": "How does Calcium CT score relate to high cholesterol?",
+ "output": {
+  "search_query": "coronary artery calcium score high cholesterol relationship",
+  "justification": "The four sources I read together cover what a CAC score measures (W01), how cholesterol causes the plaque it detects (W02), why the two numbers can differ between people (W04), and the scan's limits (W11).",
+  "answer": "A coronary artery calcium (CAC) score and cholesterol measure different stages of the same process.\n\n**What a CAC score is:** It comes from a non-contrast CT scan of the heart. It measures calcified plaque in the coronary arteries, usually reported as an Agatston score. A score of 0 means no detectable calcium, and higher numbers mean more calcified plaque (W01).\n\n**How it connects to cholesterol:**\n- **Cholesterol is a cause.** High LDL cholesterol over many years contributes to atherosclerosis, which is plaque building up in artery walls. Over time some of that plaque calcifies, and that calcium is what the CT scan detects (W02).\n- **Calcium is a later sign.** Cholesterol is a risk factor that can lead to plaque. The CAC score shows plaque that has already formed and hardened (W02).\n\n**Why the two numbers don't always match:** Two people with the same cholesterol level can have very different CAC scores. Plaque also depends on age, blood pressure, smoking, diabetes and genetics. Because CAC shows the plaque that is actually there, it can refine a heart-risk estimate based on cholesterol alone (W04).\n\n**Limits:** A CAC scan only detects calcified plaque. Younger people can have soft, non-calcified plaque that the scan misses. So a score of 0 does not rule out risk, especially in smokers, people with diabetes, or people with very high LDL (W11).\n\nIn short, high cholesterol helps cause the plaque, and the CAC score measures how much of it has calcified. How to interpret your own results or treatment is a question for a clinician.",
+  "sources": [
+   "W01",
+   "W02",
+   "W04",
+   "W11"
+  ]
+ },
+ "agents": [
+  {
+   "agent": "Structured LLM",
+   "thread": "MainThread",
+   "task": "How does Calcium CT score relate to high cholesterol?",
+   "steps": [],
+   "final": "{\"search_query\": \"coronary artery calcium CT score relationship with high cholesterol LDL statin decisions\", \"justification\": \"The user wants to know how a coronary artery calcium (CAC) CT score relates to high cholesterol. This query covers the link between LDL cholesterol and calcified plaque, and how CAC scores are used to guide statin treatment and risk assessment in people with high cholesterol.\"}"
+  },
+  {
+   "agent": "Tool LLM",
+   "thread": "MainThread",
+   "task": "What is 2 times 3?",
+   "steps": [],
+   "final": "{\"tool\": \"multiply\", \"args\": {\"a\": 2, \"b\": 3}}"
+  },
+  {
+   "agent": "Research Agent",
+   "thread": "MainThread",
+   "task": "How does Calcium CT score relate to high cholesterol?",
+   "steps": [
+    {
+     "tool": "web_search",
+     "args": {
+      "query": "coronary artery calcium score high cholesterol relationship"
+     },
+     "result": "[{\"id\": \"W01\", \"title\": \"What is a coronary artery calcium (CAC) score?\", \"source\": \"Heart health explainer\"}, {\"id\": \"W02\", \"title\": \"LDL cholesterol and atherosclerosis\", \"source\": \"Cardiology review\"}, {\"id\": \"W04\", \"title\": \"A high cholesterol number does not always mean a high CAC score\", \"source\": \"Patient Q&A\"}, {\"id\": \"W11\", \"title\": \"Limits of the CAC score\", \"source\": \"Prevention guideline summary\"}]"
+    },
+    {
+     "tool": "read_result",
+     "args": {
+      "result_id": "W01"
+     },
+     "result": "{\"id\": \"W01\", \"title\": \"What is a coronary artery calcium (CAC) score?\", \"source\": \"Heart health explainer\", \"text\": \"A coronary artery calcium (CAC) score comes from a non-contrast CT scan of the heart. It measures calcified plaque in the coronary arteries, usually reported as an Agatston score: 0 means no detectable calcium, and higher numbers mean more calcified plaque.\"}"
+    },
+    {
+     "tool": "read_result",
+     "args": {
+      "result_id": "W02"
+     },
+     "result": "{\"id\": \"W02\", \"title\": \"LDL cholesterol and atherosclerosis\", \"source\": \"Cardiology review\", \"text\": \"High LDL cholesterol over many years contributes to atherosclerosis: plaque builds up in artery walls. Over time some plaque calcifies, which is what a CAC scan detects. So cholesterol is a cause, and calcium is a later sign of plaque that has already formed.\"}"
+    },
+    {
+     "tool": "read_result",
+     "args": {
+      "result_id": "W04"
+     },
+     "result": "{\"id\": \"W04\", \"title\": \"A high cholesterol number does not always mean a high CAC score\", \"source\": \"Patient Q&A\", \"text\": \"Two people with the same cholesterol level can have very different CAC scores, because plaque also depends on age, blood pressure, smoking, diabetes and genetics. CAC shows the plaque that is actually there, which is why it can refine a risk estimate based on cholesterol alone.\"}"
+    },
+    {
+     "tool": "read_result",
+     "args": {
+      "result_id": "W11"
+     },
+     "result": "{\"id\": \"W11\", \"title\": \"Limits of the CAC score\", \"source\": \"Prevention guideline summary\", \"text\": \"A CAC score only detects calcified plaque. Younger people can have soft, non-calcified plaque that a CAC scan misses, so a score of 0 does not rule out risk, especially in smokers or people with diabetes or very high LDL.\"}"
+    }
+   ],
+   "final": {
+    "search_query": "coronary artery calcium score high cholesterol relationship",
+    "justification": "The four sources I read together cover what a CAC score measures (W01), how cholesterol causes the plaque it detects (W02), why the two numbers can differ between people (W04), and the scan's limits (W11).",
+    "answer": "A coronary artery calcium (CAC) score and cholesterol measure different stages of the same process.\n\n**What a CAC score is:** It comes from a non-contrast CT scan of the heart. It measures calcified plaque in the coronary arteries, usually reported as an Agatston score. A score of 0 means no detectable calcium, and higher numbers mean more calcified plaque (W01).\n\n**How it connects to cholesterol:**\n- **Cholesterol is a cause.** High LDL cholesterol over many years contributes to atherosclerosis, which is plaque building up in artery walls. Over time some of that plaque calcifies, and that calcium is what the CT scan detects (W02).\n- **Calcium is a later sign.** Cholesterol is a risk factor that can lead to plaque. The CAC score shows plaque that has already formed and hardened (W02).\n\n**Why the two numbers don't always match:** Two people with the same cholesterol level can have very different CAC scores. Plaque also depends on age, blood pressure, smoking, diabetes and genetics. Because CAC shows the plaque that is actually there, it can refine a heart-risk estimate based on cholesterol alone (W04).\n\n**Limits:** A CAC scan only detects calcified plaque. Younger people can have soft, non-calcified plaque that the scan misses. So a score of 0 does not rule out risk, especially in smokers, people with diabetes, or people with very high LDL (W11).\n\nIn short, high cholesterol helps cause the plaque, and the CAC score measures how much of it has calcified. How to interpret your own results or treatment is a question for a clinician.",
+    "sources": [
+     "W01",
+     "W02",
+     "W04",
+     "W11"
+    ]
+   }
+  }
+ ],
+ "usage": {
+  "Structured LLM": {
+   "calls": 1,
+   "in": 128,
+   "out": 135,
+   "seconds": 2.9805622999556363
+  },
+  "Tool LLM": {
+   "calls": 1,
+   "in": 62,
+   "out": 67,
+   "seconds": 2.0669817999587394
+  },
+  "Research Agent": {
+   "calls": 6,
+   "in": 5312,
+   "out": 921,
+   "seconds": 13.751875500020105
+  }
+ }
+}

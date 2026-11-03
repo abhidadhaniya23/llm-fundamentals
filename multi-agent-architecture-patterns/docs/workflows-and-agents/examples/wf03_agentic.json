@@ -1,0 +1,120 @@
+{
+ "lab": "wf03",
+ "mode": "agentic",
+ "provider": "anthropic",
+ "input": [
+  [
+   "e3",
+   "Where can I park on my first day, and how do I get out of the building if there's a fire?"
+  ]
+ ],
+ "output": [
+  {
+   "routed_to": "facilities",
+   "replies": {
+    "facilities": {
+     "dept": "facilities",
+     "reply": "Hi Chloe, Riverside House has 20 parking spaces, booked in the DeskBook app from Monday 30 November. Four accessible spaces next to the entrance are kept for staff with a blue badge or a medical need. Email facilities@example.com to reserve one permanently, ideally before your first day [FAC-01].\n\nFor fire evacuation, facilities will make a personal evacuation plan with you. Ask for one at facilities@example.com before Monday 7 December. Evacuation chairs are kept at every stairwell, and trained fire wardens help people who have a plan [FAC-04].\n\nOur articles don't answer some of your questions. These include the step-free route to the entrance and Zone A, and evacuation lifts or refuge areas. They also omit warden arrangements on varying office days, your team's assembly point and manager duties. Please raise these in the same email so facilities can build them into your plan."
+    }
+   }
+  }
+ ],
+ "agents": [
+  {
+   "agent": "Router",
+   "thread": "MainThread",
+   "task": "Employee id: e3\nQuestion: Where can I park on my first day, and how do I get out of the building if there's a fire?",
+   "steps": [
+    {
+     "tool": "get_employee",
+     "args": {
+      "employee_id": "e3"
+     },
+     "result": "{\"id\": \"e3\", \"name\": \"Chloe Martin\", \"role\": \"Team manager\", \"team\": \"Customer Service\", \"zone\": \"A\", \"works\": \"full time, hybrid\", \"notes\": [\"uses a wheelchair\", \"drives to work\"]}"
+    },
+    {
+     "tool": "ask_facilities",
+     "args": {
+      "brief": "Question from Chloe Martin (id e3), Team manager, Customer Service, Zone A, full time and hybrid. She asks: (1) Where can I park on my first day in the new office? (2) How do I get out of the building if there's a fire? Important context: Chloe uses a wheelchair and drives to work. For parking, please cover accessible (blue badge) bays: where they are, how many, whether she needs to register or reserve one before her first day, and the step-free route from the bays to the entrance and to Zone A. For fire evacuation, please give an answer that works for a wheelchair user, not just the standard stairwell route. Cover evacuation lifts or refuge areas near Zone A, how assisted evacuation works (for example evac chairs and trained fire wardens), and how to set up a Personal Emergency Evacuation Plan (PEEP) for her. Because she is hybrid, please explain how the PEEP and warden cover work on days her attendance varies. As a team manager she may also need to know her team's assembly point and her responsibilities during an evacuation."
+     },
+     "result": "{\"dept\": \"facilities\", \"reply\": \"Hi Chloe, Riverside House has 20 parking spaces, booked in the DeskBook app from Monday 30 November. Four accessible spaces next to the entrance are kept for staff with a blue badge or a medical need. Email facilities@example.com to reserve one permanently, ideally before your first day [FAC-01].\\n\\nFor fire evacuation, facilities will make a personal evacuation plan with you. Ask for one at facilities@example.com before Monday 7 December. Evacuation chairs are kept at every stairwell, and trained fire wardens help people who have a plan [FAC-04].\\n\\nOur articl… (+329 chars)"
+    }
+   ],
+   "final": {
+    "routed_to": "facilities"
+   }
+  },
+  {
+   "agent": "Facilities Desk",
+   "thread": "MainThread",
+   "task": "Question from Chloe Martin (id e3), Team manager, Customer Service, Zone A, full time and hybrid. She asks: (1) Where can I park on my first day in the new office? (2) How do I get out of the building if there's a fire? Important context: Chloe uses a wheelchair and drives to work. For parking, please cover accessible (blue badge) bays: where they are, how many, whether she needs to register or reserve one before her first day, and the step-free route from the bays to the entrance and to Zone A. For fire evacuation, please give an answer that works for a wheelchair user, not just the standard stairwell route. Cover evacuation lifts or refuge areas near Zone A, how assisted evacuation works (for example evac chairs and trained fire wardens), and how to set up a Personal Emergency Evacuation Plan (PEEP) for her. Because she is hybrid, please explain how the PEEP and warden cover work on days her attendance varies. As a team manager she may also need to know her team's assembly point and her responsibilities during an evacuation.",
+   "steps": [
+    {
+     "tool": "search_kb",
+     "args": {
+      "query": "accessible blue badge parking"
+     },
+     "result": "[{\"id\": \"FAC-01\", \"title\": \"Parking at Riverside House\"}, {\"id\": \"FAC-02\", \"title\": \"Bikes and showers\"}, {\"id\": \"FAC-03\", \"title\": \"Access badges\"}]"
+    },
+    {
+     "tool": "read_article",
+     "args": {
+      "article_id": "FAC-01"
+     },
+     "result": "{\"id\": \"FAC-01\", \"dept\": \"facilities\", \"title\": \"Parking at Riverside House\", \"text\": \"There are 20 parking spaces, booked in the DeskBook app from Monday 30 November. 4 accessible spaces next to the entrance are kept for staff with a blue badge or a medical need; ask facilities@example.com to reserve one permanently.\"}"
+    },
+    {
+     "tool": "search_kb",
+     "args": {
+      "query": "fire evacuation"
+     },
+     "result": "[{\"id\": \"FAC-04\", \"title\": \"Personal evacuation plans\"}]"
+    },
+    {
+     "tool": "read_article",
+     "args": {
+      "article_id": "FAC-04"
+     },
+     "result": "{\"id\": \"FAC-04\", \"dept\": \"facilities\", \"title\": \"Personal evacuation plans\", \"text\": \"If you may need help to leave the building in an emergency, facilities makes a personal evacuation plan with you. Ask before Monday 7 December at facilities@example.com. Evacuation chairs are kept at every stairwell, and trained fire wardens help people with a plan.\"}"
+    },
+    {
+     "tool": "search_kb",
+     "args": {
+      "query": "fire assembly point wardens refuge lift"
+     },
+     "result": "[{\"id\": \"FAC-04\", \"title\": \"Personal evacuation plans\"}]"
+    },
+    {
+     "tool": "search_kb",
+     "args": {
+      "query": "step-free route entrance Zone A"
+     },
+     "result": "[{\"id\": \"FAC-01\", \"title\": \"Parking at Riverside House\"}]"
+    },
+    {
+     "rejected": "sentence over 25 words: \"Our articles don't cover several things you asked about: the…\"\n154 words, max 150",
+     "answer": {
+      "reply": "Hi Chloe, Riverside House has 20 parking spaces, booked in the DeskBook app from Monday 30 November. Four accessible spaces next to the entrance are kept for staff with a blue badge or a medical need. Email facilities@example.com to reserve one permanently. It's best to do this before your first day [FAC-01].\n\nFor fire evacuation, facilities will make a personal evacuation plan with you. Ask for one at facilities@example.com before Monday 7 December. Evacuation chairs are kept at every stairwell, and trained fire wardens help people who have a plan [FAC-04].\n\nOur articles don't cover several things you asked about: the step-free route from the bays to the entrance and Zone A, evacuation lifts or refuge areas, how warden cover works on your varying office days, your team's assembly point, or a manager's duties during an evacuation. Please raise these in the same email to facilities so they can be built into your plan."
+     }
+    }
+   ],
+   "final": {
+    "reply": "Hi Chloe, Riverside House has 20 parking spaces, booked in the DeskBook app from Monday 30 November. Four accessible spaces next to the entrance are kept for staff with a blue badge or a medical need. Email facilities@example.com to reserve one permanently, ideally before your first day [FAC-01].\n\nFor fire evacuation, facilities will make a personal evacuation plan with you. Ask for one at facilities@example.com before Monday 7 December. Evacuation chairs are kept at every stairwell, and trained fire wardens help people who have a plan [FAC-04].\n\nOur articles don't answer some of your questions. These include the step-free route to the entrance and Zone A, and evacuation lifts or refuge areas. They also omit warden arrangements on varying office days, your team's assembly point and manager duties. Please raise these in the same email so facilities can build them into your plan."
+   }
+  }
+ ],
+ "usage": {
+  "Router": {
+   "calls": 3,
+   "in": 2455,
+   "out": 549,
+   "seconds": 9.129678599943873
+  },
+  "Facilities Desk": {
+   "calls": 8,
+   "in": 8847,
+   "out": 2273,
+   "seconds": 29.608631399984006
+  }
+ }
+}
