@@ -1,9 +1,17 @@
 [project]
 name = "multi-agent-architecture-patterns"
 version = "0.1.0"
-description = "Six multi-agent patterns, each run against the DAS archive chatbot"
+description = "DAS archive chatbot: Coordinator + Handoff multi-agent flow (docs/agent-flow-architecture.html)"
 requires-python = ">=3.11"
-dependencies = ["httpx"]
+dependencies = ["httpx==0.28.1"]
+
+[dependency-groups]
+dev = ["pytest==9.1.1"]
 
 [tool.uv]
 package = false
+exclude-newer = "2026-10-26T00:00:00Z"  # only resolve releases at least 7 days old when locking
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

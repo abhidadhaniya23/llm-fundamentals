@@ -1,0 +1,3 @@
+[
+  {"doc_id": "1240", "batch_id": "BATCH-2026-10-29-001", "file_name": "invoice_1240.pdf", "title": "Invoice 1240, Hafen Zollagentur (import VAT)", "type": "invoice", "document_class": "import_vat_evidence", "supplier_vat_id": "FAKE-VAT-0001", "customs_reference": "FAKE-CUSTOMS-7781", "uploaded_by": "priya", "held_since": "2026-10-29"}
+]
