@@ -95,9 +95,10 @@ def research_agent() -> ResearchAnswer:
 
 
 def main() -> None:
-    print("── Part 1: augmented LLM, one call each ──")
+    print("── Part 1a: structured output (one call) ──")
     query = structured_output()
     print(f"search_query:  {query.search_query}\njustification: {query.justification}")
+    print('\n── Part 1b: one tool call (separate toy question: "What is 2 times 3?") ──')
     print(f"multiply result: {one_tool_call()}")
 
     print("\n── Part 2: research agent ──")
