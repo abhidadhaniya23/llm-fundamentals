@@ -74,6 +74,8 @@ Folder naming and linking are still to be decided.
 
 ## Setup
 
+Quick path: `bash setup.sh` installs `uv` if missing, creates `.env` and syncs dependencies. Then fill in `.env`. Manual steps:
+
 Copy `.env.example` to `.env`, pick a provider and fill in its settings:
 
 ```
