@@ -1,0 +1,26 @@
+{
+  "CLS-COMPLIANCE": {
+    "title": "Document belongs to the Compliance archive",
+    "explanation": "The classifier identified the file as import VAT evidence (an invoice with a customs declaration attached). Tax evidence of this class must be filed in the Compliance archive, so the Finance archive rejected it.",
+    "user_fixable": true,
+    "fault": false,
+    "remedy": "Get upload access to the Compliance archive and re-upload the same file there.",
+    "target_workspace": "Compliance"
+  },
+  "VAL-VAT-MISSING": {
+    "title": "Supplier VAT id missing",
+    "explanation": "The invoice has no supplier VAT id, which the Finance archive requires for tax records.",
+    "user_fixable": true,
+    "fault": false,
+    "remedy": "Add the supplier VAT id to the invoice metadata and re-upload it to Finance.",
+    "target_workspace": "Finance"
+  },
+  "SYS-ARCHIVE-UNAVAILABLE": {
+    "title": "Archive storage unavailable",
+    "explanation": "The archive storage did not accept the write during ingestion. This is a platform fault, not a problem with the file.",
+    "user_fixable": false,
+    "fault": true,
+    "remedy": "The platform team investigates and re-runs the ingestion. No user action needed.",
+    "target_workspace": null
+  }
+}

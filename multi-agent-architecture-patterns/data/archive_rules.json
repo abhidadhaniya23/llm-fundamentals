@@ -1,0 +1,14 @@
+{
+  "Finance": {
+    "accepted_classes": ["invoice"],
+    "required_fields": ["title", "supplier_vat_id"],
+    "folder": "Finance/Invoices/{year}/Q{quarter}",
+    "retention_class": "Tax records (10 years)"
+  },
+  "Compliance": {
+    "accepted_classes": ["import_vat_evidence", "audit_evidence"],
+    "required_fields": ["title", "supplier_vat_id", "customs_reference"],
+    "folder": "Compliance/VAT-Evidence/{year}",
+    "retention_class": "Compliance evidence (10 years)"
+  }
+}

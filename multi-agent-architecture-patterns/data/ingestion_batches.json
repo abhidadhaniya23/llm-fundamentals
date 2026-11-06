@@ -1,0 +1,152 @@
+[
+  {
+    "batch_id": "BATCH-2026-10-15-003",
+    "uploader": "priya",
+    "workspace": "Finance",
+    "uploaded_on": "2026-10-15",
+    "files_total": 2,
+    "files": [
+      {
+        "doc_id": "1234",
+        "file_name": "invoice_1234.pdf",
+        "status": "archived",
+        "stage": "archived"
+      },
+      {
+        "doc_id": "1235",
+        "file_name": "invoice_1235.pdf",
+        "status": "archived",
+        "stage": "archived"
+      }
+    ]
+  },
+  {
+    "batch_id": "BATCH-2026-10-29-001",
+    "uploader": "priya",
+    "workspace": "Finance",
+    "uploaded_on": "2026-10-29",
+    "files_total": 20,
+    "files": [
+      {
+        "doc_id": "1240",
+        "file_name": "invoice_1240.pdf",
+        "status": "rejected",
+        "stage": "classification"
+      },
+      {
+        "doc_id": "1241",
+        "file_name": "invoice_1241.pdf",
+        "status": "archived",
+        "stage": "archived"
+      },
+      {
+        "doc_id": "1242",
+        "file_name": "invoice_1242.pdf",
+        "status": "archived",
+        "stage": "archived"
+      },
+      {
+        "doc_id": "1243",
+        "file_name": "invoice_1243.pdf",
+        "status": "archived",
+        "stage": "archived"
+      },
+      {
+        "doc_id": "1244",
+        "file_name": "invoice_1244.pdf",
+        "status": "archived",
+        "stage": "archived"
+      },
+      {
+        "doc_id": "1245",
+        "file_name": "invoice_1245.pdf",
+        "status": "archived",
+        "stage": "archived"
+      },
+      {
+        "doc_id": "1246",
+        "file_name": "invoice_1246.pdf",
+        "status": "archived",
+        "stage": "archived"
+      },
+      {
+        "doc_id": "1247",
+        "file_name": "invoice_1247.pdf",
+        "status": "archived",
+        "stage": "archived"
+      },
+      {
+        "doc_id": "1248",
+        "file_name": "invoice_1248.pdf",
+        "status": "archived",
+        "stage": "archived"
+      },
+      {
+        "doc_id": "1249",
+        "file_name": "invoice_1249.pdf",
+        "status": "archived",
+        "stage": "archived"
+      },
+      {
+        "doc_id": "1250",
+        "file_name": "invoice_1250.pdf",
+        "status": "archived",
+        "stage": "archived"
+      },
+      {
+        "doc_id": "1251",
+        "file_name": "invoice_1251.pdf",
+        "status": "archived",
+        "stage": "archived"
+      },
+      {
+        "doc_id": "1252",
+        "file_name": "invoice_1252.pdf",
+        "status": "archived",
+        "stage": "archived"
+      },
+      {
+        "doc_id": "1253",
+        "file_name": "invoice_1253.pdf",
+        "status": "archived",
+        "stage": "archived"
+      },
+      {
+        "doc_id": "1254",
+        "file_name": "invoice_1254.pdf",
+        "status": "archived",
+        "stage": "archived"
+      },
+      {
+        "doc_id": "1255",
+        "file_name": "invoice_1255.pdf",
+        "status": "archived",
+        "stage": "archived"
+      },
+      {
+        "doc_id": "1256",
+        "file_name": "invoice_1256.pdf",
+        "status": "archived",
+        "stage": "archived"
+      },
+      {
+        "doc_id": "1257",
+        "file_name": "invoice_1257.pdf",
+        "status": "archived",
+        "stage": "archived"
+      },
+      {
+        "doc_id": "1258",
+        "file_name": "invoice_1258.pdf",
+        "status": "archived",
+        "stage": "archived"
+      },
+      {
+        "doc_id": "1259",
+        "file_name": "invoice_1259.pdf",
+        "status": "archived",
+        "stage": "archived"
+      }
+    ]
+  }
+]

@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<!-- Master copy: docs/agent-data-sharing.md. Update it first, then this page. -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How data is shared between the agents in das/</title>
+<style>
+  :root {
+    --bg: #f5f6f8; --panel-bg: #eef0f3; --panel-border: #dcdfe4;
+    --card-bg: #ffffff; --card-border: #d7dbe0; --ink: #1b1d22; --muted: #6b7280;
+    --blue: #2f6fed; --blue-bg: #e3ecfd; --orange: #e8932c; --orange-bg: #fdf1dd; --orange-ink: #9a5a0c;
+    --purple: #7c5cd6; --purple-bg: #efeafb; --green: #3c9a5f; --green-bg: #e9f5ee;
+    --grey: #5b6470; --grey-bg: #e8eaee; --red: #c0504d; --red-bg: #fbeaea;
+    --teal: #1f8a99; --teal-bg: #e2f3f5;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
+         padding: 22px 20px 60px; color: var(--ink); font-size: 13px; line-height: 1.45; }
+  .wrap { max-width: 1400px; margin: 0 auto; }
+  h1 { font-size: 22px; font-weight: 800; letter-spacing: -0.3px; }
+  h3 { font-size: 13px; font-weight: 800; margin-bottom: 6px; }
+  h4 { font-size: 12.5px; }
+  p { margin-bottom: 6px; }
+  code { font-family: Consolas, monospace; font-size: 11.5px; }
+
+  .head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+  .sub { font-size: 12px; color: var(--muted); margin-top: 3px; }
+  .rule { margin-top: 10px; background: var(--orange-bg); border-left: 4px solid var(--orange); border-radius: 0 6px 6px 0; padding: 7px 10px; font-size: 12px; }
+
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 14px; }
+  .stat { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 10px; padding: 10px 14px; border-top: 4px solid var(--grey); }
+  .stat b { display: block; font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
+  .stat span { font-size: 11.5px; color: var(--muted); }
+  .stat.blue { border-top-color: var(--blue); } .stat.green { border-top-color: var(--green); }
+  .stat.orange { border-top-color: var(--orange); } .stat.purple { border-top-color: var(--purple); }
+
+  .tabs { display: flex; gap: 6px; margin: 16px 0 14px; border-bottom: 2px solid var(--panel-border); flex-wrap: wrap; }
+  .tab { border: 0; background: none; padding: 9px 14px; font: inherit; font-weight: 700; color: var(--muted);
+         cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; }
+  .tab.on { color: var(--ink); border-bottom-color: var(--blue); }
+  .tab .ref { font-weight: 600; font-size: 11px; color: var(--muted); }
+  .page { display: none; } .page.on { display: block; }
+
+  .panel { background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+  .panel h2 { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: .4px; margin-bottom: 8px; color: var(--grey); }
+  .panel h2 .n { display: inline-block; min-width: 20px; height: 20px; border-radius: 10px; background: var(--ink); color: #fff;
+                 text-align: center; line-height: 20px; font-size: 11px; margin-right: 6px; padding: 0 5px; }
+  .hint { font-size: 11.5px; color: var(--muted); margin-bottom: 8px; }
+  .card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 8px; padding: 10px 12px; }
+  .card.green { border-left: 4px solid var(--green); } .card.blue { border-left: 4px solid var(--blue); }
+  .card.purple { border-left: 4px solid var(--purple); } .card.teal { border-left: 4px solid var(--teal); }
+  .src { display: block; margin-top: 6px; font-size: 11px; color: var(--muted); font-family: "Segoe UI", sans-serif; font-style: normal; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .mt { margin-top: 12px; }
+
+  ul.clean { list-style: none; } ul.clean li { padding: 3px 0 3px 18px; position: relative; }
+  ul.clean li::before { content: "•"; position: absolute; left: 4px; color: var(--muted); }
+
+  .tag { display: inline-block; padding: 1px 7px; border-radius: 9px; font-size: 11px; font-weight: 700; margin: 1px 2px 1px 0; white-space: nowrap; }
+  .t-a { background: var(--blue-bg); color: var(--blue); } .t-b { background: var(--purple-bg); color: var(--purple); }
+  .t-c { background: var(--teal-bg); color: var(--teal); } .t-ok { background: var(--green-bg); color: var(--green); }
+  .t-q { background: var(--grey-bg); color: var(--grey); }
+  .pill { display: inline-block; padding: 2px 9px; border-radius: 10px; font-size: 11px; font-weight: 800; white-space: nowrap; }
+  .p-ok { background: var(--green-bg); color: var(--green); } .p-basis { background: var(--blue-bg); color: var(--blue); }
+  .p-sugg { background: var(--purple-bg); color: var(--purple); }
+
+  table { width: 100%; border-collapse: collapse; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 8px; overflow: hidden; }
+  th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--grey-bg); vertical-align: top; }
+  th { background: var(--grey-bg); font-size: 11.5px; text-transform: uppercase; letter-spacing: .3px; color: var(--grey); }
+  tr:last-child td { border-bottom: 0; }
+  td.id { font-weight: 800; white-space: nowrap; }
+
+  .flow { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; }
+  .chip { background: var(--card-bg); border: 1px solid var(--card-border); border-top: 4px solid var(--blue); border-radius: 8px; padding: 8px; font-size: 11.5px; }
+  .chip b { display: block; font-size: 12px; }
+  .chip .num { display: inline-block; width: 18px; height: 18px; border-radius: 50%; background: var(--blue); color: #fff; text-align: center; line-height: 18px; font-size: 10px; margin-bottom: 4px; }
+  .chip.h { border-top-color: var(--purple); } .chip.h .num { background: var(--purple); }
+  .chip.g { border-top-color: var(--green); } .chip.g .num { background: var(--green); }
+
+  .lc { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .st { border-radius: 8px; padding: 7px 11px; font-weight: 800; font-size: 12px; border: 2px solid var(--purple); background: var(--purple-bg); color: #5a3fb0; }
+  .st small { display: block; font-weight: 500; font-size: 10.5px; color: var(--muted); }
+  .st.end { border-color: var(--green); background: var(--green-bg); color: var(--green); }
+  .arr { color: var(--muted); font-size: 15px; font-weight: 800; }
+
+  .lanes { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--card-border); border-radius: 8px; overflow: hidden; background: var(--card-bg); }
+  .lane { padding: 10px 12px; } .lane + .lane { border-left: 2px dashed var(--panel-border); }
+  .lane .lh { font-weight: 800; font-size: 12px; text-transform: uppercase; margin-bottom: 6px; }
+  .lane.a .lh { color: var(--blue); } .lane.b .lh { color: var(--purple); }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 10px; font-size: 11.5px; color: var(--muted); margin-bottom: 10px; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 4px; vertical-align: -1px; }
+
+  details > summary { cursor: pointer; list-style: none; }
+  details > summary::-webkit-details-marker { display: none; }
+  details > summary::before { content: "▸"; display: inline-block; width: 14px; color: var(--muted); transition: transform .15s; }
+  details[open] > summary::before { transform: rotate(90deg); }
+  .rcards { display: flex; flex-direction: column; gap: 7px; }
+  .rcard { background: #fff; border: 1px solid var(--card-border); border-left: 5px solid var(--green); border-radius: 8px; }
+  .rcard > summary { padding: 9px 12px; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+  .rcard > summary .id { font-family: Consolas, monospace; font-weight: 700; font-size: 12px; color: var(--green); min-width: 200px; }
+  .rcard > summary .tt { font-weight: 700; flex: 1; min-width: 240px; }
+  .rcard .body { padding: 0 14px 12px 34px; }
+  .facts { display: grid; grid-template-columns: 110px 1fr; gap: 2px 8px; font-size: 12px; margin-top: 4px; }
+  .facts dt { color: var(--muted); font-weight: 700; }
+
+  .callout { border-radius: 8px; padding: 10px 12px; background: var(--orange-bg); border: 1px solid #f2cf96; }
+  .callout b:first-child { color: var(--orange-ink); }
+  .lbl { font-size: 10.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .4px; color: var(--muted); margin-top: 8px; }
+
+  .foot { margin-top: 18px; font-size: 11px; color: var(--muted); }
+
+  @media (max-width: 1000px) {
+    .grid2, .grid3, .stats, .lanes { grid-template-columns: 1fr 1fr; }
+    .lane + .lane { border-left: 0; border-top: 2px dashed var(--panel-border); }
+  }
+  @media print {
+    body { background: #fff; padding: 0; } .tabs { display: none; }
+    .page { display: block !important; break-before: page; } .page:first-of-type { break-before: auto; }
+    details > *:not(summary) { display: block; } .panel { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="head">
+  <div>
+    <h1>How data is shared between the agents in <code>das/</code></h1>
+    <div class="sub">draft · explains the code in <code>das/*.py</code> · 5 Nov 2026</div>
+  </div>
+</div>
+<div class="rule"><b>Key rule:</b> agents never share a conversation or message history. Each agent run starts with its own system prompt plus one <b>brief</b>. Every channel below is built in code, not by the LLM.</div>
+
+<div class="stats">
+  <div class="stat blue"><b>5 + E</b><span>agents (Coordinator, A–D) + human platform team</span></div>
+  <div class="stat purple"><b>5</b><span>channels data moves through</span></div>
+  <div class="stat green"><b>4</b><span>shared objects on <code>DASChatbot</code></span></div>
+  <div class="stat orange"><b id="ccount">0</b><span>code checks on what the LLM passes along</span></div>
+</div>
+
+<div class="tabs">
+  <button class="tab on" data-tab="overview">Overview</button>
+  <button class="tab" data-tab="channels">Channels</button>
+  <button class="tab" data-tab="state">Shared state</button>
+  <button class="tab" data-tab="checks">Checks <span class="ref" id="ctab">0</span></button>
+</div>
+
+<!-- ================= OVERVIEW ================= -->
+<section class="page on" id="overview">
+  <div class="panel">
+    <h2><span class="n">1</span>Agents</h2>
+    <table>
+      <tr><th style="width:150px">Agent</th><th>Role</th><th style="width:170px">Talks to the user?</th></tr>
+      <tr><td class="id">③ Coordinator</td><td>Routes the request, composes the reply</td><td><span class="tag t-ok">yes</span></td></tr>
+      <tr><td class="id">④ A·Search</td><td><code>search_archive</code>, <code>get_record</code></td><td><span class="tag t-q">no</span></td></tr>
+      <tr><td class="id">⑤ B·Debugger</td><td>Batch status, validation log, reason codes, one bounded consult</td><td><span class="tag t-q">no</span></td></tr>
+      <tr><td class="id">⑥ C·Access</td><td>Owned by Compliance: entitlement, access request, calls D, notifies the user</td><td><span class="tag t-ok">yes</span> <code>notify_user</code></td></tr>
+      <tr><td class="id">⑦ D·Reupload</td><td><code>prevalidate</code>, <code>upload_record</code></td><td><span class="tag t-q">no</span></td></tr>
+      <tr><td class="id">E Platform team</td><td>Humans: an incident ticket</td><td><span class="tag t-q">via ITSM</span></td></tr>
+    </table>
+    <span class="src">das/team.py 1-13, ALLOWLISTS 277-286</span>
+  </div>
+
+  <div class="panel">
+    <h2><span class="n">2</span>Main flow</h2>
+    <div class="legend"><span><i style="background:var(--blue)"></i>Manager-style call (M), control returns</span><span><i style="background:var(--purple)"></i>handoff (H), control moves</span><span><i style="background:var(--green)"></i>reply to the user</span></div>
+    <div class="flow">
+      <div class="chip"><span class="num">1</span><b>User → Coordinator</b>after input guardrails</div>
+      <div class="chip"><span class="num">2</span><b>Coordinator ⇄ A ‖ B</b>brief down, JSON up, in parallel; results written to SessionMemory</div>
+      <div class="chip g"><span class="num">3</span><b>Coordinator reply</b>passes the output guardrail</div>
+      <div class="chip h"><span class="num">4</span><b>Baton → C</b>from <code>pending_handoffs</code></div>
+      <div class="chip"><span class="num">5</span><b>C ⇄ D</b>brief down, JSON up; RuntimeState: requests, grants, uploads</div>
+      <div class="chip g"><span class="num">6</span><b>C → user</b><code>notify_user</code></div>
+    </div>
+    <span class="src">agent-data-sharing.md · Summary flow</span>
+  </div>
+
+  <div class="panel">
+    <h2><span class="n">3</span>Who sees what</h2>
+    <div class="lanes">
+      <div class="lane a"><div class="lh">Coordinator</div><ul class="clean"><li>System prompt, including <code>session.snapshot()</code></li><li>The chat history (<code>history=</code>)</li><li>Its own tool results</li></ul></div>
+      <div class="lane b"><div class="lh">Agents A–D</div><ul class="clean"><li>System prompt</li><li>One brief (JSON)</li><li>Their own tool results only</li></ul></div>
+    </div>
+    <span class="src">das/agent.py 52-55, das/runtime.py 61-66</span>
+  </div>
+</section>
+
+<!-- ================= CHANNELS ================= -->
+<section class="page" id="channels">
+  <div class="panel">
+    <h2><span class="n">1</span>M: brief down, structured result up</h2>
+    <div class="hint"><code>call_search_agent</code>, <code>call_debugger_agent</code> (Coordinator) and <code>call_reupload_agent</code> (C) are Python tools.</div>
+    <div class="grid3">
+      <div class="card blue"><b>Brief built in code</b> from the schema-validated tool arguments: goal, ids, expected output, scope. <code>Agent.run()</code> sends it as the sub-agent's only <code>user</code> message.<span class="src">das/team.py 133-171, das/agent.py 52-55</span></div>
+      <div class="card green"><b>JSON checked against a schema.</b> The final answer must match <code>SEARCH_OUT</code>, <code>DEBUG_OUT</code>, …, with one repair attempt. It goes back to the caller as an ordinary tool result.<span class="src">das/agent.py 92-105</span></div>
+      <div class="card blue"><b>Written into SessionMemory:</b> <code>search_result</code>, <code>debugger_result</code>, <code>batch_id</code>, <code>reason_code</code>, <code>fault</code>.<span class="src">das/team.py 139-158</span></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2><span class="n">2</span>H: Baton (control does not come back)</h2>
+    <div class="lc">
+      <div class="st">Baton built<small>handoff_to_access_agent / _platform_team</small></div><span class="arr">→</span>
+      <div class="st">Queued<small>bot.pending_handoffs</small></div><span class="arr">→</span>
+      <div class="st">Dispatched<small>after the Coordinator reply</small></div><span class="arr">→</span>
+      <div class="st end">C·Access brief<small>baton.to_dict()</small></div><span class="arr">/</span>
+      <div class="st end">E incident<small>open_incident</small></div>
+    </div>
+    <div class="grid2 mt">
+      <div class="card purple"><b>Coordinator only gets an acknowledgement</b> ("now owned by …"), never the outcome.<span class="src">das/team.py 209-218, das/runtime.py 130-156</span></div>
+      <div class="card purple"><b>User identity comes from SSO:</b> the baton's <code>user</code> field is <code>ctx.user.scope()</code>, never LLM arguments.<span class="src">das/team.py 115-128, 221-233</span></div>
+    </div>
+    <div class="lbl">Baton fields</div>
+    <p><code>target</code> · <code>invoice_id</code> · <code>batch_id</code> · <code>reason_code</code> · <code>user</code> · <code>reply_owner</code> · <code>notifies_next</code> · <code>request</code></p>
+  </div>
+
+  <div class="panel">
+    <h2><span class="n">3</span>Gateway as the common pipe</h2>
+    <div class="hint">Every tool result from every agent goes through <code>Gateway.call</code>.</div>
+    <div class="grid2">
+      <div class="card teal"><b>Sanitises results:</b> removes instructions embedded in the data (<code>guardrails.sanitize</code>).<span class="src">das/gateway.py 123-128</span></div>
+      <div class="card teal"><b>Collects ids into <code>session.known_ids</code>.</b> The output guardrail only lets the Coordinator reply and C's <code>notify_user</code> cite ids in that set.<span class="src">das/gateway.py 129-130, das/team.py 241</span></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2><span class="n">4</span>Bounded consult B → A</h2>
+    <div class="callout"><b>Not a real A run:</b> <code>consult_search_exists</code> calls the helper <code>exists_in</code> directly, is allowed once (<code>consult_once</code>), records it in <code>ctx.run["consults"]</code>, and the record is passed up to the Coordinator.<span class="src">das/tools.py 74-83</span></div>
+  </div>
+</section>
+
+<!-- ================= SHARED STATE ================= -->
+<section class="page" id="state">
+  <div class="panel">
+    <h2><span class="n">1</span>Objects on DASChatbot</h2>
+    <div class="hint"><code>ToolContext</code> exposes <code>bot</code>, <code>user</code>, <code>state</code> and <code>session</code> to every tool.</div>
+    <table>
+      <tr><th style="width:150px">Object</th><th style="width:150px">Scope</th><th>What it holds</th><th>Who uses it</th></tr>
+      <tr><td class="id">DataStore</td><td><span class="pill p-basis">read-only</span></td><td>JSON files in <code>data/</code></td><td>system tools</td></tr>
+      <tr><td class="id">RuntimeState</td><td><span class="pill p-sugg">per bot, RLock</span></td><td>IAM grants, access requests, uploads, incidents</td><td>C creates requests; D uploads; Coordinator checks request status</td></tr>
+      <tr><td class="id">SessionMemory</td><td><span class="pill p-sugg">per session</span></td><td>invoice/batch/reason, A's and B's results, handoffs, chat turns, <code>known_ids</code></td><td>Coordinator prompt (<code>snapshot()</code>), handoff preconditions, output guardrail</td></tr>
+      <tr><td class="id">ToolContext.run</td><td><span class="pill p-ok">one agent run</span></td><td><code>consults</code>, <code>prevalidated</code>, <code>notified</code></td><td>B's single consult, D's prevalidate-before-upload rule, C's notify-once rule</td></tr>
+    </table>
+    <span class="src">das/store.py 22-134, das/gateway.py 30-46</span>
+  </div>
+
+  <div class="panel">
+    <h2><span class="n">2</span>Why the lock</h2>
+    <div class="callout"><b>Parallel writes:</b> the Coordinator runs A and B in parallel threads, and both write to <code>session</code>, so writes happen under <code>state.lock</code>.<span class="src">das/agent.py 116-125</span></div>
+  </div>
+</section>
+
+<!-- ================= CHECKS ================= -->
+<section class="page" id="checks">
+  <div class="panel">
+    <h2><span class="n">1</span>Preconditions</h2>
+    <div class="hint">Gateway preconditions compare LLM arguments with recorded state. Click a check to expand it.</div>
+    <div class="rcards" id="rcards"></div>
+  </div>
+</section>
+
+<div class="foot">Master copy: <code>docs/agent-data-sharing.md</code> · page updated 5 Nov 2026</div>
+</div>
+
+<script>
+const CHECKS = [
+  {id: "access_handoff_allowed", title: "Handoff to C", text: "Rejects the call unless batch_id/reason_code match session.debugger_result, fault is false, and the invoice is the session's.", src: "das/team.py 189-199"},
+  {id: "platform_handoff_allowed", title: "Handoff to E", text: "Requires B to have reported fault=true.", src: "das/team.py 202-206"},
+  {id: "reupload_allowed", title: "Call to D", text: "Checks state.access_requests: the request must be approved, for this user and this workspace.", src: "das/team.py 174-180"},
+  {id: "consults from run_ctx.run", title: "B's consult", text: "output[\"consults\"] is copied from the gateway's record in run_ctx.run, not from what B says about itself.", src: "das/team.py 153"},
+];
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+
+function showTab(id) {
+  if (!$(id)) return;
+  document.querySelectorAll(".tab").forEach(b => b.classList.toggle("on", b.dataset.tab === id));
+  document.querySelectorAll(".page").forEach(p => p.classList.toggle("on", p.id === id));
+  history.replaceState(null, "", "#" + id);
+}
+document.querySelectorAll(".tab").forEach(b => b.onclick = () => showTab(b.dataset.tab));
+if (location.hash) showTab(location.hash.slice(1));
+
+$("rcards").innerHTML = CHECKS.map(r => `<details class="rcard"><summary><span class="id">${esc(r.id)}</span><span class="tt">${esc(r.title)}</span></summary>
+  <div class="body"><p>${esc(r.text)}</p><span class="src">${esc(r.src)}</span></div></details>`).join("");
+$("ccount").textContent = $("ctab").textContent = CHECKS.length;
+</script>
+</body>
+</html>

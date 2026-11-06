@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<!-- Master copy: docs/happy-path-code-flow.md. Update it first, then this page. -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DAS happy path · code flow wiki</title>
+<style>
+  :root {
+    --bg: #f5f6f8; --panel-bg: #eef0f3; --panel-border: #dcdfe4;
+    --card-bg: #ffffff; --card-border: #d7dbe0; --ink: #1b1d22; --muted: #6b7280;
+    --blue: #2f6fed; --blue-bg: #e3ecfd; --orange: #e8932c; --orange-bg: #fdf1dd; --orange-ink: #9a5a0c;
+    --purple: #7c5cd6; --purple-bg: #efeafb; --green: #3c9a5f; --green-bg: #e9f5ee;
+    --grey: #5b6470; --grey-bg: #e8eaee; --red: #c0504d; --red-bg: #fbeaea;
+    --teal: #1f8a99; --teal-bg: #e2f3f5;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
+         padding: 22px 20px 60px; color: var(--ink); font-size: 13px; line-height: 1.45; }
+  .wrap { max-width: 1400px; margin: 0 auto; }
+  a.jump { cursor: pointer; text-decoration: underline; color: var(--blue); }
+  h1 { font-size: 22px; font-weight: 800; letter-spacing: -0.3px; }
+  h3 { font-size: 13px; font-weight: 800; margin-bottom: 6px; }
+  h4 { font-size: 12.5px; }
+  p { margin-bottom: 6px; }
+  code { font-family: Consolas, monospace; font-size: 11.5px; background: var(--grey-bg); padding: 0 3px; border-radius: 3px; }
+  pre.code { font-family: Consolas, monospace; font-size: 11.5px; background: #fff; border: 1px solid var(--card-border);
+             border-radius: 8px; padding: 9px 11px; overflow: auto; white-space: pre; line-height: 1.5; }
+
+  .head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+  .sub { font-size: 12px; color: var(--muted); margin-top: 3px; }
+  .rule { margin-top: 10px; background: var(--orange-bg); border-left: 4px solid var(--orange); border-radius: 0 6px 6px 0; padding: 7px 10px; font-size: 12px; }
+
+  .stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 14px; }
+  .stat { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 10px; padding: 10px 14px; border-top: 4px solid var(--grey); }
+  .stat b { display: block; font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
+  .stat span { font-size: 11.5px; color: var(--muted); }
+  .stat.red { border-top-color: var(--red); } .stat.blue { border-top-color: var(--blue); } .stat.green { border-top-color: var(--green); }
+  .stat.orange { border-top-color: var(--orange); } .stat.purple { border-top-color: var(--purple); }
+
+  .tabs { display: flex; gap: 6px; margin: 16px 0 14px; border-bottom: 2px solid var(--panel-border); flex-wrap: wrap; }
+  .tab { border: 0; background: none; padding: 9px 14px; font: inherit; font-weight: 700; color: var(--muted);
+         cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; }
+  .tab.on { color: var(--ink); border-bottom-color: var(--blue); }
+  .tab .ref { font-weight: 600; font-size: 11px; color: var(--muted); }
+  .page { display: none; } .page.on { display: block; }
+
+  .panel { background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+  .panel h2 { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: .4px; margin-bottom: 8px; color: var(--grey); }
+  .panel h2 .n { display: inline-block; min-width: 20px; height: 20px; border-radius: 10px; background: var(--ink); color: #fff;
+                 text-align: center; line-height: 20px; font-size: 11px; margin-right: 6px; padding: 0 5px; }
+  .hint { font-size: 11.5px; color: var(--muted); margin-bottom: 8px; }
+  .card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 8px; padding: 10px 12px; }
+  .card.red { border-left: 4px solid var(--red); } .card.green { border-left: 4px solid var(--green); }
+  .card.blue { border-left: 4px solid var(--blue); } .card.purple { border-left: 4px solid var(--purple); }
+  .card.orange { border-left: 4px solid var(--orange); background: #fffaf2; } .card.grey { border-left: 4px solid var(--grey); }
+  .card.teal { border-left: 4px solid var(--teal); }
+  .src { display: block; margin-top: 6px; font-size: 11px; color: var(--muted); font-style: normal; }
+  .goal { font-size: 14px; font-weight: 700; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .mt { margin-top: 12px; }
+
+  ul.clean { list-style: none; } ul.clean li { padding: 3px 0 3px 18px; position: relative; }
+  ul.clean li::before { content: "•"; position: absolute; left: 4px; color: var(--muted); }
+  ol.steps { padding-left: 20px; } ol.steps li { margin: 3px 0; }
+
+  .tag { display: inline-block; padding: 1px 7px; border-radius: 9px; font-size: 11px; font-weight: 700; margin: 1px 2px 1px 0; white-space: nowrap; }
+  .t-v { background: var(--orange-bg); color: var(--orange-ink); } .t-q { background: var(--grey-bg); color: var(--grey); }
+  .t-a { background: var(--blue-bg); color: var(--blue); } .t-b { background: var(--purple-bg); color: var(--purple); }
+  .t-c { background: var(--teal-bg); color: var(--teal); } .t-ok { background: var(--green-bg); color: var(--green); }
+  .pill { display: inline-block; padding: 2px 9px; border-radius: 10px; font-size: 11px; font-weight: 800; white-space: nowrap; }
+
+  table { width: 100%; border-collapse: collapse; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 8px; overflow: hidden; }
+  th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--grey-bg); vertical-align: top; }
+  th { background: var(--grey-bg); font-size: 11.5px; text-transform: uppercase; letter-spacing: .3px; color: var(--grey); }
+  tr:last-child td { border-bottom: 0; }
+  td.id { font-weight: 800; white-space: nowrap; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  tr.click { cursor: pointer; } tr.click:hover td { background: var(--blue-bg); }
+
+  .filters { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; align-items: center; }
+  .fbtn { border: 1px solid var(--card-border); background: var(--card-bg); border-radius: 16px; padding: 4px 12px; font: inherit; font-weight: 700; cursor: pointer; color: var(--grey); }
+  .fbtn.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .fsearch { margin-left: auto; border: 1px solid var(--card-border); border-radius: 16px; padding: 5px 12px; font: inherit; min-width: 240px; }
+
+  .flow { display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); gap: 8px; }
+  .chip { background: var(--card-bg); border: 1px solid var(--card-border); border-top: 4px solid var(--blue); border-radius: 8px; padding: 8px; font-size: 11.5px; }
+  .chip b { display: block; font-size: 12px; }
+  .chip .num { display: inline-block; min-width: 18px; height: 18px; border-radius: 9px; background: var(--blue); color: #fff; text-align: center; line-height: 18px; font-size: 10px; margin-bottom: 4px; padding: 0 4px; }
+  .chip.h { border-top-color: var(--purple); } .chip.h .num { background: var(--purple); }
+  .chip.g { border-top-color: var(--green); } .chip.g .num { background: var(--green); }
+  .chip.o { border-top-color: var(--orange); } .chip.o .num { background: var(--orange); }
+
+  .roles { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .role { border-radius: 8px; padding: 10px; border: 1px solid var(--card-border); background: #fff; border-top: 5px solid var(--blue); }
+  .role.h { border-top-color: var(--purple); } .role.c { border-top-color: var(--teal); }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: 11.5px; color: var(--muted); margin-bottom: 8px; }
+  .legend i { display: inline-block; width: 22px; height: 0; border-top: 2px solid; margin-right: 5px; vertical-align: 3px; }
+
+  details > summary { cursor: pointer; list-style: none; }
+  details > summary::-webkit-details-marker { display: none; }
+  details > summary::before { content: "▸"; display: inline-block; width: 14px; color: var(--muted); transition: transform .15s; }
+  details[open] > summary::before { transform: rotate(90deg); }
+  .rcards { display: flex; flex-direction: column; gap: 7px; }
+  .rcard { background: #fff; border: 1px solid var(--card-border); border-left: 5px solid var(--blue); border-radius: 8px; }
+  .rcard > summary { padding: 9px 12px; font-weight: 700; }
+  .rcard .body { padding: 0 14px 12px 34px; }
+  .facts { display: grid; grid-template-columns: 120px 1fr; gap: 3px 10px; font-size: 12px; margin-top: 4px; }
+  .facts dt { color: var(--muted); font-weight: 700; }
+
+  .quote { display: block; font-family: Georgia, "Times New Roman", serif; font-style: italic; border-left: 4px solid var(--blue);
+           background: #f7f9fe; padding: 7px 10px; border-radius: 0 6px 6px 0; margin: 4px 0; }
+  .notlist { margin-top: 10px; background: var(--grey-bg); border-radius: 8px; padding: 8px 12px; font-size: 12px; color: var(--grey); }
+  .lbl { font-size: 10.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .4px; color: var(--muted); margin-top: 10px; }
+
+  /* sequence diagram */
+  .seqwrap { background: #fff; border: 1px solid var(--card-border); border-radius: 8px; overflow: auto; }
+  svg.seq { display: block; min-width: 1000px; width: 100%; height: auto; font-family: "Segoe UI", sans-serif; }
+  svg.seq .lt { font-size: 11.5px; font-weight: 800; fill: var(--ink); }
+  svg.seq .ls { font-size: 9.5px; fill: var(--muted); }
+  svg.seq .lab { font-size: 10.5px; paint-order: stroke; stroke: #fff; stroke-width: 3px; stroke-linejoin: round; }
+  svg.seq .ph { font-size: 10px; font-weight: 800; letter-spacing: .3px; text-transform: uppercase; }
+  svg.seq g.step { cursor: pointer; }
+  svg.seq g.step:hover .lab { font-weight: 800; }
+  svg.seq g.step .hit { fill: transparent; }
+  svg.seq g.step:hover .hit { fill: #2f6fed14; }
+
+  .drawer { position: fixed; top: 0; right: 0; width: min(560px, 96vw); height: 100vh; background: #fff; box-shadow: -6px 0 24px #0003;
+            transform: translateX(105%); transition: transform .2s; z-index: 10; display: flex; flex-direction: column; }
+  .drawer.on { transform: none; }
+  .drawer .hd { padding: 14px 16px; border-bottom: 1px solid var(--panel-border); display: flex; gap: 10px; align-items: start; }
+  .drawer .hd h3 { font-size: 16px; flex: 1; margin: 0; }
+  .drawer .bd { padding: 12px 16px 30px; overflow: auto; }
+  .drawer .x { border: 0; background: var(--grey-bg); border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-size: 15px; }
+  .drawer .nav { display: flex; gap: 6px; margin-top: 14px; }
+
+  /* plain-language guide */
+  .sl { display: inline-block; min-width: 22px; padding: 0 6px; height: 18px; line-height: 18px; border-radius: 9px; background: var(--blue);
+        color: #fff; font-size: 10.5px; font-weight: 800; text-align: center; margin: 1px 2px 1px 0; cursor: pointer; border: 0; font-family: inherit; }
+  .sl:hover { background: var(--ink); }
+  .cast .card h3 { display: flex; gap: 8px; align-items: center; }
+  .cast .av { width: 26px; height: 26px; border-radius: 50%; color: #fff; font-weight: 800; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; flex: none; }
+  .cast .code { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .chap { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 4px; }
+  .chap .card h4 { font-size: 11px; text-transform: uppercase; letter-spacing: .4px; color: var(--muted); margin-bottom: 4px; }
+  .chap .wrong { grid-column: 1 / -1; }
+  .rcard > summary .meta { font-weight: 500; color: var(--muted); font-size: 11.5px; margin-left: 6px; }
+  .plain { font-size: 13.5px; background: var(--green-bg); border-radius: 8px; padding: 8px 10px; margin-top: 10px; }
+  @media (max-width: 1000px) { .chap { grid-template-columns: 1fr; } }
+
+  .foot { margin-top: 18px; font-size: 11px; color: var(--muted); }
+
+  @media (max-width: 1000px) {
+    .grid2, .grid3, .stats, .roles { grid-template-columns: 1fr 1fr; }
+    .fsearch { margin-left: 0; min-width: 0; flex: 1; }
+  }
+  @media print {
+    body { background: #fff; padding: 0; } .tabs, .filters, .drawer { display: none; }
+    .page { display: block !important; break-before: page; } .page:first-of-type { break-before: auto; }
+    details > *:not(summary) { display: block; } .panel { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="head">
+  <div>
+    <h1>DAS happy path · code flow wiki</h1>
+    <div class="sub">Coordinator + Handoff · Priya, invoice 1240 · offline run of <code>main.py --offline</code> · scenario date 2026-10-30</div>
+  </div>
+</div>
+<div class="rule"><b>Read this first:</b> in offline mode only the model's decisions are replayed (<code>ScriptedLLM</code>). The agents, gateway, guardrails, tools and data are the real code in <code>das/</code>.</div>
+
+<div class="stats">
+  <div class="stat blue"><b>20</b><span>LLM calls (first request)</span></div>
+  <div class="stat blue"><b>15</b><span>tool calls through Gateway.call</span></div>
+  <div class="stat purple"><b id="nsteps">0</b><span>steps in the sequence</span></div>
+  <div class="stat green"><b>2</b><span>messages to Priya (Coordinator, C·Access)</span></div>
+  <div class="stat green"><b>0</b><span>blocked by guardrails / gateway</span></div>
+</div>
+
+<div class="tabs">
+  <button class="tab on" data-tab="overview">Overview</button>
+  <button class="tab" data-tab="sequence">Sequence diagram</button>
+  <button class="tab" data-tab="steps">Step-by-step <span class="ref" id="tsteps">0</span></button>
+  <button class="tab" data-tab="files">Files &amp; classes <span class="ref" id="tfiles">0</span></button>
+  <button class="tab" data-tab="contracts">Contracts</button>
+  <button class="tab" data-tab="wiki">Wiki <span class="ref">plain language</span></button>
+</div>
+
+<!-- ================= OVERVIEW ================= -->
+<section class="page on" id="overview">
+  <div class="panel">
+    <h2><span class="n">1</span>Scenario</h2>
+    <div class="grid2">
+      <div class="card blue">
+        <h3>Request</h3>
+        <span class="quote">I uploaded 20 invoices yesterday but I can't find invoice 1240 in Finance. If it got rejected, tell me why and get me access to the Compliance archive to re-upload it there.<span class="src">das/offline.py · REQUEST</span></span>
+        <p class="mt"><b>User:</b> Priya, Finance Analyst, id <code>priya</code>, roles <code>Finance-Reader</code>, <code>Finance-Uploader</code>.</p>
+        <p><b>Follow-up:</b> "Is it approved yet?"</p>
+        <span class="src">data/entitlements.json · das/offline.py FOLLOW_UP</span>
+      </div>
+      <div class="card green">
+        <h3>Outcome</h3>
+        <ul class="clean">
+          <li>1240 is <b>not in Finance</b> (A·Search).</li>
+          <li>Batch <code>BATCH-2026-10-29-001</code> archived 19 of 20; 1240 <b>rejected</b> with <code>CLS-COMPLIANCE</code> (B·Debugger).</li>
+          <li>Access request <code>REQ-1001</code> created and approved (simulated); IAM grants <code>Compliance-Uploader</code> (C·Access).</li>
+          <li>1240 archived in <code>Compliance/VAT-Evidence/2026</code> (D·Reupload).</li>
+          <li>Priya gets <b>two messages</b>: the Coordinator's reply, then C·Access's notification.</li>
+        </ul>
+        <span class="src">happy-path-code-flow.md §1 · offline run trace</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2><span class="n">2</span>Three call types</h2>
+    <div class="roles">
+      <div class="role"><h4>M · Manager-style call</h4><p>A tool whose <code>fn</code> runs another <code>Agent.run()</code> and returns its output. <b>Control returns</b> to the caller.</p><p>Coordinator → A, Coordinator → B, C → D. <code>Tool.kind = "agent"</code></p><span class="src">das/team.py · call_search_agent, call_debugger_agent, call_reupload_agent</span></div>
+      <div class="role h"><h4>H · Handoff</h4><p>A tool that appends a <code>Baton</code> to <code>DASChatbot.pending_handoffs</code> and returns at once. <b>Control and ownership move</b>; the Coordinator never sees the outcome.</p><p>Coordinator → C. <code>Tool.kind = "handoff"</code></p><span class="src">das/team.py · _hand_off · das/runtime.py · _dispatch_handoffs</span></div>
+      <div class="role c"><h4>Consult</h4><p>B asks A <b>one</b> structured question (<code>consult_search_exists</code>), allowed once (<code>consult_once</code>), reported upward in B's <code>consults</code>.</p><p><code>Tool.kind = "consult"</code></p><span class="src">das/tools.py · consult_search_exists, consult_once</span></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2><span class="n">3</span>Flow at a glance</h2>
+    <div class="hint">Blue = main flow, purple = handoff, green = guardrail passed or message to Priya, orange = write action (auto-confirmed, simulated consent). Click a step to open it.</div>
+    <div class="flow" id="glance"></div>
+  </div>
+</section>
+
+<!-- ================= SEQUENCE ================= -->
+<section class="page" id="sequence">
+  <div class="panel">
+    <h2><span class="n">1</span>How to read this diagram</h2>
+    <div class="grid3">
+      <div class="card blue">
+        <h3>Layout</h3>
+        <ul class="clean">
+          <li><b>Columns are lifelines.</b> The box at the top gives the participant and its file; the dashed line under it is that participant over time.</li>
+          <li><b>Time runs top to bottom.</b> The number on each arrow is its step number (see the Step-by-step tab).</li>
+          <li><b>Shaded bands are phases.</b> The band's name is in its top-right corner.</li>
+        </ul>
+      </div>
+      <div class="card purple">
+        <h3>Arrows</h3>
+        <ul class="clean">
+          <li><b>Caller → callee.</b> The arrowhead points at whoever receives the call, result or message.</li>
+          <li><b>Line style shows the kind of call.</b> See the legend: blue = Manager call (control returns), dashed grey = result, thick purple = handoff (control moves), teal = consult, orange = write tool, dotted = LLM call, green = guardrail or message to Priya.</li>
+          <li><b>A loop back into the same column</b> is an internal step (2 SSO, 7 parallel dispatch).</li>
+        </ul>
+      </div>
+      <div class="card green">
+        <h3>Things to notice</h3>
+        <ul class="clean">
+          <li><b>Parallel work is drawn in sequence.</b> Steps 8–10 (A) and 11–16 (B) run at the same time; they are only stacked so they are readable.</li>
+          <li><b>After the handoff (18)</b>, the Coordinator's only remaining arrow is its reply (19). From 22 on, C·Access does the work and sends message 2 itself.</li>
+          <li><b>Not drawn:</b> the LLM turns of A–D between their tool calls, and the <code>Gateway.call</code> checks inside each tool arrow.</li>
+        </ul>
+      </div>
+    </div>
+    <span class="src">happy-path-code-flow.md §7.1</span>
+  </div>
+
+  <div class="panel">
+    <h2><span class="n">2</span>Sequence diagram · first request</h2>
+    <div class="hint">Click any arrow to see the file, function, contract and result. Every tool and agent call passes <code>Gateway.call</code>; the LLM turns of A, B, C and D are not drawn as separate arrows.</div>
+    <div class="legend" id="legend"></div>
+    <div class="seqwrap"><svg class="seq" id="seq" role="img" aria-label="Sequence diagram of the DAS happy path"></svg></div>
+    <span class="src">happy-path-code-flow.md §6, §7 · offline run trace</span>
+  </div>
+</section>
+
+<!-- ================= STEPS ================= -->
+<section class="page" id="steps">
+  <div class="panel">
+    <h2><span class="n">1</span>Every step, with file and contract</h2>
+    <div class="hint">Filter by phase or search (e.g. <code>tools.py</code>, <code>REQ-1001</code>). Click a row for detail.</div>
+    <div class="filters" id="pfilters"></div>
+    <div id="stable"></div>
+    <span class="src">happy-path-code-flow.md §6</span>
+  </div>
+  <div class="panel">
+    <h2><span class="n">2</span>Follow-up: "Is it approved yet?"</h2>
+    <div class="flow">
+      <div class="chip g"><span class="num">1</span><b>Input guardrails</b>injection, PII, topic: on-topic (follow-up)</div>
+      <div class="chip"><span class="num">2</span><b>Coordinator</b>prompt embeds <code>SessionMemory.snapshot()</code></div>
+      <div class="chip"><span class="num">3</span><b>get_access_request_status</b><code>REQ-1001</code> → approved</div>
+      <div class="chip g"><span class="num">4</span><b>Output guardrail</b>cites <code>1240</code>, <code>REQ-1001</code>: passed</div>
+    </div>
+    <span class="src">happy-path-code-flow.md §6 · das/team.py coordinator_prompt · das/store.py SessionMemory</span>
+  </div>
+</section>
+
+<!-- ================= FILES ================= -->
+<section class="page" id="files">
+  <div class="panel">
+    <h2><span class="n">1</span>Files and classes</h2>
+    <div id="ftable"></div>
+    <span class="src">happy-path-code-flow.md §3</span>
+  </div>
+  <div class="panel">
+    <h2><span class="n">2</span>Agents</h2>
+    <div class="hint">All defined in <code>das/team.py</code> as <code>Agent(name, title, step, system_prompt, output_schema, max_steps)</code>. Allowlists are enforced by <code>Gateway.call</code>, and only allowlisted tools are offered to the LLM (<code>Gateway.specs_for</code>).</div>
+    <div class="grid3" id="agents"></div>
+    <span class="src">happy-path-code-flow.md §4</span>
+  </div>
+</section>
+
+<!-- ================= CONTRACTS ================= -->
+<section class="page" id="contracts">
+  <div class="panel">
+    <h2><span class="n">1</span>Core interfaces</h2>
+    <div class="grid2">
+<pre class="code"># das/llm.py
+class LLMClient(Protocol):
+    def chat(agent: str, messages: list[dict],
+             tools: list[dict] | None = None) -> LLMReply
+
+LLMReply(content: str | None, tool_calls: list[ToolCall],
+         prompt_tokens: int, completion_tokens: int)
+ToolCall(id: str, name: str, arguments: dict, raw_arguments: str)
+
+# das/agent.py
+Agent.run(bot, brief, ctx=None, history=None)
+    -> (output, messages, ctx)
+Agent.resume(bot, messages, ctx, note) -> output
+
+# das/runtime.py
+DASChatbot.handle(text: str) -> list[(sender, text)]</pre>
+<pre class="code"># das/gateway.py
+Tool(name, description, parameters: dict,
+     fn: (ToolContext, dict) -> dict,
+     kind = "tool" | "agent" | "handoff" | "consult",
+     write: bool = False,
+     precondition: (ToolContext, dict) -> str | None)
+
+Gateway.call(ctx: ToolContext, name: str, args: dict) -> dict
+    # refusal: {"error": code, "message": ...}
+
+ToolContext(bot, agent, run: dict)   # .user .state .session
+
+# das/team.py
+Baton(target, invoice_id, batch_id, reason_code, user,
+      reply_owner, notifies_next, request)</pre>
+    </div>
+    <span class="src">happy-path-code-flow.md §5.1</span>
+  </div>
+
+  <div class="panel">
+    <h2><span class="n">2</span>Agent output schemas</h2>
+    <div class="hint">Built with <code>obj()</code>, so <code>additionalProperties: false</code>. <code>Agent._loop</code> validates the final answer and allows one repair.</div>
+    <div class="grid2">
+      <div class="card blue"><h3>SEARCH_OUT · A·Search</h3>required <code>doc_id</code>, <code>workspace</code>, <code>exists: bool</code>, <code>has_access: bool</code>; optional <code>note</code>.<span class="src">das/team.py</span></div>
+      <div class="card blue"><h3>DEBUG_OUT · B·Debugger</h3>required <code>batch_id: str|null</code>, <code>status</code>, <code>reason_code: str|null</code>, <code>fault: bool</code>, <code>explanation</code> (≤1500); optional <code>consults: array</code>.<span class="src">das/team.py</span></div>
+      <div class="card blue"><h3>ACCESS_OUT · C·Access</h3>required <code>request_id: str|null</code>, <code>access</code> ∈ {granted, already_had, pending, rejected}, <code>reupload_status</code>, <code>notified: bool</code>.<span class="src">das/team.py</span></div>
+      <div class="card blue"><h3>REUPLOAD_OUT · D·Reupload</h3>required <code>doc_id</code>, <code>workspace</code>, <code>prevalidation</code> ∈ {passed, failed}, <code>status</code> ∈ {archived, not_uploaded}; optional <code>detail</code>.<span class="src">das/team.py</span></div>
+    </div>
+    <span class="src">happy-path-code-flow.md §5.2</span>
+  </div>
+
+  <div class="panel">
+    <h2><span class="n">3</span>Tool argument schemas used on the happy path</h2>
+    <div id="ttable"></div>
+    <p class="mt"><b>Schema atoms</b> (<code>das/schema.py</code>): <code>STR</code> string ≤500 · <code>DOC_ID</code> <code>\d{4}</code> · <code>DATE</code> <code>\d{4}-\d{2}-\d{2}</code> · <code>WORKSPACE</code> ∈ {Finance, Compliance, HR} · <code>PERMISSION</code> ∈ {read, upload} · <code>REQUEST_ID</code> <code>REQ-\d+</code> · <code>BATCH_ID</code> <code>BATCH-\d{4}-\d{2}-\d{2}-\d{3}</code> · <code>REASON_CODE</code> <code>[A-Z]{3}-[A-Z-]+</code></p>
+    <span class="src">happy-path-code-flow.md §5.3</span>
+  </div>
+
+  <div class="panel">
+    <h2><span class="n">4</span>Gateway.call checks, in order</h2>
+    <div class="hint">Any failed check returns <code>{"error": code, ...}</code> to the agent (traced as BLOCK) instead of raising.</div>
+    <div class="flow">
+      <div class="chip"><span class="num">1</span><b>Allowlist</b>else <code>tool_not_permitted</code></div>
+      <div class="chip"><span class="num">2</span><b>Valid JSON</b>else <code>invalid_arguments</code></div>
+      <div class="chip"><span class="num">3</span><b>Arg schema</b><code>schema.validate</code>, else <code>invalid_arguments</code></div>
+      <div class="chip"><span class="num">4</span><b>Precondition</b>else <code>precondition_failed</code></div>
+      <div class="chip o"><span class="num">5</span><b>Write confirm</b><code>confirmer</code>, else <code>not_confirmed</code></div>
+      <div class="chip"><span class="num">6</span><b>Run tool.fn</b><code>ToolError</code> → refusal with its code</div>
+      <div class="chip g"><span class="num">7</span><b>Sanitise</b>findings → <code>untrusted_content</code></div>
+      <div class="chip"><span class="num">8</span><b>Record</b>ids → <code>session.known_ids</code>; audit</div>
+    </div>
+    <span class="src">happy-path-code-flow.md §5.4 · das/gateway.py Gateway.call</span>
+  </div>
+
+  <div class="panel">
+    <h2><span class="n">5</span>Routing preconditions</h2>
+    <div class="grid3">
+      <div class="card purple"><h3>access_handoff_allowed</h3>B returned a <code>reason_code</code>; <code>fault</code> is false; baton <code>reason_code</code> and <code>batch_id</code> equal B's; <code>invoice_id</code> equals the session's.<span class="src">das/team.py</span></div>
+      <div class="card blue"><h3>reupload_allowed</h3>The request exists, belongs to the user, is <code>approved</code>, and is for the target workspace.<span class="src">das/team.py</span></div>
+      <div class="card orange"><h3>upload_allowed</h3><code>prevalidate</code> passed for this doc in this run, and the user now has upload access.<span class="src">das/tools.py</span></div>
+      <div class="card teal"><h3>consult_once</h3>Only one consult per DebuggerAgent run.<span class="src">das/tools.py</span></div>
+      <div class="card green"><h3>notify_once</h3>Only one notification per handoff.<span class="src">das/team.py</span></div>
+    </div>
+    <span class="src">happy-path-code-flow.md §5.5</span>
+  </div>
+</section>
+
+<!-- ================= WIKI ================= -->
+<section class="page" id="wiki">
+  <div class="panel">
+    <h2><span class="n">1</span>How to use this guide</h2>
+    <div class="grid3">
+      <div class="card blue"><b>No coding needed.</b> Each part explains what happens in everyday words, using an office as the picture.</div>
+      <div class="card purple"><b>"Why" is always given.</b> Each chapter says why the system is built that way, not only what it does.</div>
+      <div class="card teal"><b>Every claim links to code.</b> <span class="sl">12</span> buttons open that exact step (file, function, real data). <code>file · function</code> tells a developer where to look.</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2><span class="n">2</span>The cast: who does what</h2>
+    <div class="hint">An office analogy, only there to help you understand. The real code name is under each role. Click a step number to see that character at work.</div>
+    <div class="grid3" id="cast"></div>
+    <span class="src">happy-path-code-flow.md §10.1</span>
+  </div>
+
+  <div class="panel">
+    <h2><span class="n">3</span>How a worker thinks</h2>
+    <div class="hint">Every worker (front desk, A, B, C, D) runs this same loop. It's the one piece of code they all share.</div>
+    <div class="flow" id="loop"></div>
+    <span class="src">happy-path-code-flow.md §10.3 · das/agent.py Agent.run, Agent._loop, Agent._execute</span>
+  </div>
+
+  <div class="panel">
+    <h2><span class="n">4</span>The story, chapter by chapter <span class="ref" id="nchap"></span></h2>
+    <div class="hint">Click a chapter to open it. Blue box = what happens, purple = why it's built that way, teal = where it is in the code, red = what happens if it goes wrong.</div>
+    <div class="rcards" id="chapters"></div>
+    <span class="src">happy-path-code-flow.md §10.4</span>
+  </div>
+
+  <div class="panel">
+    <h2><span class="n">5</span>Safety rules the code enforces</h2>
+    <div class="hint">These rules are written in code, so they hold whatever the AI decides.</div>
+    <div class="grid2" id="rules"></div>
+    <span class="src">happy-path-code-flow.md §10.5</span>
+  </div>
+
+  <div class="panel">
+    <h2><span class="n">6</span>Questions people ask</h2>
+    <div class="rcards" id="faq"></div>
+    <span class="src">happy-path-code-flow.md §10.6</span>
+  </div>
+
+  <div class="panel">
+    <h2><span class="n">7</span>Glossary <span class="ref" id="ngloss"></span></h2>
+    <div class="filters"><input class="fsearch" id="gsearch" placeholder="Search a word, e.g. baton, schema" aria-label="Search glossary" style="margin-left:0"></div>
+    <div id="gloss"></div>
+    <span class="src">happy-path-code-flow.md §10.2</span>
+  </div>
+
+  <div class="panel">
+    <h2><span class="n">8</span>Per-agent numbers (first request)</h2>
+    <div id="ntable"></div>
+    <div class="hint mt">Token counts in offline mode are estimates by <code>ScriptedLLM</code> (characters / 4), not real model usage.</div>
+    <span class="src">happy-path-code-flow.md §8 · FLOW SUMMARY of the offline run</span>
+  </div>
+
+  <div class="panel">
+    <h2><span class="n">9</span>Not on the happy path</h2>
+    <div class="notlist"><ul class="clean">
+      <li><b>Fault path:</b> B returns <code>fault: true</code> → <code>handoff_to_platform_team</code> → <code>DASChatbot._platform_team</code> → <code>open_incident</code>.</li>
+      <li><b>Refusals:</b> off-topic, prompt injection, gateway BLOCKs, output guardrail blocking twice → <code>FALLBACK</code>.</li>
+      <li><b>Sanitising</b> of planted instructions (doc 1236's title) in <code>guardrails.sanitize</code>.</li>
+    </ul></div>
+    <span class="src">happy-path-code-flow.md §9</span>
+  </div>
+</section>
+
+<div class="foot">Master copy: <code>docs/happy-path-code-flow.md</code> · page updated 5 Nov 2026 · facts from <code>das/</code> and the offline run</div>
+</div>
+
+<div class="drawer" id="drawer"><div class="hd"><h3 id="dtitle"></h3><button class="x" id="dclose" aria-label="Close">✕</button></div><div class="bd" id="dbody"></div></div>
+
+<script>
+/* ---------- data (single place for every fact that the JS renders) ---------- */
+const LANES = [
+  {k: "priya", n: "Priya", s: "Chat UI"},
+  {k: "rt", n: "Runtime", s: "runtime.py · DASChatbot"},
+  {k: "gr", n: "Guardrails", s: "guardrails.py"},
+  {k: "co", n: "③ Coordinator", s: "team.py · COORDINATOR"},
+  {k: "a", n: "④ A·Search", s: "team.py · SEARCH"},
+  {k: "b", n: "⑤ B·Debugger", s: "team.py · DEBUGGER"},
+  {k: "c", n: "⑥ C·Access", s: "team.py · ACCESS"},
+  {k: "d", n: "⑦ D·Reupload", s: "team.py · REUPLOAD"},
+  {k: "gw", n: "Gateway + tools", s: "gateway.py · tools.py"},
+  {k: "llm", n: "LLM", s: "llm.py · ScriptedLLM"},
+];
+const KIND = {
+  m:       {c: "#2f6fed", w: 2,   d: "",    t: "Manager call (control returns)"},
+  ret:     {c: "#5b6470", w: 1.2, d: "5 4", t: "Return / result"},
+  h:       {c: "#7c5cd6", w: 2.5, d: "",    t: "Handoff (control moves)"},
+  consult: {c: "#1f8a99", w: 2,   d: "",    t: "Bounded consult"},
+  tool:    {c: "#5b6470", w: 1.4, d: "",    t: "Tool call via Gateway.call"},
+  write:   {c: "#e8932c", w: 2,   d: "",    t: "Write tool (auto-confirmed, simulated)"},
+  llm:     {c: "#2f6fed", w: 1.2, d: "2 3", t: "LLM call"},
+  guard:   {c: "#3c9a5f", w: 1.6, d: "",    t: "Guardrail check (passed)"},
+  say:     {c: "#3c9a5f", w: 2.2, d: "",    t: "Message to Priya"},
+  self:    {c: "#5b6470", w: 1.2, d: "",    t: "Internal step"},
+};
+const PHASES = [
+  {k: "in", n: "Input", from: 1, to: 4, c: "#3c9a5f"},
+  {k: "mgr", n: "Coordinator: A ‖ B (Manager calls, parallel)", from: 5, to: 16, c: "#2f6fed"},
+  {k: "hand", n: "Handoff + Coordinator reply", from: 17, to: 21, c: "#7c5cd6"},
+  {k: "own", n: "C·Access owns it (Compliance team)", from: 22, to: 31, c: "#1f8a99"},
+];
+const STEPS = [
+  {n: 1, f: "priya", t: "rt", k: "m", l: "handle(REQUEST)", file: "main.py · main → runtime.py · DASChatbot.handle", io: "text in; list of (sender, text) out",
+   note: "main() calls bot.handle(text) for the request and later for the follow-up."},
+  {n: 2, f: "rt", t: "rt", k: "self", l: "SSO: UserContext", file: "store.py · RuntimeState.login (at construction)", io: "UserContext(user_id='priya', roles=('Finance-Reader','Finance-Uploader'), token='FAKE-SSO-TOKEN-priya')",
+   note: "Simulated OIDC. The token scope (user_id, roles, shortened token) is attached to every tool call through ToolContext.user."},
+  {n: 3, f: "rt", t: "gr", k: "guard", l: "detect_injection, redact_pii", file: "runtime.py · _input_guardrails → guardrails.py", io: "injection: passed · PII: nothing to redact",
+   note: "Regex-based and deterministic. An injection hit would deliver REFUSE_INJECTION and stop here."},
+  {n: 4, f: "gr", t: "llm", k: "llm", l: "check_topic", file: "guardrails.py · check_topic (agent 'InputGuardrail')", io: "{\"on_topic\": true, \"reason\": \"archive upload, rejection and access question\"}",
+   note: "Strict-JSON classifier call. An invalid verdict fails closed (off-topic)."},
+  {n: 5, f: "rt", t: "co", k: "m", l: "COORDINATOR.run(cleaned, history)", file: "agent.py · Agent.run → _loop", io: "text brief; 5 tool specs offered",
+   note: "System prompt = coordinator_prompt(bot): today's date, user, routing rules, session memory snapshot."},
+  {n: 6, f: "co", t: "llm", k: "llm", l: "turn 1", file: "llm.py · chat", io: "2 tool calls: call_search_agent, call_debugger_agent",
+   note: "The prompt says A and B are independent and must be called in the same turn. 'yesterday' is resolved to 2026-10-29."},
+  {n: 7, f: "co", t: "co", k: "self", l: "_execute: parallel ‖", file: "agent.py · Agent._execute", io: "no write tools → ThreadPoolExecutor(max_workers=2)",
+   note: "Each branch runs in a copied contextvars context; trace lines are buffered per branch and printed in order."},
+  {n: 8, f: "co", t: "a", k: "m", l: "call_search_agent (M)", file: "team.py · call_search_agent → SEARCH.run(brief)", io: "args {invoice_id: '1240', workspace: 'Finance'}",
+   note: "Passes Gateway.call (allowlist, schema). Brief: goal, invoice_id, workspace, expected output, scope 'no access requests, no uploads, never reply to the user'."},
+  {n: 9, f: "a", t: "gw", k: "tool", l: "search_archive", file: "tools.py · search_archive", io: "args {query: '1240', workspace: 'Finance'} → {count: 0, matches: []}",
+   note: "_require(ctx, 'Finance', 'read') passes: Priya has Finance-Reader."},
+  {n: 10, f: "a", t: "co", k: "ret", l: "SEARCH_OUT", file: "agent.py · _loop (validated by SEARCH_OUT)", io: "{doc_id: '1240', workspace: 'Finance', exists: false, has_access: true}",
+   note: "call_search_agent stores invoice_id and search_result in SessionMemory."},
+  {n: 11, f: "co", t: "b", k: "m", l: "call_debugger_agent (M)", file: "team.py · call_debugger_agent → DEBUGGER.run(brief)", io: "args {invoice_id: '1240', batch_date: '2026-10-29'}",
+   note: "Runs in parallel with step 8 (same LLM turn)."},
+  {n: 12, f: "b", t: "gw", k: "tool", l: "get_batch_status", file: "tools.py · get_batch_status", io: "BATCH-2026-10-29-001 · 20 files · 19 archived · rejected ['1240']",
+   note: "Only batches where uploader == ctx.user.user_id are returned."},
+  {n: 13, f: "b", t: "gw", k: "tool", l: "get_validation_log", file: "tools.py · get_validation_log", io: "stage classification · result rejected · reason_code CLS-COMPLIANCE · confidence 0.94",
+   note: "_own_batch checks the batch belongs to Priya."},
+  {n: 14, f: "b", t: "gw", k: "tool", l: "get_reason_code_doc", file: "tools.py · get_reason_code_doc", io: "user_fixable: true · fault: false · target_workspace: Compliance",
+   note: "From data/reason_codes.json: tax evidence of this class must be filed in the Compliance archive."},
+  {n: 15, f: "b", t: "a", k: "consult", l: "consult_search_exists", file: "tools.py · consult_search_exists (precondition consult_once)", io: "args {doc_id: '1240', workspace: 'Finance'} → {exists: false}",
+   note: "One structured question, recorded in ctx.run['consults'] and reported upward."},
+  {n: 16, f: "b", t: "co", k: "ret", l: "DEBUG_OUT + consults", file: "team.py · call_debugger_agent (validated by DEBUG_OUT)", io: "{batch_id: 'BATCH-2026-10-29-001', status: 'rejected', reason_code: 'CLS-COMPLIANCE', fault: false, consults: [1]}",
+   note: "Stored in SessionMemory (batch_id, reason_code, fault, debugger_result). The handoff precondition reads it."},
+  {n: 17, f: "co", t: "llm", k: "llm", l: "turn 2", file: "llm.py · chat", io: "1 tool call: handoff_to_access_agent",
+   note: "B said fault=false with a user-fixable reason code, so the prompt routes to C."},
+  {n: 18, f: "co", t: "rt", k: "h", l: "handoff_to_access_agent (H)", file: "team.py · handoff_to_access_agent → _hand_off", io: "Baton queued in bot.pending_handoffs → {accepted: true, now_owned_by: 'C·Access agent (Compliance team)'}",
+   note: "access_handoff_allowed passes: reason_code and batch_id match B's result, invoice matches the session. Control and ownership move."},
+  {n: 19, f: "co", t: "rt", k: "ret", l: "turn 3: reply text", file: "agent.py · _loop (no output schema)", io: "plain text reply to Priya",
+   note: "The Coordinator tells Priya who owns the task now and who will notify her."},
+  {n: 20, f: "rt", t: "gr", k: "guard", l: "check_output", file: "runtime.py · _deliver_checked → guardrails.check_output", io: "cited ids ['1240', 'BATCH-2026-10-29-001'] all known · passed",
+   note: "Ids must come from the user message or tool results (session.known_ids) and must not be restricted records."},
+  {n: 21, f: "rt", t: "priya", k: "say", l: "message 1 · DAS assistant", file: "runtime.py · deliver", io: "1240 not in Finance; batch archived 19 of 20; rejected with CLS-COMPLIANCE; handed to Compliance's Access & policy agent",
+   note: "Appended to outbox and to session.turns."},
+  {n: 22, f: "rt", t: "c", k: "h", l: "dispatch baton → ACCESS.run", file: "runtime.py · _dispatch_handoffs", io: "brief = baton.to_dict() (invoice, batch, reason code, user scope, request)",
+   note: "Runs after the Coordinator's reply is delivered."},
+  {n: 23, f: "c", t: "gw", k: "tool", l: "check_entitlement", file: "tools.py · check_entitlement", io: "{workspace: 'Compliance', permission: 'upload', granted: false}",
+   note: "Roles are still Finance-Reader, Finance-Uploader."},
+  {n: 24, f: "c", t: "gw", k: "write", l: "create_access_request", file: "tools.py · create_access_request (write)", io: "REQ-1001 · pending_approval · role Compliance-Uploader · routed to compliance-records-lead",
+   note: "Write action: auto_confirm (simulated user consent). Sets session.open_request_id."},
+  {n: 25, f: "c", t: "gw", k: "tool", l: "get_access_request_status", file: "tools.py · get_access_request_status", io: "status: approved · approved_by compliance-records-lead",
+   note: "Approval is simulated: the data owner approves right away and IAM grants Compliance-Uploader to priya."},
+  {n: 26, f: "c", t: "d", k: "m", l: "call_reupload_agent (M)", file: "team.py · call_reupload_agent → REUPLOAD.run(brief)", io: "args {doc_id: '1240', target_workspace: 'Compliance', request_id: 'REQ-1001'}",
+   note: "reupload_allowed passes: REQ-1001 belongs to priya, is approved, and is for Compliance."},
+  {n: 27, f: "d", t: "gw", k: "tool", l: "prevalidate", file: "tools.py · prevalidate", io: "4 checks passed: document_class, title, supplier_vat_id, customs_reference",
+   note: "Records ctx.run['prevalidated']['1240'] = true for upload_allowed."},
+  {n: 28, f: "d", t: "gw", k: "write", l: "upload_record", file: "tools.py · upload_record (write, precondition upload_allowed)", io: "archived · Compliance/VAT-Evidence/2026 · retention 10 years · delete_after 2036-12-31",
+   note: "Added to RuntimeState.uploaded in memory; data/*.json is never modified."},
+  {n: 29, f: "d", t: "c", k: "ret", l: "REUPLOAD_OUT", file: "agent.py · _loop (validated by REUPLOAD_OUT)", io: "{doc_id: '1240', workspace: 'Compliance', prevalidation: 'passed', status: 'archived'}",
+   note: "Control returns to C (Manager call)."},
+  {n: 30, f: "c", t: "priya", k: "say", l: "notify_user · message 2", file: "team.py · notify_user (precondition notify_once)", io: "output guardrail passed → deliver('C·Access agent (Compliance team)', ...)",
+   note: "C owns the reply now. REQ-1001 approved; 1240 archived in Compliance/VAT-Evidence/2026."},
+  {n: 31, f: "c", t: "rt", k: "ret", l: "ACCESS_OUT", file: "runtime.py · _dispatch_handoffs (validated by ACCESS_OUT)", io: "{request_id: 'REQ-1001', access: 'granted', reupload_status: 'archived in Compliance', notified: true}",
+   note: "Only traced as a milestone; the Coordinator never sees it."},
+];
+const FILES = [
+  ["main.py", "main()", "Parses args, installs Tracer, builds offline_llm() or NexusClient, creates DASChatbot, calls bot.handle(text) per message"],
+  ["das/config.py", "LLMSettings, llm_settings(), scenario_today()", "Env-only settings (LLM_FAST_*); key never printed; scenario date 2026-10-30"],
+  ["das/runtime.py", "DASChatbot", "One session: handle() → _input_guardrails() → COORDINATOR.run() → _deliver_checked() → _dispatch_handoffs()"],
+  ["das/guardrails.py", "detect_injection, redact_pii, check_topic, check_output, sanitize, collect_ids, extract_json", "Input checks, output checks, tool-result sanitising, id tracking"],
+  ["das/agent.py", "Agent (run, resume, _loop, _execute), AgentError", "The LLM tool-calling loop every agent uses; parallel tool calls; output-schema validation with one repair"],
+  ["das/llm.py", "LLMClient (Protocol), NexusClient, ScriptedLLM, LLMReply, ToolCall, reply()", "Model access; ScriptedLLM replays per-agent queues"],
+  ["das/offline.py", "happy_path_script(), offline_llm()", "The scripted model decisions for this scenario"],
+  ["das/team.py", "COORDINATOR, SEARCH, DEBUGGER, ACCESS, REUPLOAD, Baton, TEAM_TOOLS, ALLOWLISTS, build_gateway()", "Agent definitions, prompts, output schemas, M/H tools, preconditions, allowlists"],
+  ["das/gateway.py", "Gateway, Tool, ToolContext, ToolError, auto_confirm", "The one door to tools: allowlist, arg schema, precondition, write confirm, sanitise, audit"],
+  ["das/tools.py", "SYSTEM_TOOLS + one function per tool", "Enterprise-system tools, run as the signed-in user"],
+  ["das/schema.py", "validate(), obj(), STR, DOC_ID, BATCH_ID, …", "JSON-Schema subset: same schema sent to the LLM and enforced by the gateway"],
+  ["das/store.py", "DataStore, RuntimeState, UserContext, SessionMemory", "Read-only data/*.json, in-memory changes, SSO user, Coordinator memory"],
+  ["das/trace.py", "Tracer, tracer(), install()", "Every hop printed; milestones and per-agent counters for the FLOW SUMMARY"],
+];
+const AGENTS = [
+  {n: "③ Coordinator", c: "blue", o: "none (plain text reply)", tools: "call_search_agent, call_debugger_agent, handoff_to_access_agent, handoff_to_platform_team, get_access_request_status", ms: "8"},
+  {n: "④ A·Search", c: "blue", o: "SEARCH_OUT", tools: "search_archive, get_record", ms: "5"},
+  {n: "⑤ B·Debugger", c: "blue", o: "DEBUG_OUT", tools: "get_batch_status, get_validation_log, get_reason_code_doc, consult_search_exists", ms: "8"},
+  {n: "⑥ C·Access", c: "purple", o: "ACCESS_OUT", tools: "check_entitlement, create_access_request, get_access_request_status, call_reupload_agent, notify_user", ms: "10"},
+  {n: "⑦ D·Reupload", c: "purple", o: "REUPLOAD_OUT", tools: "prevalidate, upload_record", ms: "5"},
+  {n: "E·Platform team", c: "grey", o: "n/a (humans)", tools: "open_incident", ms: "n/a · not used on the happy path"},
+];
+const TOOLS = [
+  ["call_search_agent", "team.py", "agent (M)", "invoice_id: DOC_ID, workspace: WORKSPACE", "no", "none"],
+  ["call_debugger_agent", "team.py", "agent (M)", "invoice_id: DOC_ID, batch_date: DATE", "no", "none"],
+  ["search_archive", "tools.py", "tool", "query: STR, workspace: WORKSPACE", "no", "none (checks read access inside)"],
+  ["get_batch_status", "tools.py", "tool", "batch_date: DATE", "no", "none"],
+  ["get_validation_log", "tools.py", "tool", "batch_id: BATCH_ID, doc_id: DOC_ID", "no", "none (_own_batch inside)"],
+  ["get_reason_code_doc", "tools.py", "tool", "reason_code: REASON_CODE", "no", "none"],
+  ["consult_search_exists", "tools.py", "consult", "doc_id: DOC_ID, workspace: WORKSPACE", "no", "consult_once"],
+  ["handoff_to_access_agent", "team.py", "handoff (H)", "invoice_id, batch_id, reason_code, target_workspace, permission, justification", "no", "access_handoff_allowed"],
+  ["check_entitlement", "tools.py", "tool", "workspace, permission: PERMISSION", "no", "none"],
+  ["create_access_request", "tools.py", "tool", "workspace, permission, justification: STR", "yes", "none"],
+  ["get_access_request_status", "tools.py", "tool", "request_id: REQUEST_ID", "no", "none"],
+  ["call_reupload_agent", "team.py", "agent (M)", "doc_id, target_workspace, request_id", "no", "reupload_allowed"],
+  ["prevalidate", "tools.py", "tool", "doc_id, target_workspace", "no", "none"],
+  ["upload_record", "tools.py", "tool", "doc_id, target_workspace", "yes", "upload_allowed"],
+  ["notify_user", "team.py", "tool", "message (≤1500)", "no", "notify_once"],
+];
+const NUMBERS = [
+  ["InputGuardrail", 1, 0, 139, 19], ["Coordinator", 3, 3, 1820, 165], ["A·Search", 2, 1, 497, 51],
+  ["B·Debugger", 5, 4, 4036, 132], ["C·Access", 6, 5, 2946, 77], ["D·Reupload", 3, 2, 814, 66], ["TOTAL", 20, 15, 10252, 510],
+];
+const GLANCE = [
+  {s: [1, 2], c: "", b: "① Priya → ② SSO", t: "handle(), UserContext"},
+  {s: [3, 4], c: "g", b: "Input guardrails", t: "injection, PII, topic ✓"},
+  {s: [5, 6, 7], c: "", b: "③ Coordinator", t: "LLM turn 1 → A ‖ B"},
+  {s: [8, 9, 10], c: "", b: "④ A·Search (M)", t: "1240 not in Finance"},
+  {s: [11, 12, 13, 14, 15, 16], c: "", b: "⑤ B·Debugger (M)", t: "rejected, CLS-COMPLIANCE, fault false"},
+  {s: [17, 18], c: "h", b: "H ⇒ C·Access", t: "baton queued"},
+  {s: [19, 20, 21], c: "g", b: "⑧ Output guardrail", t: "message 1 to Priya"},
+  {s: [22, 23, 24, 25], c: "o", b: "⑥ C·Access", t: "REQ-1001 created, approved"},
+  {s: [26, 27, 28, 29], c: "o", b: "⑦ D·Reupload (M)", t: "prevalidate, upload"},
+  {s: [30, 31], c: "g", b: "⑥ notify_user", t: "message 2 to Priya"},
+];
+
+/* ---------- plain-language guide (happy-path-code-flow.md §10) ---------- */
+const PLAIN = [
+  "Priya's message reaches the chatbot.",
+  "Her sign-in tells the system who she is and what roles she has.",
+  "The message is checked for tricks and personal data.",
+  "The model confirms the message is about the archive.",
+  "The front desk starts working on the request.",
+  "It decides to ask two workers at once.",
+  "Both workers start at the same time.",
+  "The archive clerk is asked: is 1240 in Finance?",
+  "It searches the Finance archive: nothing found.",
+  "It reports: not there, but Priya has read access.",
+  "The investigator is asked: what happened to 1240 in yesterday's upload?",
+  "It finds yesterday's batch: 19 of 20 archived, 1240 rejected.",
+  "It reads the log: 1240 was recognised as import VAT evidence.",
+  "It looks up the rejection code: Priya can fix it; it belongs in Compliance.",
+  "It double-checks with the archive clerk once: still not in Finance.",
+  "It reports the reason and that this is not a system fault.",
+  "The front desk decides to hand the case to Compliance.",
+  "The baton is passed; Compliance's access officer now owns the case.",
+  "The front desk writes its reply to Priya.",
+  "The reply is checked: only real ids, no personal data.",
+  "Priya receives message 1.",
+  "Compliance's access officer picks up the baton.",
+  "It checks Priya's rights: no upload access to Compliance.",
+  "It raises access request REQ-1001 (with consent).",
+  "The request is approved (simulated) and Priya gets the role.",
+  "It asks the filing clerk to upload 1240.",
+  "The filing clerk checks the file against Compliance's rules: all pass.",
+  "It files 1240 in Compliance/VAT-Evidence/2026.",
+  "It reports back: archived.",
+  "Compliance's access officer tells Priya the outcome (message 2).",
+  "It closes the case; the front desk is not told.",
+];
+const CAST = [
+  {lane: "priya", av: "P", c: "var(--green)", who: "Priya", role: "The customer at the counter.", code: "UserContext (store.py)"},
+  {lane: "rt", av: "M", c: "var(--grey)", who: "Office manager", role: "Runs the conversation: takes the message, passes it on, delivers replies, later passes on handed-over work.", code: "DASChatbot (runtime.py)"},
+  {lane: "gr", av: "✓", c: "var(--green)", who: "Mailroom check", role: "Checks every message coming in and every reply going out.", code: "guardrails.py"},
+  {lane: "co", av: "③", c: "var(--blue)", who: "Front-desk lead", role: "Splits the request, sends workers, writes the reply. Never looks anything up itself.", code: "COORDINATOR (team.py)"},
+  {lane: "a", av: "④", c: "var(--blue)", who: "Archive clerk (A)", role: "Checks whether a document is in a cabinet.", code: "SEARCH (team.py)"},
+  {lane: "b", av: "⑤", c: "var(--blue)", who: "Investigator (B)", role: "Reads the upload logs and the rulebook to find out what went wrong.", code: "DEBUGGER (team.py)"},
+  {lane: "c", av: "⑥", c: "var(--purple)", who: "Compliance access officer (C)", role: "Owns the access request and re-upload, and tells Priya the result.", code: "ACCESS (team.py)"},
+  {lane: "d", av: "⑦", c: "var(--purple)", who: "Compliance filing clerk (D)", role: "Checks the file meets the rules, then files it.", code: "REUPLOAD (team.py)"},
+  {lane: "gw", av: "G", c: "var(--teal)", who: "Security door", role: "The one door into every office system: checks badge, form, order of steps, consent, and strips suspicious text.", code: "Gateway (gateway.py)"},
+  {lane: "llm", av: "?", c: "var(--blue)", who: "The \"thinking\"", role: "Each worker asks the language model what to do next. Offline, the answers are replayed from a script.", code: "NexusClient / ScriptedLLM (llm.py)"},
+  {lane: null, av: "▦", c: "var(--grey)", who: "Office systems", role: "Archive, upload logs, rulebook, access rights (IAM), ticketing (ITSM).", code: "tools.py + data/*.json"},
+];
+const LOOP = [
+  ["Read", "its instructions and the brief"],
+  ["Ask the model", "what to do next, showing the tools it may use"],
+  ["Model decides", "use one or more tools, or give the final answer"],
+  ["Use tools", "through the security door; each result is added to the notes, then back to “Ask”"],
+  ["Answer on the form", "must fit the answer form: one retry, and a turn limit (max_steps)"],
+];
+const CHAPTERS = [
+  {t: "Priya asks", s: [1, 2],
+   what: "Priya is already signed in. Her identity and roles (Finance-Reader, Finance-Uploader) come from sign-in (SSO), with a fake token placeholder in this demo.",
+   why: "Every later action runs as Priya, never as an admin, so she can only reach what she is allowed to.",
+   code: ["runtime.py · DASChatbot.handle", "store.py · RuntimeState.login", "store.py · UserContext"]},
+  {t: "The mailroom checks the message", s: [3, 4],
+   what: "Three questions. Is someone trying to trick the bot? Is there personal data (email, phone, IBAN) to mask? Is the message about the archive? The last one is a yes/no question to the model.",
+   why: "Misuse is stopped before any worker spends effort. If the topic check gets an unclear answer, it refuses (fails closed).",
+   code: ["guardrails.py · detect_injection", "guardrails.py · redact_pii", "guardrails.py · check_topic", "runtime.py · _input_guardrails"],
+   wrong: "Priya gets a refusal (trick detected or off-topic) or an “assistant unavailable” message, and nothing else runs."},
+  {t: "The front desk plans", s: [5, 6, 7],
+   what: "It sees two separate questions: “where is 1240?” and “what happened to yesterday's upload?” (yesterday = 2026-10-29). It sends both workers at the same time.",
+   why: "The questions don't depend on each other, so running them together saves time. The front desk never looks things up itself, so each worker keeps a small key ring.",
+   code: ["team.py · coordinator_prompt", "agent.py · Agent._loop", "agent.py · Agent._execute"]},
+  {t: "A checks the archive", s: [8, 9, 10],
+   what: "A searches Finance for 1240 and finds nothing. Priya does have read access to Finance. A answers on a fixed form.",
+   why: "A fixed form (SEARCH_OUT) gives the front desk predictable facts. A cannot upload and cannot talk to Priya.",
+   code: ["team.py · call_search_agent", "tools.py · search_archive", "team.py · SEARCH_OUT"]},
+  {t: "B investigates", s: [11, 12, 13, 14, 15, 16],
+   what: "Yesterday's batch had 20 files and 19 were archived. The log says 1240 was rejected when its type was recognised: import VAT evidence (customs declaration attached), confidence 0.94, and Finance accepts plain invoices only. The rulebook entry for CLS-COMPLIANCE says Priya can fix this, it is not a system fault, and the right place is Compliance. B double-checks once with A.",
+   why: "“Not a system fault” decides the route. Only one question to A is allowed, and it is reported, so workers can't chat endlessly.",
+   code: ["tools.py · get_batch_status", "tools.py · get_validation_log", "tools.py · get_reason_code_doc", "tools.py · consult_search_exists / consult_once", "team.py · DEBUG_OUT"]},
+  {t: "The front desk hands over", s: [17, 18],
+   what: "The front desk may not grant access in another team's system, so it passes a baton (the case folder) to Compliance's access officer: invoice, batch, reason code, the request, and Priya's identity. From now on C owns the case.",
+   why: "Ownership is clear. Priya's identity comes from sign-in, not from the AI. The door only lets the handoff through if it matches what B found, so the AI can't invent a reason.",
+   code: ["team.py · handoff_to_access_agent", "team.py · access_handoff_allowed", "team.py · Baton / _hand_off"],
+   wrong: "If the baton doesn't match B's result (or B reported a system fault), the door refuses with “precondition_failed” and the front desk must choose again."},
+  {t: "Priya gets the first answer", s: [19, 20, 21],
+   what: "The front desk writes the reply. The mailroom checks that every id in it came from Priya or a tool result, and masks personal data.",
+   why: "This catches invented ids and records Priya may not see.",
+   code: ["runtime.py · _deliver_checked", "guardrails.py · check_output", "runtime.py · deliver"],
+   wrong: "If the check blocks the reply, the front desk gets one rewrite. If that fails too, Priya gets a safe fallback message."},
+  {t: "Compliance takes over", s: [22, 23, 24, 25],
+   what: "C finds that Priya can't upload to Compliance. It raises access request REQ-1001 to the data owner (compliance-records-lead), asking for consent first (automatic in this demo). The status check then shows it approved, and Priya gets the Compliance-Uploader role.",
+   why: "Changes need consent, and the team that owns the system does the work. Note: the approval is simulated and happens at once.",
+   code: ["runtime.py · _dispatch_handoffs", "tools.py · check_entitlement", "tools.py · create_access_request", "tools.py · get_access_request_status", "gateway.py · auto_confirm"]},
+  {t: "The file is filed", s: [26, 27, 28, 29],
+   what: "C asks D to upload. D first checks the held file against Compliance's rules (type import_vat_evidence accepted; title, supplier VAT id and customs reference present), and only then uploads. It lands in Compliance/VAT-Evidence/2026, kept 10 years, delete after 2036-12-31.",
+   why: "The door refuses the upload unless the check passed and the approval exists. The order is enforced by code, not by trusting the AI.",
+   code: ["team.py · call_reupload_agent / reupload_allowed", "tools.py · prevalidate", "tools.py · upload_record / upload_allowed"]},
+  {t: "Priya gets the second message", s: [30, 31],
+   what: "C tells Priya itself, through the same mailroom check, and only once. The front desk never hears the outcome.",
+   why: "The owner reports.",
+   code: ["team.py · notify_user", "team.py · notify_once"]},
+  {t: "Follow-up: “Is it approved yet?”", s: [],
+   what: "The front desk remembers REQ-1001 from session memory and checks the live status: approved, 1240 archived in Compliance.",
+   why: "Session memory lets short follow-ups work without Priya repeating herself.",
+   code: ["store.py · SessionMemory", "team.py · coordinator_prompt", "tools.py · get_access_request_status"]},
+];
+const RULES = [
+  {t: "Each worker has its own key ring", p: "It only sees and can only use its allowed tools.", code: "team.py ALLOWLISTS · gateway.py specs_for, call", s: [5, 8, 11]},
+  {t: "Every form is checked", p: "Fields, types and formats (e.g. a 4-digit document id) are validated before a tool runs.", code: "schema.py validate", s: [9]},
+  {t: "Steps must happen in order", p: "E.g. no upload before the file passes its check and access is approved.", code: "tool preconditions in team.py and tools.py", s: [18, 26, 28]},
+  {t: "Changes need consent", p: "Access requests, uploads and incidents ask first (automatic in this demo, or --confirm-writes).", code: "gateway.py confirmer", s: [24, 28]},
+  {t: "Retrieved text is data, not orders", p: "Instructions hidden in documents are cut out (e.g. doc 1236's title).", code: "guardrails.py sanitize", s: []},
+  {t: "No invented ids", p: "Replies may only mention ids that came from Priya or from a tool result.", code: "guardrails.py check_output", s: [20, 30]},
+  {t: "Acts as Priya, never as admin", p: "Tools check ownership, e.g. only Priya's own batches.", code: "tools.py _require, _own_batch", s: [9, 13]},
+  {t: "Secrets only from settings", p: "The model key comes from the environment and is never printed.", code: "config.py LLMSettings", s: []},
+];
+const FAQ = [
+  {q: "Does the AI make up the answer?", a: "The facts come from tool results. The reply is checked so that it only cites ids that really appeared.", code: "guardrails.py check_output", s: [20]},
+  {q: "Is the approval real?", a: "No, not in this demo. get_access_request_status approves a pending request at once.", code: "tools.py get_access_request_status", s: [25], tag: "simulated"},
+  {q: "Why two messages from two senders?", a: "The handoff moved ownership. The front desk answers what it owns, and Compliance's officer reports its own outcome.", code: "team.py _hand_off · notify_user", s: [21, 30]},
+  {q: "What does “offline” mean?", a: "The model's choices are replayed from das/offline.py. Everything else runs for real.", code: "offline.py happy_path_script · llm.py ScriptedLLM", s: []},
+  {q: "What if a worker fails?", a: "Priya gets a safe fallback message. If handed-over work fails, she is told it could not be completed automatically and that the owning team has been informed.", code: "runtime.py handle, _dispatch_handoffs", s: []},
+  {q: "Why several workers and not one big AI?", a: "Each worker has a small key ring, the code checks every hand-over between them, and it is always clear who owns the reply.", code: "team.py docstring · ALLOWLISTS", s: [18]},
+];
+const GLOSSARY = [
+  ["Agent", "A worker: instructions, a set of allowed tools, and an answer form", "Agent (agent.py)"],
+  ["LLM", "The language model that decides the next step", "LLMClient.chat (llm.py)"],
+  ["Tool", "One action in an office system, e.g. “search the archive”", "Tool (gateway.py), functions in tools.py"],
+  ["Tool call", "A worker asking to use a tool, with filled-in fields", "ToolCall (llm.py)"],
+  ["Gateway", "The single door every tool call passes through", "Gateway.call (gateway.py)"],
+  ["Allowlist", "The tools a worker may use (its key ring)", "ALLOWLISTS (team.py)"],
+  ["Schema / contract", "The form an input or answer must fit: which fields, which types, which values", "schema.py, *_OUT (team.py)"],
+  ["Brief", "The written task one worker gives another", "brief dicts in team.py"],
+  ["Manager call", "“Do this and report back to me”", "kind=\"agent\" tools"],
+  ["Handoff / baton", "“This is yours now”; the case folder that moves with it", "Baton, _hand_off (team.py)"],
+  ["Consult", "B's one allowed question to A", "consult_search_exists (tools.py)"],
+  ["Precondition", "A rule that must be true before a tool may run", "precondition= on Tool"],
+  ["Write action", "A tool that changes something (needs consent)", "write=True on Tool"],
+  ["Guardrail", "An automatic check on messages in and out", "guardrails.py"],
+  ["Known ids", "Every id that came from Priya or a tool result; the reply may only mention these", "SessionMemory.known_ids (store.py)"],
+  ["Session memory", "What the front desk remembers between Priya's messages", "SessionMemory (store.py)"],
+  ["Offline mode", "The model's decisions are replayed; everything else is real", "offline_llm() (offline.py)"],
+];
+
+/* ---------- helpers ---------- */
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+const laneName = k => LANES.find(l => l.k === k).n;
+const phaseOf = n => PHASES.find(p => n >= p.from && n <= p.to);
+
+/* tabs */
+function showTab(id) {
+  if (!$(id)) return;
+  document.querySelectorAll(".tab").forEach(b => b.classList.toggle("on", b.dataset.tab === id));
+  document.querySelectorAll(".page").forEach(p => p.classList.toggle("on", p.id === id));
+  history.replaceState(null, "", "#" + id);
+}
+document.querySelectorAll(".tab").forEach(b => b.onclick = () => showTab(b.dataset.tab));
+if (location.hash) showTab(location.hash.slice(1));
+
+/* drawer: html passed in must already be escaped */
+function openDrawer(title, html) { $("dtitle").textContent = title; $("dbody").innerHTML = html; $("drawer").classList.add("on"); $("dbody").scrollTop = 0; }
+$("dclose").onclick = () => $("drawer").classList.remove("on");
+document.addEventListener("keydown", e => { if (e.key === "Escape") $("drawer").classList.remove("on"); });
+
+function openStep(n) {
+  const s = STEPS.find(x => x.n === n), k = KIND[s.k], p = phaseOf(n);
+  const prev = n > 1 ? `<button class="fbtn" data-go="${n - 1}">← step ${n - 1}</button>` : "";
+  const next = n < STEPS.length ? `<button class="fbtn" data-go="${n + 1}">step ${n + 1} →</button>` : "";
+  openDrawer(`Step ${s.n} · ${s.l}`, `
+    <span class="pill" style="background:${k.c}22;color:${k.c}">${esc(k.t)}</span>
+    <span class="tag t-q">${esc(p.n)}</span>
+    <div class="plain"><b>In plain words:</b> ${esc(PLAIN[n - 1])}</div>
+    <div class="lbl">For developers</div>
+    <dl class="facts">
+      <dt>From → To</dt><dd>${esc(laneName(s.f))} → ${esc(laneName(s.t))}</dd>
+      <dt>File · function</dt><dd><code>${esc(s.file)}</code></dd>
+      <dt>Contract / result</dt><dd><code>${esc(s.io)}</code></dd>
+    </dl>
+    <div class="lbl">What happens</div><p>${esc(s.note)}</p>
+    <div class="lbl">Source</div><p>happy-path-code-flow.md §6 · offline run trace</p>
+    <div class="nav">${prev}${next}</div>`);
+  $("dbody").querySelectorAll("[data-go]").forEach(b => b.onclick = () => openStep(+b.dataset.go));
+}
+
+/* ---------- overview: flow at a glance ---------- */
+$("glance").innerHTML = GLANCE.map((g, i) => `<div class="chip ${g.c}" style="cursor:pointer" data-step="${g.s[0]}"><span class="num">${esc(g.s[0])}–${esc(g.s[g.s.length - 1])}</span><b>${esc(g.b)}</b>${esc(g.t)}</div>`).join("");
+$("glance").querySelectorAll("[data-step]").forEach(c => c.onclick = () => openStep(+c.dataset.step));
+
+/* ---------- sequence diagram (SVG built from STEPS) ---------- */
+(function drawSequence() {
+  const NS = "http://www.w3.org/2000/svg", colW = 122, left = 14, top = 58, rowH = 30, gap = 10;
+  const W = left * 2 + colW * LANES.length;
+  const xOf = k => left + colW * LANES.findIndex(l => l.k === k) + colW / 2;
+  const yOf = n => top + 16 + (n - 1) * rowH + PHASES.findIndex(p => n >= p.from && n <= p.to) * gap;
+  const H = yOf(STEPS.length) + 34;
+  const svg = $("seq");
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  const el = (tag, attrs, parent, text) => {
+    const e = document.createElementNS(NS, tag);
+    for (const [a, v] of Object.entries(attrs)) e.setAttribute(a, v);
+    if (text !== undefined) e.textContent = text;
+    (parent || svg).appendChild(e);
+    return e;
+  };
+  const defs = el("defs", {});
+  Object.entries(KIND).forEach(([name, k]) => {
+    const m = el("marker", {id: "ah-" + name, viewBox: "0 0 10 10", refX: "9", refY: "5", markerWidth: "7", markerHeight: "7", orient: "auto-start-reverse"}, defs);
+    el("path", {d: "M0,0 L10,5 L0,10 z", fill: k.c}, m);
+  });
+  PHASES.forEach(p => {
+    const y1 = yOf(p.from) - rowH / 2 - 2, y2 = yOf(p.to) + rowH / 2 - 2;
+    el("rect", {x: 4, y: y1, width: W - 8, height: y2 - y1, rx: 6, fill: p.c, "fill-opacity": "0.05", stroke: p.c, "stroke-opacity": "0.25"});
+    el("text", {x: W - 10, y: y1 + 11, "text-anchor": "end", class: "ph", fill: p.c}, null, p.n);
+  });
+  LANES.forEach(l => {
+    const x = xOf(l.k);
+    el("line", {x1: x, y1: top - 6, x2: x, y2: H - 8, stroke: "#c9ced6", "stroke-width": 1, "stroke-dasharray": "3 3"});
+    el("rect", {x: x - colW / 2 + 5, y: 6, width: colW - 10, height: 40, rx: 7, fill: "#fff", stroke: "#d7dbe0"});
+    el("text", {x, y: 23, "text-anchor": "middle", class: "lt"}, null, l.n);
+    el("text", {x, y: 37, "text-anchor": "middle", class: "ls"}, null, l.s);
+  });
+  STEPS.forEach(s => {
+    const k = KIND[s.k], y = yOf(s.n), x1 = xOf(s.f), x2 = xOf(s.t);
+    const g = el("g", {class: "step", tabindex: "0", role: "button", "aria-label": `Step ${s.n}: ${s.l}`});
+    el("title", {}, g, `${s.n}. ${laneName(s.f)} → ${laneName(s.t)}: ${s.l}`);
+    const style = {stroke: k.c, "stroke-width": k.w, fill: "none", "marker-end": `url(#ah-${s.k})`};
+    if (k.d) style["stroke-dasharray"] = k.d;
+    if (x1 === x2) {
+      el("rect", {class: "hit", x: x1 - 4, y: y - 16, width: colW + 10, height: rowH - 2, rx: 4}, g);
+      el("path", {d: `M${x1},${y - 5} h26 v11 h-24`, ...style}, g);
+      el("text", {x: x1 + 32, y: y + 4, class: "lab", fill: k.c}, g, `${s.n}. ${s.l}`);
+    } else {
+      const lo = Math.min(x1, x2), hi = Math.max(x1, x2);
+      el("rect", {class: "hit", x: lo - 4, y: y - 16, width: hi - lo + 8, height: rowH - 2, rx: 4}, g);
+      el("line", {x1: x1 + (x2 > x1 ? 3 : -3), y1: y + 2, x2: x2 + (x2 > x1 ? -3 : 3), y2: y + 2, ...style}, g);
+      el("text", {x: (x1 + x2) / 2, y: y - 4, "text-anchor": "middle", class: "lab", fill: k.c}, g, `${s.n}. ${s.l}`);
+    }
+    g.onclick = () => openStep(s.n);
+    g.onkeydown = e => { if (e.key === "Enter") openStep(s.n); };
+  });
+  $("legend").innerHTML = Object.values(KIND).map(k => `<span><i style="border-top-color:${k.c};border-top-style:${k.d ? "dashed" : "solid"}"></i>${esc(k.t)}</span>`).join("");
+})();
+
+/* ---------- step table (filterable) ---------- */
+let pf = "all";
+$("pfilters").innerHTML = `<button class="fbtn on" data-f="all">All</button>` +
+  PHASES.map(p => `<button class="fbtn" data-f="${esc(p.k)}">${esc(p.n)}</button>`).join("") +
+  `<input class="fsearch" id="ssearch" placeholder="Search steps, files, ids" aria-label="Search steps">`;
+function renderSteps() {
+  const term = $("ssearch").value.trim().toLowerCase();
+  const rows = STEPS.filter(s => (pf === "all" || phaseOf(s.n).k === pf) &&
+    (!term || [s.l, s.file, s.io, s.note, PLAIN[s.n - 1], laneName(s.f), laneName(s.t)].join(" ").toLowerCase().includes(term)));
+  $("stable").innerHTML = rows.length ? `<table><tr><th style="width:40px">#</th><th style="width:19%">In plain words</th><th style="width:13%">From → To</th><th style="width:14%">Call</th><th style="width:22%">File · function</th><th>Contract / result</th></tr>${
+    rows.map(s => { const k = KIND[s.k]; return `<tr class="click" data-step="${s.n}"><td class="id">${s.n}</td><td>${esc(PLAIN[s.n - 1])}</td><td>${esc(laneName(s.f))} → ${esc(laneName(s.t))}</td><td><span class="pill" style="background:${k.c}1f;color:${k.c}">${esc(s.l)}</span></td><td><code>${esc(s.file)}</code></td><td>${esc(s.io)}</td></tr>`; }).join("")}</table>`
+    : '<div class="hint">No steps match.</div>';
+  $("stable").querySelectorAll("tr[data-step]").forEach(r => r.onclick = () => openStep(+r.dataset.step));
+}
+$("pfilters").querySelectorAll(".fbtn").forEach(b => b.onclick = () => {
+  pf = b.dataset.f;
+  $("pfilters").querySelectorAll(".fbtn").forEach(x => x.classList.toggle("on", x === b));
+  renderSteps();
+});
+$("ssearch").oninput = renderSteps;
+renderSteps();
+
+/* ---------- files, agents, tools, numbers ---------- */
+$("ftable").innerHTML = `<table><tr><th style="width:15%">File</th><th style="width:35%">Class / function</th><th>Role in the flow</th></tr>${
+  FILES.map(f => `<tr><td class="id"><code>${esc(f[0])}</code></td><td><code>${esc(f[1])}</code></td><td>${esc(f[2])}</td></tr>`).join("")}</table>`;
+$("agents").innerHTML = AGENTS.map(a => `<div class="card ${a.c}"><h3>${esc(a.n)}</h3><dl class="facts"><dt>Output schema</dt><dd><code>${esc(a.o)}</code></dd><dt>Tools</dt><dd>${esc(a.tools)}</dd><dt>max_steps</dt><dd>${esc(a.ms)}</dd></dl><span class="src">das/team.py · ALLOWLISTS</span></div>`).join("");
+$("ttable").innerHTML = `<table><tr><th>Tool</th><th>File</th><th>Kind</th><th>Args</th><th>Write</th><th>Precondition</th></tr>${
+  TOOLS.map(t => `<tr><td class="id"><code>${esc(t[0])}</code></td><td>${esc(t[1])}</td><td>${esc(t[2])}</td><td><code>${esc(t[3])}</code></td><td>${t[4] === "yes" ? '<span class="tag t-v">yes</span>' : "no"}</td><td>${esc(t[5])}</td></tr>`).join("")}</table>`;
+$("ntable").innerHTML = `<table><tr><th>Agent</th><th>LLM calls</th><th>Tool calls</th><th>Tokens in</th><th>Tokens out</th></tr>${
+  NUMBERS.map(r => `<tr${r[0] === "TOTAL" ? ' style="font-weight:800"' : ""}><td>${esc(r[0])}</td>${r.slice(1).map(v => `<td class="num">${esc(v)}</td>`).join("")}</tr>`).join("")}</table>`;
+
+/* ---------- plain-language guide ---------- */
+const stepBtns = list => list.map(n => `<button class="sl" data-step="${esc(n)}" title="${esc(PLAIN[n - 1])}">${esc(n)}</button>`).join("");
+const codeList = list => `<ul class="clean">${list.map(c => `<li><code>${esc(c)}</code></li>`).join("")}</ul>`;
+$("cast").classList.add("cast");
+$("cast").innerHTML = CAST.map(c => {
+  const steps = c.lane ? STEPS.filter(s => s.f === c.lane || s.t === c.lane).map(s => s.n) : [];
+  return `<div class="card"><h3><span class="av" style="background:${c.c}">${esc(c.av)}</span>${esc(c.who)}</h3><p>${esc(c.role)}</p>
+    <div class="code">In the code: <code>${esc(c.code)}</code></div>
+    ${steps.length ? `<div class="lbl">Appears in steps</div>${stepBtns(steps)}` : ""}</div>`;
+}).join("");
+$("loop").innerHTML = LOOP.map((l, i) => `<div class="chip${i === 4 ? " g" : ""}"><span class="num">${i + 1}</span><b>${esc(l[0])}</b>${esc(l[1])}</div>`).join("");
+$("nchap").textContent = CHAPTERS.length;
+$("chapters").innerHTML = CHAPTERS.map((c, i) => `<details class="rcard"${i === 0 ? " open" : ""}><summary>Chapter ${i + 1} · ${esc(c.t)}<span class="meta">${c.s.length ? `steps ${esc(c.s[0])}–${esc(c.s[c.s.length - 1])}` : "second request"}</span></summary>
+  <div class="body"><div class="chap">
+    <div class="card blue"><h4>What happens</h4>${esc(c.what)}</div>
+    <div class="card purple"><h4>Why it's built this way</h4>${esc(c.why)}</div>
+    <div class="card teal"><h4>Where in the code</h4>${codeList(c.code)}${c.s.length ? `<div class="lbl">Open a step</div>${stepBtns(c.s)}` : ""}</div>
+    ${c.wrong ? `<div class="card red wrong"><h4>If it goes wrong</h4>${esc(c.wrong)}</div>` : ""}
+  </div></div></details>`).join("");
+$("rules").innerHTML = RULES.map(r => `<div class="card green"><b>${esc(r.t)}.</b> ${esc(r.p)}
+  <div class="code" style="margin-top:4px;color:var(--muted);font-size:11px">In the code: <code>${esc(r.code)}</code></div>
+  ${r.s.length ? `<div class="lbl">Seen in steps</div>${stepBtns(r.s)}` : ""}</div>`).join("");
+$("faq").innerHTML = FAQ.map(f => `<details class="rcard"><summary>${esc(f.q)}${f.tag ? ` <span class="tag t-v">${esc(f.tag)}</span>` : ""}</summary>
+  <div class="body"><p>${esc(f.a)}</p><div class="hint">In the code: <code>${esc(f.code)}</code></div>${f.s.length ? stepBtns(f.s) : ""}</div></details>`).join("");
+function renderGloss() {
+  const term = $("gsearch").value.trim().toLowerCase();
+  const rows = GLOSSARY.filter(g => !term || g.join(" ").toLowerCase().includes(term));
+  $("gloss").innerHTML = rows.length ? `<table><tr><th style="width:16%">Term</th><th>Plain meaning</th><th style="width:30%">In the code</th></tr>${
+    rows.map(g => `<tr><td class="id">${esc(g[0])}</td><td>${esc(g[1])}</td><td><code>${esc(g[2])}</code></td></tr>`).join("")}</table>` : '<div class="hint">No terms match.</div>';
+}
+$("gsearch").oninput = renderGloss;
+renderGloss();
+$("ngloss").textContent = GLOSSARY.length;
+document.addEventListener("click", e => { const b = e.target.closest("button.sl[data-step]"); if (b) openStep(+b.dataset.step); });
+
+$("nsteps").textContent = $("tsteps").textContent = STEPS.length;
+$("tfiles").textContent = FILES.length;
+</script>
+</body>
+</html>

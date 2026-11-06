@@ -1,0 +1,22 @@
+[
+  {"batch_id": "BATCH-2026-10-29-001", "doc_id": "1240", "stage": "classification", "result": "rejected", "reason_code": "CLS-COMPLIANCE", "detail": "Classifier: import VAT evidence (customs declaration attached), confidence 0.94. The Finance archive accepts the 'invoice' class only."},
+  {"batch_id": "BATCH-2026-10-29-001", "doc_id": "1241", "stage": "validation", "result": "passed", "reason_code": null, "detail": "OCR, classification and validation rules passed."},
+  {"batch_id": "BATCH-2026-10-29-001", "doc_id": "1242", "stage": "validation", "result": "passed", "reason_code": null, "detail": "OCR, classification and validation rules passed."},
+  {"batch_id": "BATCH-2026-10-29-001", "doc_id": "1243", "stage": "validation", "result": "passed", "reason_code": null, "detail": "OCR, classification and validation rules passed."},
+  {"batch_id": "BATCH-2026-10-29-001", "doc_id": "1244", "stage": "validation", "result": "passed", "reason_code": null, "detail": "OCR, classification and validation rules passed."},
+  {"batch_id": "BATCH-2026-10-29-001", "doc_id": "1245", "stage": "validation", "result": "passed", "reason_code": null, "detail": "OCR, classification and validation rules passed."},
+  {"batch_id": "BATCH-2026-10-29-001", "doc_id": "1246", "stage": "validation", "result": "passed", "reason_code": null, "detail": "OCR, classification and validation rules passed."},
+  {"batch_id": "BATCH-2026-10-29-001", "doc_id": "1247", "stage": "validation", "result": "passed", "reason_code": null, "detail": "OCR, classification and validation rules passed."},
+  {"batch_id": "BATCH-2026-10-29-001", "doc_id": "1248", "stage": "validation", "result": "passed", "reason_code": null, "detail": "OCR, classification and validation rules passed."},
+  {"batch_id": "BATCH-2026-10-29-001", "doc_id": "1249", "stage": "validation", "result": "passed", "reason_code": null, "detail": "OCR, classification and validation rules passed."},
+  {"batch_id": "BATCH-2026-10-29-001", "doc_id": "1250", "stage": "validation", "result": "passed", "reason_code": null, "detail": "OCR, classification and validation rules passed."},
+  {"batch_id": "BATCH-2026-10-29-001", "doc_id": "1251", "stage": "validation", "result": "passed", "reason_code": null, "detail": "OCR, classification and validation rules passed."},
+  {"batch_id": "BATCH-2026-10-29-001", "doc_id": "1252", "stage": "validation", "result": "passed", "reason_code": null, "detail": "OCR, classification and validation rules passed."},
+  {"batch_id": "BATCH-2026-10-29-001", "doc_id": "1253", "stage": "validation", "result": "passed", "reason_code": null, "detail": "OCR, classification and validation rules passed."},
+  {"batch_id": "BATCH-2026-10-29-001", "doc_id": "1254", "stage": "validation", "result": "passed", "reason_code": null, "detail": "OCR, classification and validation rules passed."},
+  {"batch_id": "BATCH-2026-10-29-001", "doc_id": "1255", "stage": "validation", "result": "passed", "reason_code": null, "detail": "OCR, classification and validation rules passed."},
+  {"batch_id": "BATCH-2026-10-29-001", "doc_id": "1256", "stage": "validation", "result": "passed", "reason_code": null, "detail": "OCR, classification and validation rules passed."},
+  {"batch_id": "BATCH-2026-10-29-001", "doc_id": "1257", "stage": "validation", "result": "passed", "reason_code": null, "detail": "OCR, classification and validation rules passed."},
+  {"batch_id": "BATCH-2026-10-29-001", "doc_id": "1258", "stage": "validation", "result": "passed", "reason_code": null, "detail": "OCR, classification and validation rules passed."},
+  {"batch_id": "BATCH-2026-10-29-001", "doc_id": "1259", "stage": "validation", "result": "passed", "reason_code": null, "detail": "OCR, classification and validation rules passed."}
+]

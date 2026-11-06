@@ -1,0 +1,16 @@
+{
+  "users": {
+    "priya": {"display_name": "Priya", "job": "Finance Analyst", "roles": ["Finance-Reader", "Finance-Uploader"]},
+    "compliance-records-lead": {"display_name": "Compliance records lead", "job": "Data owner", "roles": ["Compliance-Admin"]}
+  },
+  "roles": {
+    "Finance-Reader": {"workspace": "Finance", "permissions": ["read"]},
+    "Finance-Uploader": {"workspace": "Finance", "permissions": ["read", "upload"]},
+    "Compliance-Reader": {"workspace": "Compliance", "permissions": ["read"]},
+    "Compliance-Uploader": {"workspace": "Compliance", "permissions": ["read", "upload"]},
+    "Compliance-Admin": {"workspace": "Compliance", "permissions": ["read", "upload", "admin"]},
+    "HR-Reader": {"workspace": "HR", "permissions": ["read"]}
+  },
+  "grantable": {"Compliance:upload": "Compliance-Uploader", "Compliance:read": "Compliance-Reader"},
+  "data_owners": {"Finance": "finance-records-lead", "Compliance": "compliance-records-lead", "HR": "hr-records-lead"}
+}
