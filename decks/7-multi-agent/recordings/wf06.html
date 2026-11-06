@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>06 Agent</title>
+<style>
+  :root { --bg: #fff; --fg: #1d2733; --muted: #5b6672; --code: #f4f5f2; --line: #dde1e5; --link: #134F7C; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #14181d; --fg: #e6e9ec; --muted: #9aa4ae; --code: #1e242b; --line: #2c343d; --link: #8ec5ef; } }
+  body { background: var(--bg); color: var(--fg); font: 16px/1.55 system-ui, sans-serif; max-width: 920px; margin: 32px auto; padding: 0 16px; }
+  a { color: var(--link); } .back { font-weight: 600; text-decoration: none; }
+  pre { background: var(--code); border: 1px solid var(--line); border-radius: 8px; padding: 12px; overflow-x: auto; font-size: 13px; line-height: 1.4; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; } :not(pre) > code { background: var(--code); padding: 1px 4px; border-radius: 4px; }
+  table { border-collapse: collapse; } th, td { border: 1px solid var(--line); padding: 6px 10px; }
+</style></head><body>
+<p><a class="back" href="../../index.html">← All decks</a></p>
+<main id="md"></main>
+<script src="../viewer/vendor/marked.min.js"></script>
+<script>document.getElementById('md').innerHTML = marked.parse("# 06 Agent\n\n\nRecorded 2026-11-04 00:49 on macOS, model `anthropic` (claude-opus-5-5), labs at 1616e30. The model's wording changes run to run; the steps and checks don't.\n\n## 1. uv run labs/wf06_agent.py\n\nIn `multi-agent-architecture-patterns/`:\n\n```\nuv run labs/wf06_agent.py\n```\n\nLook for: A calculator warm-up, then the café order priced in EUR.\n\nExit code 0, 30.3 s.\n\n```text\n[Calculator] add({'a': 3, 'b': 4})\n[Calculator] multiply({'a': 7, 'b': 4})\n[Calculator] done (handoff validated)\n\nWarm-up answer: 28.0  (tool results along the way: [7, 28])\n[Café Agent] get_rules({})\n[Café Agent] get_price({'item': 'salmon kibble'})\n[Café Agent] get_price({'item': 'scratching post'})\n[Café Agent] get_discount({'code': 'WHISKERS10'})\n[Café Agent] get_shipping({'city': 'Bergen'})\n[Café Agent] get_tax_rate({'city': 'Bergen'})\n[Café Agent] exchange_rate({'currency': 'EUR'})\n[Café Agent] multiply({'a': 389, 'b': 3})\n[Café Agent] multiply({'a': 549, 'b': 2})\n[Café Agent] add({'a': 1167, 'b': 1098})\n[Café Agent] multiply({'a': 2265, 'b': 0.1})\n[Café Agent] subtract({'a': 2265, 'b': 226.5})\n[Café Agent] add({'a': 2038.5, 'b': 149})\n[Café Agent] multiply({'a': 2187.5, 'b': 0.25})\n[Café Agent] add({'a': 2187.5, 'b': 546.875})\n[Café Agent] multiply({'a': 2734.375, 'b': 0.085})\n[Café Agent] done (handoff validated)\n\nCafé order total: 232.42 EUR  (code's own total: 232.42)\n\nAgent              calls  tokens in  tokens out  seconds\nCalculator             3      1,031          70        4\nCafé Agent            17     18,854         774       24\nTotal                 20     19,885         844       29\n\ntranscript: runs/wf/wf06_agent.json\n```\n\n**Observed:** Warm-up add → multiply = 28. Café: rules, six look-ups, nine sums; 232.42 EUR, equal to code's own total.\n");</script>
+</body></html>

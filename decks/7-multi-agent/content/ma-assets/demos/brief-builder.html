@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>Brief builder</title>
+<link rel="stylesheet" href="demo.css">
+<style>
+  .top { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+  .top h1 { margin: 0 10px 0 0; }
+  .top .sp { flex: 1; }
+  .tg { font-size: 14px; padding: 3px 10px; }
+  .tg::before { content: '○ '; }
+  .tg.on::before { content: '● '; }
+  .main { display: grid; grid-template-columns: 430px 1fr; gap: 12px; height: 520px; }
+  .h { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin-bottom: 4px; }
+  .brief { font-family: var(--mono); font-size: 13px; line-height: 1.5; background: #1d2733; color: #e8eef4; border-radius: 10px; padding: 10px 12px; white-space: pre-wrap; margin-bottom: 8px; }
+  .brief .k { color: #ffb37a; font-weight: 700; }
+  .brief.small { font-size: 12px; opacity: .85; }
+  .vague { color: #e8eef4; font-size: 16px; }
+  .workers { display: grid; grid-template-rows: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; height: 100%; min-height: 0; }
+  .wk { border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; overflow: hidden; display: flex; flex-direction: column; position: relative; }
+  .wk::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 18px; background: linear-gradient(rgba(255,255,255,0), var(--card)); pointer-events: none; }
+  .wk .hd { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
+  .wk .hd b { color: var(--navy); font-size: 16px; }
+  .calls { font-family: var(--mono); font-size: 13px; border-radius: 12px; padding: 1px 9px; background: var(--good-tint); color: var(--good); font-weight: 700; }
+  .calls.hi { background: var(--bad-tint); color: var(--bad); }
+  .bd { font-size: 12px; font-weight: 800; border-radius: 6px; padding: 1px 8px; text-transform: uppercase; letter-spacing: .03em; }
+  .bd.dup { background: #efe7fb; color: #5b3a99; } .bd.gap { background: var(--warn-tint); color: var(--warn); }
+  .bd.eff { background: var(--bad-tint); color: var(--bad); } .bd.wall { background: #eee; color: #444; }
+  .bd.noise { background: #e3f2fb; color: #0f5f8c; } .bd.ok { background: var(--good-tint); color: var(--good); }
+  .out { font-size: 14px; line-height: 1.45; }
+  .out ul { margin: 0; padding-left: 18px; }
+  .out li { margin-bottom: 2px; }
+  .out .x { background: #efe7fb; border-radius: 3px; padding: 0 2px; }
+  .out .n { color: #0f5f8c; background: #e3f2fb; border-radius: 3px; padding: 0 2px; }
+  .out .old { color: var(--muted); text-decoration: line-through; text-decoration-color: rgba(0,0,0,.25); }
+  .out p { margin: 0; }
+  .wallp { font-size: 13px; line-height: 1.35; color: var(--ink); }
+  .gapnote { margin-top: 8px; font-size: 14px; background: var(--warn-tint); border-left: 5px solid var(--warn); border-radius: 8px; padding: 5px 10px; }
+  .lab { position: fixed; right: 10px; bottom: 6px; font-size: 13px; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="top">
+  <h1>Brief builder</h1>
+  <button class="tg" data-k="goal">Goal</button>
+  <button class="tg" data-k="format">Output format</button>
+  <button class="tg" data-k="tools">Tools</button>
+  <button class="tg" data-k="bounds">Boundaries</button>
+  <button class="tg" data-k="budget">Budget</button>
+  <span class="sp"></span>
+  <button id="vague">Vague</button>
+  <button id="bounded">Bounded</button>
+</div>
+<div class="main">
+  <div>
+    <div class="h">Brief to the mail worker</div>
+    <div class="brief" id="b-mail"></div>
+    <div class="h">Brief to the Jira worker</div>
+    <div class="brief small" id="b-jira"></div>
+    <div id="gap"></div>
+  </div>
+  <div class="workers">
+    <div class="wk"><div class="hd"><b>Mail worker</b><span class="calls" id="c-mail"></span><span id="bd-mail"></span></div><div class="out" id="o-mail"></div></div>
+    <div class="wk"><div class="hd"><b>Jira worker</b><span class="calls" id="c-jira"></span><span id="bd-jira"></span></div><div class="out" id="o-jira"></div></div>
+  </div>
+</div>
+<div class="lab">Fictional Contoso data · simulated worker output</div>
+<script src="demo-kit.js"></script>
+<script>
+const $ = s => document.querySelector(s);
+const K = ['goal', 'format', 'tools', 'bounds', 'budget'];
+const BRIEF = {
+  mail: {
+    goal: 'Find what vendor B told us after 2026-09-24 about price and system requirements.',
+    format: 'max 6 bullets, each with date, sender, fact; then "Open questions:".',
+    tools: 'mail_search only. Folder: POC. Ignore alert mails.',
+    bounds: 'Vendor B only. No Jira, no minutes (other workers do those).',
+    budget: 'at most 8 tool calls. Stop when price and requirements are found.',
+  },
+  jira: {
+    goal: 'Find the status of vendor B\'s open asks in Jira, POC-12 to POC-14.',
+    format: 'one line per issue: key, status, date, what is still open.',
+    tools: 'jira_search only. Project POC.',
+    bounds: 'Vendor B issues only. No mail, no minutes. Don\'t restate prices.',
+    budget: 'at most 5 tool calls.',
+  },
+};
+const LABEL = { goal: 'Goal', format: 'Output', tools: 'Tools', bounds: 'Boundaries', budget: 'Budget' };
+function briefHtml(w, s) {
+  if (!K.some(k => s[k])) return '<span class="vague">Look into vendor B.</span>';
+  return K.filter(k => s[k]).map(k => `<span class="k">${LABEL[k]}:</span> ${Demo.esc(BRIEF[w][k])}`).join('\n') + (s.goal ? '' : '\n<span class="k">Task:</span> Look into vendor B.');
+}
+// facts
+const PRICE = { d: '2026-10-07', who: 'Marek (vendor B)', f: '0.85 EUR per GB per day; 170 EUR/day at 200 GB/day' };
+const VALID = { d: '2026-10-07', who: 'Marek (vendor B)', f: 'offer valid until 2026-12-31; volume discount from 300 GB/day' };
+const VERS = { d: '2026-10-02', who: 'Lee → Marek', f: 'servers: 4× Windows Server 2019, 2× 2022; about 180 GB/day' };
+const ONPREM = { d: '2026-09-24', who: 'minutes thread', f: 'vendor B: fully on-premise collection and parsing' };
+const HIST = [
+  { d: '2026-09-17', who: 'Sam → vendor A', f: 'asked vendor A for an on-premise parser', old: 1 },
+  { d: '2026-09-30', who: 'vendor A', f: 'no on-premise parser before next year', old: 1 },
+  { d: '2026-10-01', who: 'Sam', f: 'minutes approved: vendor A dropped', old: 1 },
+];
+const NOISE = [
+  { d: '2026-10-06', who: 'alert', f: '4 transfer TIMEOUTs 02:09–02:16 (9d41-6a0e, b2e0-17f4, 7f3a-91c2, e7c3-58b1)', n: 1 },
+  { d: '2026-10-06', who: 'alert', f: 'index failure 03:02, 41aa-0c9d', n: 1 },
+];
+function bullets(items, cls) {
+  return '<ul>' + items.map(i => `<li class="${i.x ? '' : ''}"><span class="${i.dup ? 'x' : i.n ? 'n' : i.old ? 'old' : ''}"><b>${i.d}</b> · ${Demo.esc(i.who)} · ${Demo.esc(i.f)}</span></li>`).join('') + '</ul>';
+}
+function wall(items) {
+  return '<p class="wallp">' + items.map(i => `I looked through the ${i.n ? 'alert' : 'POC'} mail and on ${i.d} ${Demo.esc(i.who)} ${i.dup ? '<span class="x">' : ''}said or noted that ${Demo.esc(i.f)}${i.dup ? '</span>' : ''}.`).join(' ') + ' Overall vendor B seems to be progressing and there are several threads relating to the POC which may be relevant, and I also noticed some other mails that could be of interest to the team going forward.</p>';
+}
+function render(s) {
+  document.querySelectorAll('.tg').forEach(b => b.classList.toggle('on', !!s[b.dataset.k]));
+  const all = K.every(k => s[k]), none = !K.some(k => s[k]);
+  $('#vague').classList.toggle('on', none); $('#bounded').classList.toggle('on', all);
+  $('#b-mail').innerHTML = briefHtml('mail', s);
+  $('#b-jira').innerHTML = briefHtml('jira', s);
+  // mail worker
+  let mail = [];
+  if (!s.goal) mail.push(...HIST);
+  mail.push(ONPREM, Object.assign({ dup: !s.bounds }, PRICE));
+  if (s.goal || s.format) mail.push(VALID);
+  if (s.goal && s.bounds) mail.push(VERS);
+  if (!s.tools) mail.push(...NOISE);
+  // jira worker
+  let jira = [];
+  if (s.bounds) {
+    jira = [
+      { d: '2026-10-07', who: 'POC-12', f: 'Done: pricing answered' },
+      { d: '2026-09-24', who: 'POC-13', f: 'Open: vendor B asked "Windows Server 2019?" (Lee)' },
+      { d: '2026-10-02', who: 'POC-14', f: 'In Progress: send vendor B the server versions (Lee)' },
+    ];
+  } else {
+    jira = [
+      { d: '2026-10-07', who: 'POC-12', f: 'Done: 0.85 EUR per GB per day', dup: 1 },
+      { d: '2026-10-07', who: 'POC-12', f: 'so 170 EUR/day at 200 GB/day', dup: 1 },
+    ];
+    if (s.goal) jira.push({ d: '2026-09-24', who: 'POC-13', f: 'Open: Windows Server 2019?' });
+  }
+  if (!s.tools) jira.push({ d: '2026-10-06', who: 'logs', f: 'also read transfer.log: 4 TIMEOUTs', n: 1 });
+  const fmtOut = items => s.format ? bullets(items) + (s.goal || s.bounds ? '<p style="margin-top:4px"><b>Open questions:</b> ' + (s.bounds ? 'does vendor B support the two 2022 servers too?' : 'none') + '</p>' : '') : wall(items);
+  $('#o-mail').innerHTML = fmtOut(mail);
+  $('#o-jira').innerHTML = fmtOut(jira);
+  // tool calls
+  let cm = 6, cj = 4;
+  if (!s.goal) { cm += 14; cj += 6; }
+  if (!s.tools) { cm += 12; cj += 8; }
+  if (!s.bounds) { cm += 8; cj += 4; }
+  if (s.budget) { cm = Math.min(cm, 8); cj = Math.min(cj, 5); }
+  $('#c-mail').textContent = cm + ' tool calls'; $('#c-jira').textContent = cj + ' tool calls';
+  $('#c-mail').classList.toggle('hi', cm > 10); $('#c-jira').classList.toggle('hi', cj > 10);
+  const badges = (w, calls) => {
+    const b = [];
+    if (!s.bounds) b.push('<span class="bd dup">duplicate</span>');
+    if (calls > 10) b.push('<span class="bd eff">over-effort</span>');
+    if (!s.format) b.push('<span class="bd wall">wall of text</span>');
+    if (!s.tools) b.push('<span class="bd noise">noise</span>');
+    if (w === 'mail' && !s.goal) b.push('<span class="bd gap">off-goal: vendor A</span>');
+    return b.length ? b.join(' ') : '<span class="bd ok">usable</span>';
+  };
+  $('#bd-mail').innerHTML = badges('mail', cm);
+  $('#bd-jira').innerHTML = badges('jira', cj);
+  const gap = !(s.goal && s.bounds);
+  $('#gap').innerHTML = gap
+    ? '<div class="gapnote"><b>GAP:</b> nobody checks Lee\'s server versions (2026-10-02) against vendor B\'s question "Windows Server 2019?" (POC-13).</div>'
+    : '<div class="gapnote" style="background:var(--good-tint);border-left-color:var(--good)"><b>No gap:</b> the mail worker brings Lee\'s versions and the Jira worker brings POC-13, so the merger can connect them.</div>';
+}
+const preset = Demo.param('preset', 'vague');
+const init = {}; K.forEach(k => init[k] = preset === 'bounded');
+const set = Demo.sync('brief', init, render);
+document.querySelectorAll('.tg').forEach(b => b.onclick = () => set({ [b.dataset.k]: !init[b.dataset.k] }));
+$('#vague').onclick = () => { const p = {}; K.forEach(k => p[k] = false); set(p); };
+$('#bounded').onclick = () => { const p = {}; K.forEach(k => p[k] = true); set(p); };
+</script>
+</body>
+</html>

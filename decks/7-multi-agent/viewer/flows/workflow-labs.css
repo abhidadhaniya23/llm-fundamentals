@@ -1,0 +1,18 @@
+/* Multi-agent deck: wide diagrams grow tall at projector width. Cap them so a slide fits 1080p. */
+body.students #slide .diagram svg { max-height: 40vh; width: auto; }
+body.students #slide .diagram { padding: 10px; margin: .6em 0; }
+/* Workflow labs: the pattern diagrams are mermaid flowcharts; keep them to a strip so the problem fits on one slide. */
+body.students #slide .diagram svg { max-height: 20vh; }
+
+/* Recorded runs: a terminal window. <pre class="term"> with <span class="rv sN"> per step group. */
+#slide pre.term { background: #1e1e1e; color: #d4d4d4; border-radius: 8px; padding: 34px 16px 12px; position: relative;
+  font: 15px/1.4 ui-monospace, Menlo, Consolas, monospace; white-space: pre-wrap; overflow-wrap: anywhere; margin: .5em 0; }
+#slide pre.term::before { content: "● ● ●"; position: absolute; top: 8px; left: 12px; color: #6a6a6a; font-size: 11px; letter-spacing: 2px; }
+#slide pre.term .t-cmd { color: #9cdcfe; }
+#slide pre.term .t-cmd::before { content: "$ "; color: #6a9955; }
+#slide pre.term .t-who { color: #F47421; font-weight: 600; }
+#slide pre.term .t-ok { color: #6a9955; }
+#slide pre.term .t-bad { color: #f48771; font-weight: 600; }
+#slide pre.term .t-dim { color: #808080; }
+body.students #slide pre.term { font-size: 16px; line-height: 1.35; }
+

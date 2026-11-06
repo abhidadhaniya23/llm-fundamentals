@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>Pattern playground</title>
+<link rel="stylesheet" href="demo.css">
+<style>
+  .top { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+  .top h1 { margin: 0 8px 0 0; }
+  .top .sp { flex: 1; }
+  .top .ex { font-size: 13px; color: var(--muted); }
+  .pats { display: flex; gap: 4px; flex-wrap: wrap; row-gap: 4px; margin-bottom: 6px; align-items: center; }
+  .pats button { font-size: 13px; padding: 3px 8px; white-space: nowrap; }
+  .pats .div { width: 1px; height: 22px; background: var(--line); margin: 0 4px; }
+  .pats .grp { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; margin-right: 2px; }
+  button:disabled { opacity: .35; cursor: default; background: var(--card); color: var(--navy); }
+  .stage { border: 1px solid var(--line); border-radius: 10px; background: var(--paper); }
+  svg { display: block; width: 100%; height: 340px; }
+  .cap { margin-top: 8px; min-height: 66px; font-size: 16px; line-height: 1.45; background: var(--card); border-left: 6px solid var(--orange); border-radius: 10px; padding: 7px 14px; box-shadow: 0 0 0 1px var(--line) inset; }
+  .cap .n { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; display: block; }
+  .cap.end { border-left-color: var(--good); }
+  .cap.bad { border-left-color: var(--bad); }
+  .lab { position: fixed; right: 10px; bottom: 6px; font-size: 13px; color: var(--muted); }
+  .fail.on { background: var(--bad); border-color: var(--bad); color: #fff; }
+  .fail { border-color: var(--bad); color: var(--bad); }
+</style>
+</head>
+<body>
+<div class="top">
+  <h1>Pattern playground</h1>
+  <button data-task="A" title="Friday's POC status: vendor B vs C">Task A · Friday status</button>
+  <button data-task="B" title="Night alerts 2026-10-06">Task B · night alerts</button>
+  <span class="ex" id="ex"></span>
+  <span class="sp"></span>
+  <button class="fail" id="fail" title="Show the ping-pong failure">Show failure</button>
+  <button id="play">▶ Play</button>
+  <button id="step">Step ›</button>
+  <button id="reset">Reset</button>
+</div>
+<div class="pats" id="pats"></div>
+<div class="stage"><svg id="svg" viewBox="0 0 1000 360"></svg></div>
+<div class="cap" id="cap"></div>
+<div class="lab">Fictional Contoso data · illustrative</div>
+<script src="demo-kit.js"></script>
+<script>
+// Node: [id, x, y, label, kind, extra]. kind: in, out, model, code, agent, ghost
+// Step: { m: [[from, to, message], ...], c: 'caption' }
+const KIND_SUB = { model: 'model call', code: 'plain code', agent: 'agent · own loop', ghost: 'not needed this week' };
+const P = {
+  chain: { name: 'Chain', kind: 'workflow', desc: 'Chain: each step feeds the next. A plain-code gate can stop it between steps.',
+    A: { nodes: [['q', 90, 180, 'Friday status?', 'in'], ['mi', 280, 180, 'read minutes', 'model'], ['ma', 470, 180, 'read mail', 'model'], ['ji', 660, 180, 'read Jira', 'model'], ['wr', 850, 180, 'write report', 'model']],
+      steps: [
+        { m: [['q', 'mi', 'vendor B vs C']], c: 'Step 1 reads the four POC minutes, from 2026-09-03 to 2026-10-01.' },
+        { m: [['mi', 'ma', 'notes so far']], c: 'Step 2 reads the POC mail. It has to wait for step 1 to finish first.' },
+        { m: [['ma', 'ji', 'notes so far']], c: 'Step 3 reads Jira, POC-12 to POC-15.' },
+        { m: [['ji', 'wr', 'all notes']], c: 'Step 4 writes the report from the notes.' },
+        { m: [], end: 'wr', c: 'The order is fixed and the same every Friday. But minutes, mail and Jira don\'t depend on each other, so each step waits for nothing. That\'s a hint that <b>parallel</b> would be faster.' }] },
+    B: { nodes: [['in', 90, 180, 'alert mail', 'in'], ['ex', 280, 180, 'extract doc-id', 'model'], ['ga', 470, 180, 'gate: xxxx-xxxx?', 'code'], ['ki', 660, 180, 'look up KI', 'code'], ['dr', 850, 180, 'draft note', 'model']],
+      steps: [
+        { m: [['in', 'ex', '02:14 7f3a-91c2 TIMEOUT']], c: 'The alert mail arrives. Step 1 is a model call that pulls the doc-id out of the text.' },
+        { m: [['ex', 'ga', '7f3a-91c2']], c: 'The <b>gate</b> is plain code: does the id match xxxx-xxxx? If not, the chain stops here and a human looks.' },
+        { m: [['ga', 'ki', 'format ok']], c: 'Plain code looks the symptom up in the known-issues sheet and finds KI-022, transfer timeout.' },
+        { m: [['ki', 'dr', 'KI-022: reprocess after 06:00']], c: 'The last model call drafts the note for Sam.' },
+        { m: [], end: 'dr', c: '"7f3a-91c2 (Fabrikam Legal) timed out at 02:14, target busy. Reprocess after 06:00." Every alert takes the same steps, so this is a <b>chain</b>, not an agent.' }] } },
+  parallel: { name: 'Parallel', kind: 'workflow', desc: 'Parallel: independent parts run at the same time (sectioning), or the same task runs several times and the majority wins (voting).',
+    A: { nodes: [['q', 80, 180, 'Friday status?', 'in'], ['sp', 260, 180, 'split', 'code'], ['mi', 500, 60, 'read minutes', 'model'], ['ma', 500, 180, 'read mail', 'model'], ['ji', 500, 300, 'read Jira', 'model'], ['me', 740, 180, 'merge', 'model'], ['out', 910, 180, 'report', 'out']],
+      steps: [
+        { m: [['q', 'sp', 'vendor B vs C']], c: 'The split is plain code. The three parts are fixed in advance and are the same every Friday.' },
+        { m: [['sp', 'mi', 'read'], ['sp', 'ma', 'read'], ['sp', 'ji', 'read']], c: '<b>Sectioning:</b> three readers start at the same moment, none waiting for another.' },
+        { m: [['mi', 'me', '09-24: B demo'], ['ma', 'me', 'B: 0.85 EUR/GB/day'], ['ji', 'me', 'POC-12 Done']], c: 'The results come back about when the slowest reader finishes, not when all three would have finished one after another.' },
+        { m: [['me', 'out', 'report']], c: 'One merge call writes the report.' },
+        { m: [], end: 'out', c: 'The other kind is <b>voting</b>: ask "does Noor\'s forwarded transcript contain an instruction to an assistant?" three times, and the majority wins (2 of 3 say yes).' }] },
+    B: { nodes: [['in', 80, 180, 'night alerts', 'in'], ['sp', 250, 180, 'split', 'code'], ['a1', 490, 40, '9d41-6a0e', 'model'], ['a2', 490, 133, 'b2e0-17f4', 'model'], ['a3', 490, 227, '7f3a-91c2', 'model'], ['a4', 490, 320, 'e7c3-58b1', 'model'], ['me', 730, 180, 'merge', 'code'], ['out', 910, 180, 'morning mail', 'out']],
+      steps: [
+        { m: [['in', 'sp', '4 TIMEOUTs, 02:09–02:16']], c: 'Four transfer TIMEOUT alerts on 2026-10-06 between 02:09 and 02:16.' },
+        { m: [['sp', 'a1', 'alert'], ['sp', 'a2', 'alert'], ['sp', 'a3', 'alert'], ['sp', 'a4', 'alert']], c: 'Each alert is analysed on its own, all four at the same time.' },
+        { m: [['a1', 'me', 'KI-022'], ['a2', 'me', 'KI-022'], ['a3', 'me', 'KI-022'], ['a4', 'me', 'KI-022']], c: 'All four match KI-022: target busy during the night batch.' },
+        { m: [['me', 'out', 'reprocess 4 IDs after 06:00']], c: 'Plain code merges the four results into one list.' },
+        { m: [], end: 'out', c: 'This works because the alerts don\'t depend on each other. If they did, parallel would give four half-answers.' }] } },
+  routing: { name: 'Routing', kind: 'workflow', desc: 'Routing: a classifier (model or rules) picks one path. Each handler has its own prompt and tools.',
+    A: { nodes: [['q', 100, 180, 'question', 'in'], ['ro', 360, 180, 'data-class check', 'code'], ['lo', 680, 90, 'local model', 'model', 'Confidential'], ['cl', 680, 270, 'cloud model', 'model', 'Internal']],
+      steps: [
+        { m: [['q', 'ro', 'Friday status + SD-LOG-01']], c: 'The question needs SD-LOG-01, the solution design.' },
+        { m: [['ro', 'lo', 'Confidential']], c: 'SD-LOG-01 is Confidential, and Contoso policy says Confidential content only goes to a local model.' },
+        { m: [['q', 'ro', 'Why did we drop vendor A?']], c: 'The next question only needs the approved minutes.' },
+        { m: [['ro', 'cl', 'Internal']], c: 'The minutes are Internal, so they can go to the cloud model.' },
+        { m: [], end: 'ro', c: 'Routing by <b>data class</b>, the rule from the RAG day. The same pattern can route by difficulty: easy questions to a small model, hard ones to a big one.' }] },
+    B: { nodes: [['in', 100, 180, 'alert mail', 'in'], ['ro', 340, 180, 'router', 'model'], ['ch', 660, 60, 'Content Hub handler', 'model'], ['la', 660, 180, 'Legacy Archive handler', 'model'], ['ca', 660, 300, 'Capture handler', 'model']],
+      steps: [
+        { m: [['in', 'ro', '02:14 7f3a-91c2 transfer TIMEOUT']], c: 'The router reads the alert. It can be a model call or plain rules.' },
+        { m: [['ro', 'ch', 'Content Hub']], c: 'The transfer stage runs on Content Hub, so it goes to the Content Hub handler, which has its own prompt and tools.' },
+        { m: [['in', 'ro', 'Capture batch stuck at remote site']], c: 'Next mail: a Capture batch is stuck at the remote site (KI-047).' },
+        { m: [['ro', 'ca', 'Capture']], c: 'It goes to the Capture handler, which knows to retry the export.' },
+        { m: [], end: 'ro', c: 'One path per input. The handlers never see each other\'s mails, so each prompt stays short and focused.' }] } },
+  orchestrator: { name: 'Orchestrator–workers', kind: 'workflow', desc: 'Orchestrator–workers: one model decides at run time which subtasks are needed. That run-time choice is the difference from parallel.',
+    A: { nodes: [['q', 90, 180, 'Sam: B vs C?', 'in'], ['or', 300, 180, 'orchestrator', 'agent'], ['w1', 580, 50, 'minutes since 09-24', 'model'], ['w2', 580, 140, 'mail: B and C', 'model'], ['w3', 580, 230, 'Jira POC-12..15', 'model'], ['w4', 580, 320, 'SD-LOG-01', 'ghost'], ['out', 870, 180, 'report', 'out']],
+      steps: [
+        { m: [['q', 'or', 'Friday status: B vs C']], c: 'The orchestrator reads the question and <b>decides</b> which workers it needs.' },
+        { m: [['or', 'w1', 'brief'], ['or', 'w2', 'brief'], ['or', 'w3', 'brief']], c: 'This week it picks three: minutes since 09-24, mail from vendors B and C, and Jira POC-12 to POC-15. Each worker gets a brief.' },
+        { m: [['w1', 'or', 'B: on-prem'], ['w2', 'or', 'B: 0.85 EUR/GB/day'], ['w3', 'or', 'POC-15: C demo 10-15']], c: 'Each worker returns a short summary.' },
+        { m: [['or', 'out', 'report']], c: 'The orchestrator merges the summaries and writes the report.' },
+        { m: [], end: 'out', c: 'Next week the question mentions the design, so it adds a fourth worker for SD-LOG-01 (dimmed). The subtasks are <b>not fixed in advance</b>. This is the pattern to build by hand.' }] },
+    B: { nodes: [['in', 90, 180, 'night alerts', 'in'], ['or', 320, 180, 'orchestrator', 'agent'], ['w1', 600, 90, 'Content Hub worker', 'model'], ['w2', 600, 270, 'index worker', 'model'], ['out', 870, 180, 'morning mail', 'out']],
+      steps: [
+        { m: [['in', 'or', '5 alert mails']], c: 'Five mails: four transfer TIMEOUTs and one index failure at 03:02.' },
+        { m: [['or', 'w1', '4 TIMEOUTs'], ['or', 'w2', '41aa-0c9d']], c: 'The orchestrator decides that two kinds of problem need two workers.' },
+        { m: [['w1', 'or', 'KI-022, after 06:00'], ['w2', 'or', 'index failure: check SOP']], c: 'Both workers report back.' },
+        { m: [['or', 'out', 'draft for Sam']], c: 'The orchestrator writes one morning mail.' },
+        { m: [], end: 'out', c: 'If there had only been TIMEOUTs, it would have started only one worker. The orchestrator <b>decides at run time</b>.' }] } },
+  evaluator: { name: 'Evaluator–optimizer', kind: 'workflow', fixed: 'Example: the internal storage quote for Fabrikam Legal', desc: 'Evaluator–optimizer: one model writes, another checks against criteria, and they loop until it passes or hits a limit.',
+    X: { nodes: [['in', 90, 180, 'quote request', 'in', 'Fabrikam Legal'], ['wr', 340, 180, 'writer', 'model'], ['rv', 640, 180, 'reviewer', 'model'], ['out', 890, 180, 'quote sent', 'out']],
+      steps: [
+        { m: [['in', 'wr', 'extra storage']], c: 'Fabrikam Legal asks for an internal quote for extra storage.' },
+        { m: [['wr', 'rv', 'draft v1']], c: 'The writer drafts the quote.' },
+        { m: [['rv', 'wr', 'FAIL: price not from the list']], c: 'The reviewer checks it against three criteria: the price list, the tenant\'s data class, and tone. Round 1 fails.' },
+        { m: [['wr', 'rv', 'draft v2']], c: 'Round 2: the price now comes from the list.' },
+        { m: [['rv', 'wr', 'FAIL: data class missing']], c: 'Still failing: the quote doesn\'t say which data class the storage is for.' },
+        { m: [['wr', 'rv', 'draft v3']], c: 'Round 3.' },
+        { m: [['rv', 'out', 'PASS']], c: 'It passes.' },
+        { m: [], end: 'out', c: 'The criteria are clear, and the limit is <b>3 rounds</b>. After round 3 it goes to a person, whether it passed or not. Without a limit, the loop can run for ever.' }] } },
+  pipeline: { name: 'Pipeline', kind: 'agents', fixed: 'Example: the monthly tenant report', desc: 'Pipeline: agents in a fixed order, each with its own tools and its own loop.',
+    X: { nodes: [['in', 90, 180, 'Jira + 50 tickets', 'in'], ['co', 300, 180, 'collector', 'agent'], ['an', 510, 180, 'analyst', 'agent'], ['wr', 720, 180, 'writer', 'agent'], ['out', 910, 180, 'tenant report', 'out']],
+      steps: [
+        { m: [['in', 'co', 'this month']], c: 'The collector agent pulls the tickets and Jira issues. It may call its tools many times.' },
+        { m: [['co', 'an', '50 tickets']], c: 'The analyst agent groups them by tenant and looks for trends.' },
+        { m: [['an', 'wr', 'trends per tenant']], c: 'The writer agent turns the trends into the report.' },
+        { m: [['wr', 'out', 'report']], c: 'Report done.' },
+        { m: [], end: 'out', c: 'The difference from a chain: each stage is an agent with its own loop. <b>Smell:</b> if the collector misses ten tickets, nobody downstream notices.' }] } },
+  fanout: { name: 'Fan-out/fan-in', kind: 'agents', desc: 'Fan-out/fan-in: split, run agents in parallel, merge.',
+    A: { nodes: [['q', 80, 180, 'Friday status?', 'in'], ['sp', 250, 180, 'splitter', 'agent'], ['r1', 490, 40, 'minutes reader', 'agent'], ['r2', 490, 133, 'mail reader', 'agent'], ['r3', 490, 227, 'Jira reader', 'agent'], ['r4', 490, 320, 'SD-LOG-01 reader', 'agent'], ['me', 730, 180, 'merger', 'agent'], ['out', 910, 180, 'report', 'out']],
+      steps: [
+        { m: [['q', 'sp', 'vendor B vs C']], c: 'The splitter writes four briefs.' },
+        { m: [['sp', 'r1', 'brief'], ['sp', 'r2', 'brief'], ['sp', 'r3', 'brief'], ['sp', 'r4', 'brief']], c: 'Four readers start at once, each an agent with its own tools and its own context.' },
+        { m: [['r1', 'me', '6 lines'], ['r2', 'me', '6 lines'], ['r3', 'me', '6 lines'], ['r4', 'me', '6 lines']], c: 'Each one reads a lot and returns a few lines. That is <b>context isolation</b>: the 30 mails never reach the merger.' },
+        { m: [['me', 'out', 'report']], c: 'The merger writes the report from 24 lines.' },
+        { m: [], end: 'out', c: 'Anthropic\'s research system: 3–5 sub-agents in parallel, each using 3+ tools in parallel, cut research time by up to 90%. <b>Smell:</b> the merger trusts every branch equally.' }] },
+    B: { nodes: [['in', 80, 180, 'night alerts', 'in'], ['sp', 250, 180, 'splitter', 'agent'], ['a1', 490, 40, '9d41-6a0e', 'agent'], ['a2', 490, 133, 'b2e0-17f4', 'agent'], ['a3', 490, 227, '7f3a-91c2', 'agent'], ['a4', 490, 320, 'e7c3-58b1', 'agent'], ['me', 730, 180, 'merger', 'agent'], ['out', 910, 180, 'morning mail', 'out']],
+      steps: [
+        { m: [['in', 'sp', '4 TIMEOUTs']], c: 'One agent per alert.' },
+        { m: [['sp', 'a1', 'brief'], ['sp', 'a2', 'brief'], ['sp', 'a3', 'brief'], ['sp', 'a4', 'brief']], c: 'Each agent reads transfer.log and index.log for its ID, which is a lot of log lines.' },
+        { m: [['a1', 'me', 'KI-022'], ['a2', 'me', 'KI-022'], ['a3', 'me', 'KI-022 · Fabrikam Legal'], ['a4', 'me', 'KI-022']], c: 'Each returns one line. The log lines stay in its own context.' },
+        { m: [['me', 'out', 'reprocess 4 IDs after 06:00']], c: 'The merger writes Sam\'s morning mail.' },
+        { m: [], end: 'out', c: 'Is four agents worth it here? Four alerts with the same cause could be <b>one agent</b> with a loop. Fan-out pays when each branch reads a lot.' }] } },
+  supervisor: { name: 'Supervisor', kind: 'agents', desc: 'Supervisor: a lead agent delegates, collects, and decides whether more work is needed. Control stays in one place.',
+    A: { nodes: [['q', 90, 180, 'Sam: B vs C?', 'in'], ['su', 340, 180, 'supervisor', 'agent'], ['ma', 640, 80, 'mail agent', 'agent'], ['ji', 640, 280, 'Jira agent', 'agent'], ['out', 890, 180, 'report', 'out']],
+      steps: [
+        { m: [['q', 'su', 'Friday status']], c: 'The supervisor owns the task from start to end.' },
+        { m: [['su', 'ma', 'vendor B + C mail'], ['su', 'ji', 'POC-12..15']], c: 'It delegates the mail to one agent and Jira to another.' },
+        { m: [['ma', 'su', 'B asked: Windows 2019?'], ['ji', 'su', 'POC-13 Open']], c: 'Both report back. The supervisor sees an open question.' },
+        { m: [['su', 'ji', 'also POC-14?']], c: 'It decides <b>more work is needed</b> and sends the Jira agent back.' },
+        { m: [['ji', 'su', 'POC-14: Lee sent versions']], c: 'Lee sent the server versions on 2026-10-02: four servers on 2019 and two on 2022.' },
+        { m: [['su', 'out', 'report']], c: 'The supervisor writes the report.' },
+        { m: [], end: 'out', c: '<b>Smell:</b> every report passes through the supervisor\'s context. With 10 workers, it becomes the bottleneck.' }] },
+    B: { nodes: [['in', 90, 180, 'night alerts', 'in'], ['su', 340, 180, 'on-call supervisor', 'agent'], ['ch', 640, 70, 'Content Hub agent', 'agent'], ['ix', 640, 290, 'index agent', 'agent'], ['out', 890, 180, 'Sam\'s morning mail', 'out']],
+      steps: [
+        { m: [['in', 'su', 'Night alerts 2026-10-06']], c: 'Five alert mails reach the on-call supervisor.' },
+        { m: [['su', 'ch', '4 TIMEOUTs 02:09–02:16'], ['su', 'ix', '03:02 41aa-0c9d']], c: 'It delegates the four TIMEOUTs to the Content Hub agent and the index failure to the index agent.' },
+        { m: [['ch', 'su', 'KI-022: target busy'], ['ix', 'su', 'index failure: see SOP']], c: 'Both report back.' },
+        { m: [['su', 'ch', 'which tenant is 7f3a-91c2?']], c: 'The supervisor wants one more fact and sends the Content Hub agent back.' },
+        { m: [['ch', 'su', 'Fabrikam Legal']], c: 'The answer: Fabrikam Legal.' },
+        { m: [['su', 'out', 'draft: reprocess after 06:00']], c: 'It drafts the morning mail. <b>Sam approves</b> before anything is reprocessed.' },
+        { m: [], end: 'out', c: 'One owner from start to end. <b>Smell:</b> the supervisor\'s context fills with every report.' }] } },
+  handoff: { name: 'Handoff', kind: 'agents', fixed: 'Example: Noor\'s ticket', desc: 'Handoff (swarm): there\'s no boss. An agent hands the whole conversation to another agent.',
+    X: { nodes: [['no', 120, 70, 'Noor\'s ticket', 'in'], ['it', 120, 260, 'intake agent', 'agent'], ['ch', 460, 260, 'Content Hub agent', 'agent'], ['ca', 800, 260, 'Capture agent', 'agent'], ['out', 800, 70, 'reply to Noor', 'out']],
+      steps: [
+        { m: [['no', 'it', 'Fabrikam docs missing in search']], c: 'Noor\'s ticket arrives at the intake agent.' },
+        { m: [['it', 'ch', 'whole conversation']], c: 'The intake agent hands the <b>whole conversation</b> to the Content Hub agent. It doesn\'t wait for an answer.' },
+        { m: [['ch', 'ca', 'batch stuck at remote site']], c: 'The Content Hub agent sees that the documents never arrived: a Capture batch is stuck. It hands over to the Capture agent.' },
+        { m: [['ca', 'out', 'retry the export (KI-047)']], c: 'The Capture agent retries the export and replies to Noor itself.' },
+        { m: [], end: 'out', c: 'Good for a conversation that moves across specialties. Whoever holds the conversation answers.' }],
+      fail: [
+        { m: [['no', 'it', 'Fabrikam docs missing in search']], c: 'Same ticket. This time watch the handoffs.' },
+        { m: [['it', 'ch', 'whole conversation']], c: 'Intake hands it to Content Hub.' },
+        { m: [['ch', 'ca', 'Capture batch?']], c: 'Content Hub: "looks like Capture."' },
+        { m: [['ca', 'ch', 'transfer stage = Content Hub']], c: 'Capture: "the transfer stage is Content Hub, not mine."' },
+        { m: [['ch', 'ca', 'Capture batch?']], c: 'Content Hub hands it back again.' },
+        { m: [['ca', 'ch', 'not mine']], c: 'And back again.' },
+        { m: [], bad: true, end: 'ch', c: '<b>Ping-pong:</b> four handoffs and nobody owns the end. Noor still has no answer. <b>Fix:</b> a hop limit in code, one owner for the reply, and a human after 2 handoffs.' }] } },
+};
+const ORDER = [['workflow', ['chain', 'parallel', 'routing', 'orchestrator', 'evaluator']], ['agents', ['pipeline', 'fanout', 'supervisor', 'handoff']]];
+const $ = s => document.querySelector(s);
+const svg = $('#svg');
+const W = 168, H = 60;
+$('#pats').innerHTML = ORDER.map(([g, ks], i) => (i ? '<span class="div"></span>' : '') + `<span class="grp">${g === 'workflow' ? 'Workflows' : 'Agents'}</span>` + ks.map(k => `<button data-p="${k}">${P[k].name}</button>`).join('')).join('');
+
+function scenario(s) {
+  const p = P[s.pattern];
+  const sc = p.X || p[s.task] || p.A;
+  return { p, sc, steps: (s.fail && sc.fail) ? sc.fail : sc.steps };
+}
+function border(a, b) {
+  // point on the box border of a, towards b
+  const dx = b.x - a.x, dy = b.y - a.y;
+  if (!dx && !dy) return { x: a.x, y: a.y };
+  const t = Math.min((W / 2 + 4) / Math.abs(dx || 1e-9), (H / 2 + 4) / Math.abs(dy || 1e-9));
+  return { x: a.x + dx * t, y: a.y + dy * t };
+}
+function seg(N, f, t) {
+  const a = N[f], b = N[t];
+  return [border(a, b), border(b, a)];
+}
+let last = { key: '', step: -1 };
+let anim = null;
+function render(s) {
+  const { p, sc, steps } = scenario(s);
+  document.querySelectorAll('[data-p]').forEach(b => b.classList.toggle('on', b.dataset.p === s.pattern));
+  document.querySelectorAll('[data-task]').forEach(b => { b.disabled = !!p.X; b.classList.toggle('on', !p.X && b.dataset.task === s.task); });
+  $('#ex').textContent = p.fixed || '';
+  $('#fail').style.display = sc.fail ? '' : 'none';
+  $('#fail').classList.toggle('on', !!s.fail);
+  const N = {};
+  sc.nodes.forEach(([id, x, y, label, kind, extra]) => N[id] = { id, x, y, label, kind, extra });
+  const cur = steps[s.step - 1];
+  const active = new Set();
+  if (cur) cur.m.forEach(([f, t]) => { active.add(f); active.add(t); });
+  if (cur && cur.end) active.add(cur.end);
+  // edges: every pair that any step uses (both scripts)
+  const pairs = new Map();
+  [...sc.steps, ...(sc.fail || [])].forEach(st => st.m.forEach(([f, t]) => { const k = [f, t].sort().join('|'); if (!pairs.has(k)) pairs.set(k, [f, t]); }));
+  if (N.w4) pairs.set('or|w4', ['or', 'w4']);
+  const curPairs = new Set(cur ? cur.m.map(([f, t]) => [f, t].sort().join('|')) : []);
+  let h = `<defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" style="fill:#b9b4a8"/></marker>
+    <marker id="aho" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0L10,5L0,10z" style="fill:var(--orange)"/></marker></defs>`;
+  pairs.forEach(([f, t], k) => {
+    const [a, b] = seg(N, f, t);
+    const ghost = N[f].kind === 'ghost' || N[t].kind === 'ghost';
+    h += `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" style="stroke:${ghost ? '#d6d2c8' : '#c9c4b8'};stroke-width:2;${ghost ? 'stroke-dasharray:5 5' : ''}"/>`;
+  });
+  if (cur) cur.m.forEach(([f, t]) => {
+    const [a, b] = seg(N, f, t);
+    h += `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" style="stroke:var(--orange);stroke-width:3.5" marker-end="url(#aho)"/>`;
+  });
+  sc.nodes.forEach(([id]) => {
+    const n = N[id];
+    const st = {
+      in: ['var(--navy-tint)', 'var(--navy)', ''], out: ['var(--good-tint)', 'var(--good)', ''],
+      model: ['#f4f0fb', '#7d4cc2', ''], code: ['#f1f1ef', '#8a8578', ''], agent: ['var(--orange-tint)', 'var(--orange)', ''],
+      ghost: ['#fbfaf7', '#c9c4b8', 'stroke-dasharray:6 4;'],
+    }[n.kind];
+    const on = active.has(id);
+    const bad = cur && cur.bad && cur.end === id;
+    const sub = n.extra || KIND_SUB[n.kind] || '';
+    h += `<g><rect x="${n.x - W / 2}" y="${n.y - H / 2}" width="${W}" height="${H}" rx="10" style="fill:${bad ? 'var(--bad-tint)' : st[0]};stroke:${bad ? 'var(--bad)' : st[1]};stroke-width:${on ? 3.5 : 1.8};${st[2]}"/>
+      <text x="${n.x}" y="${n.y + (sub ? -3 : 5)}" text-anchor="middle" style="font-size:15px;font-weight:700;fill:${n.kind === 'ghost' ? '#a9a49a' : 'var(--ink)'}">${Demo.esc(n.label)}</text>
+      ${sub ? `<text x="${n.x}" y="${n.y + 16}" text-anchor="middle" style="font-size:11.5px;fill:var(--muted)">${Demo.esc(sub)}</text>` : ''}</g>`;
+  });
+  // message pills at the edge midpoints
+  if (cur) cur.m.forEach(([f, t, msg]) => {
+    const [a, b] = seg(N, f, t);
+    const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+    const w = Math.min(260, msg.length * 6.6 + 16);
+    const x = Math.max(4, Math.min(1000 - w - 4, mx - w / 2));
+    h += `<g class="pill"><rect x="${x}" y="${my - 12}" width="${w}" height="22" rx="11" style="fill:#fff;stroke:var(--orange);stroke-width:1.5"/>
+      <text x="${x + w / 2}" y="${my + 4}" text-anchor="middle" style="font-family:var(--mono);font-size:11.5px;fill:#8a3d0b">${Demo.esc(msg)}</text></g>`;
+  });
+  h += '<g id="dots"></g>';
+  svg.innerHTML = h;
+  // caption
+  const cap = $('#cap');
+  cap.classList.toggle('end', !!(cur && cur.end && !cur.bad));
+  cap.classList.toggle('bad', !!(cur && cur.bad));
+  cap.innerHTML = s.step === 0
+    ? `<span class="n">${p.kind === 'workflow' ? 'Workflow pattern: the code fixes the path' : 'Multi-agent architecture: an agent decides who works next'}</span>${p.desc} Press <b>Play</b> or <b>Step</b>.`
+    : `<span class="n">Step ${s.step} of ${steps.length}</span>${cur.c}`;
+  $('#step').disabled = s.step >= steps.length;
+  // animate dots when moving forward one step
+  const key = s.pattern + s.task + s.fail;
+  if (cur && cur.m.length && last.key === key && s.step === last.step + 1) animate(N, cur.m);
+  last = { key, step: s.step };
+  if (s.step >= steps.length) stopPlay();
+}
+function animate(N, moves) {
+  if (anim) cancelAnimationFrame(anim);
+  const g = svg.querySelector('#dots');
+  const segs = moves.map(([f, t]) => seg(N, f, t));
+  g.innerHTML = segs.map(() => '<circle r="9" style="fill:var(--orange);stroke:#fff;stroke-width:2.5"/>').join('');
+  const cs = [...g.querySelectorAll('circle')];
+  svg.querySelectorAll('.pill').forEach(p => p.style.opacity = 0);
+  const t0 = performance.now(), D = 750;
+  const tick = now => {
+    const k = Math.min(1, (now - t0) / D), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+    segs.forEach(([a, b], i) => { cs[i].setAttribute('cx', a.x + (b.x - a.x) * e); cs[i].setAttribute('cy', a.y + (b.y - a.y) * e); });
+    if (k < 1) anim = requestAnimationFrame(tick);
+    else { g.innerHTML = ''; svg.querySelectorAll('.pill').forEach(p => p.style.opacity = 1); anim = null; }
+  };
+  anim = requestAnimationFrame(tick);
+}
+const init = { pattern: P[Demo.param('pattern', 'orchestrator')] ? Demo.param('pattern', 'orchestrator') : 'orchestrator', task: Demo.param('task', 'A') === 'B' ? 'B' : 'A', step: 0, fail: false };
+const set = Demo.sync('patterns', init, render);
+let timer = null;
+function stopPlay() { if (timer) { clearInterval(timer); timer = null; } $('#play').textContent = '▶ Play'; }
+// Demo.sync mutates `init` in place (also on messages from the other window), so it is the live state.
+const curState = init;
+const setS = patch => set(patch);
+document.querySelectorAll('[data-p]').forEach(b => b.onclick = () => { stopPlay(); setS({ pattern: b.dataset.p, step: 0, fail: false }); });
+document.querySelectorAll('[data-task]').forEach(b => b.onclick = () => { stopPlay(); setS({ task: b.dataset.task, step: 0 }); });
+$('#fail').onclick = () => { stopPlay(); setS({ fail: !curState.fail, step: 0 }); };
+$('#reset').onclick = () => { stopPlay(); setS({ step: 0 }); };
+$('#step').onclick = () => { stopPlay(); nextStep(); };
+function nextStep() { const { steps } = scenario(curState); if (curState.step < steps.length) setS({ step: curState.step + 1 }); else stopPlay(); }
+$('#play').onclick = () => {
+  if (timer) return stopPlay();
+  const { steps } = scenario(curState);
+  if (curState.step >= steps.length) setS({ step: 0 });
+  $('#play').textContent = '❚❚ Pause';
+  nextStep();
+  timer = setInterval(nextStep, 1900);
+};
+</script>
+</body>
+</html>

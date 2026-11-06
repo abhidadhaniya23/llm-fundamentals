@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Before you run: check the tools</title>
+<style>
+  :root { --bg: #fff; --fg: #1d2733; --muted: #5b6672; --code: #f4f5f2; --line: #dde1e5; --link: #134F7C; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #14181d; --fg: #e6e9ec; --muted: #9aa4ae; --code: #1e242b; --line: #2c343d; --link: #8ec5ef; } }
+  body { background: var(--bg); color: var(--fg); font: 16px/1.55 system-ui, sans-serif; max-width: 920px; margin: 32px auto; padding: 0 16px; }
+  a { color: var(--link); } .back { font-weight: 600; text-decoration: none; }
+  pre { background: var(--code); border: 1px solid var(--line); border-radius: 8px; padding: 12px; overflow-x: auto; font-size: 13px; line-height: 1.4; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; } :not(pre) > code { background: var(--code); padding: 1px 4px; border-radius: 4px; }
+  table { border-collapse: collapse; } th, td { border: 1px solid var(--line); padding: 6px 10px; }
+</style></head><body>
+<p><a class="back" href="../../index.html">← All decks</a></p>
+<main id="md"></main>
+<script src="../viewer/vendor/marked.min.js"></script>
+<script>document.getElementById('md').innerHTML = marked.parse("# Before you run: check the tools\n\n\nRecorded 2026-11-04 01:06 on macOS, model `anthropic` (claude-opus-5-5), labs at 1616e30. The model's wording changes run to run; the steps and checks don't.\n\n## 1. uv run labs/wf_tools.py\n\nIn `multi-agent-architecture-patterns/`:\n\n```\nuv run labs/wf_tools.py\n```\n\nLook for: Every tool self-checks without a model. If this fails, no lab will work.\n\nExit code 0, 0.1 s.\n\n```text\nwf_tools self-check passed\n```\n\n**Observed:** Passes with no .env: no model is called.\n\n## 2. a lab with no .env (Nexus settings empty)\n\nIn `multi-agent-architecture-patterns/`:\n\n```\nuv run labs/wf01_prompt_chaining.py\n```\n\nWith these set in the shell first: `LLM_PROVIDER=nexus`, `NEXUS_BASE_URL=`, `NEXUS_API_KEY=`\n\nLook for: It stops before the first model call and names what is missing.\n\nExit code 1, 0.1 s.\n\n```text\n\nLLM_PROVIDER=nexus needs NEXUS_BASE_URL, NEXUS_API_KEY. Set them in .env (see .env.example) or export them before running a lab.\n```\n\n**Observed:** Exit 1 before any model call, naming the two missing settings.\n");</script>
+</body></html>

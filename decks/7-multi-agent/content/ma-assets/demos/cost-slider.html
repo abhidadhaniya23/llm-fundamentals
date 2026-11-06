@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>The 15× bill</title>
+<link rel="stylesheet" href="demo.css">
+<style>
+  .top { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+  .top h1 { margin: 0 10px 0 0; }
+  .ctl { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 10px; }
+  .ctl .card { display: flex; flex-direction: column; gap: 4px; }
+  .ctl label { font-size: 13px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+  .ctl .val { font-size: 18px; font-weight: 700; color: var(--navy-deep); }
+  .ctl input[type=range] { width: 100%; accent-color: var(--orange); }
+  .ctl input[type=number] { width: 90px; border: 1.5px solid var(--line); border-radius: 6px; padding: 3px 6px; }
+  .ctl .dis { opacity: .4; pointer-events: none; }
+  .panels { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .panel { border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; }
+  .panel h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin-bottom: 6px; }
+  .row { margin-bottom: 10px; }
+  .row .nm { font-size: 13px; color: var(--muted); display: flex; justify-content: space-between; }
+  .row .nm b { color: var(--ink); }
+  .row.sel .nm { color: var(--orange); font-weight: 700; }
+  .track { position: relative; height: 22px; background: var(--zebra); border-radius: 5px; margin-top: 2px; }
+  .bar { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 5px; background: var(--navy); transition: width .35s; }
+  .row.sel .bar { background: var(--orange); }
+  .anch { position: absolute; top: -4px; bottom: -4px; border-left: 2px dashed var(--muted); }
+  .anch span { position: absolute; top: -15px; left: -9px; font-size: 11px; color: var(--muted); font-weight: 700; }
+  .anchrow { position: relative; height: 16px; }
+  .sum { margin-top: 10px; font-size: 16px; line-height: 1.5; background: var(--orange-tint); border-left: 6px solid var(--orange); border-radius: 10px; padding: 8px 14px; }
+  .sum .x { font-size: 22px; font-weight: 800; color: #8a3d0b; }
+  .src { font-size: 12px; color: var(--muted); margin-top: 6px; }
+  .lab { position: fixed; right: 10px; bottom: 6px; font-size: 13px; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="top">
+  <h1>The bill: one task, three ways</h1>
+  <button data-mode="chat">Chat</button>
+  <button data-mode="single">Single agent</button>
+  <button data-mode="multi">Orchestrator + workers</button>
+</div>
+<div class="ctl">
+  <div class="card" id="c-n"><label>Workers (sources read in parallel)</label><span class="val" id="v-n"></span><input type="range" id="n" min="1" max="10" step="1"></div>
+  <div class="card" id="c-t"><label>Tokens per worker</label><span class="val" id="v-t"></span><input type="range" id="tpw" min="1000" max="20000" step="1000"></div>
+  <div class="card"><label>Price per million tokens (EUR, illustrative)</label><input type="number" id="price" min="0.1" max="100" step="0.1"><span class="muted" style="font-size:13px">Runs per year (every Friday): 52</span></div>
+</div>
+<div class="panels">
+  <div class="panel"><h3>Tokens per run</h3><div class="anchrow" id="anch"></div><div id="p-tok"></div></div>
+  <div class="panel"><h3>Cost per year (52 Fridays)</h3><div id="p-cost"></div></div>
+  <div class="panel"><h3>Wall-clock time per run</h3><div id="p-time"></div></div>
+</div>
+<div class="sum" id="sum"></div>
+<div class="src">Anchors from Anthropic: an agent uses about 4× the tokens of a chat, a multi-agent system about 15×. Chat = 2,000 tokens; orchestrator overhead = 6,000 tokens. Single agent reads the sources one after another (25 s each); workers read them at the same time.</div>
+<div class="lab">Fictional Contoso data · illustrative numbers</div>
+<script src="demo-kit.js"></script>
+<script>
+const CHAT = 2000, SINGLE = 8000, ORCH = 6000;
+const $ = s => document.querySelector(s);
+const fmt = n => Math.round(n).toLocaleString('en-US');
+function calc(s) {
+  const multi = ORCH + s.n * s.tpw;
+  return {
+    tok: { chat: CHAT, single: SINGLE, multi },
+    time: { chat: 4, single: 10 + s.n * 25, multi: 10 + 25 * (s.tpw / 6000) + 10 },
+  };
+}
+function bars(el, vals, s, unit, max) {
+  const names = { chat: 'Chat', single: 'Single agent', multi: `Orchestrator + ${s.n}` };
+  el.innerHTML = ['chat', 'single', 'multi'].map(k => `
+    <div class="row ${s.mode === k ? 'sel' : ''}">
+      <div class="nm"><span>${names[k]}</span><b>${unit(vals[k])}</b></div>
+      <div class="track"><div class="bar" style="width:${Math.max(1, 100 * vals[k] / max)}%"></div></div>
+    </div>`).join('');
+}
+function render(s) {
+  document.querySelectorAll('[data-mode]').forEach(b => b.classList.toggle('on', b.dataset.mode === s.mode));
+  $('#n').value = s.n; $('#tpw').value = s.tpw;
+  if (document.activeElement !== $('#price')) $('#price').value = s.price;
+  $('#v-n').textContent = s.n + (s.n === 1 ? ' worker' : ' workers');
+  $('#v-t').textContent = fmt(s.tpw);
+  $('#c-n').classList.toggle('dis', s.mode !== 'multi');
+  $('#c-t').classList.toggle('dis', s.mode !== 'multi');
+  const c = calc(s);
+  const tmax = Math.max(c.tok.multi, 15 * CHAT) * 1.08;
+  bars($('#p-tok'), c.tok, s, v => fmt(v) + ' · ' + (v / CHAT).toFixed(1) + '×', tmax);
+  $('#anch').innerHTML = [1, 4, 15].map(x => `<div class="anch" style="left:${100 * x * CHAT / tmax}%"><span>${x}×</span></div>`).join('');
+  const cost = {}; Object.keys(c.tok).forEach(k => cost[k] = c.tok[k] / 1e6 * s.price * 52);
+  bars($('#p-cost'), cost, s, v => v.toFixed(2) + ' EUR', Math.max(...Object.values(cost)) * 1.08);
+  bars($('#p-time'), c.time, s, v => Math.round(v) + ' s', Math.max(...Object.values(c.time)) * 1.08);
+  const t = c.tok[s.mode], x = t / CHAT;
+  const label = { chat: 'Chat', single: 'Single agent', multi: `Orchestrator + ${s.n} workers` }[s.mode];
+  let verdict;
+  if (s.mode === 'chat') verdict = 'Cheapest and fastest, but it can\'t read Jira or the mail. For Friday\'s report it would guess.';
+  else if (s.mode === 'single') verdict = `Reads the ${s.n} sources one after another: ${Math.round(c.time.single)} s. Try the prompt fix here first.`;
+  else verdict = `${(c.time.single / c.time.multi).toFixed(1)}× faster than one agent, ${(c.tok.multi / SINGLE).toFixed(1)}× its tokens. Worth it only if the answer is worth it.`;
+  $('#sum').innerHTML = `<b>${label}:</b> <span class="x">${x.toFixed(1)}×</span> a chat · ${fmt(t)} tokens · ${(t / 1e6 * s.price).toFixed(3)} EUR per run · ${Math.round(c.time[s.mode])} s<br>${verdict}`;
+}
+const set = Demo.sync('cost', { mode: Demo.param('mode', 'multi'), n: 4, tpw: 6000, price: 3 }, render);
+document.querySelectorAll('[data-mode]').forEach(b => b.onclick = () => set({ mode: b.dataset.mode }));
+$('#n').oninput = e => set({ n: +e.target.value });
+$('#tpw').oninput = e => set({ tpw: +e.target.value });
+$('#price').oninput = e => { const v = parseFloat(e.target.value); if (v > 0) set({ price: v }); };
+</script>
+</body>
+</html>

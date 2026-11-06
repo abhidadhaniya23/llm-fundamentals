@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>Multi-agent demos</title>
+<link rel="stylesheet" href="demo.css">
+<style>
+  html, body { height: auto; }
+  body { overflow: auto; padding: 20px 24px; max-width: 1100px; }
+  h1 { font-size: 1.4rem; margin-bottom: 4px; }
+  table { border-collapse: collapse; width: 100%; margin-top: 12px; }
+  th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; font-size: 15px; }
+  th { color: var(--muted); font-size: 13px; text-transform: uppercase; letter-spacing: .04em; }
+  td a { color: var(--navy); font-weight: 600; }
+  .p a { display: inline-block; margin: 0 6px 4px 0; font-family: var(--mono); font-size: 13px; background: var(--navy-tint); border-radius: 4px; padding: 1px 6px; text-decoration: none; font-weight: 400; }
+  .synthetic { position: static; margin-top: 14px; }
+</style>
+</head>
+<body>
+<h1>Multi-Agent Orchestration: interactive demos</h1>
+<div class="muted">For the trainer to test. Each page is sized for a 1100×600 slide iframe; clicks mirror between the trainer and student windows. Open a page twice to test the sync.</div>
+<table id="t"><tr><th>#</th><th>Demo</th><th>Flow</th><th>What it shows</th><th>Presets</th></tr></table>
+<script src="demo-kit.js"></script>
+<script>
+const D = [
+  ['cost-slider', 'Flow 1.4', 'Tokens, yearly cost and wall-clock time for chat, one agent and an orchestrator with N workers; Anthropic\'s 1× / 4× / 15× anchors.', ['mode=chat', 'mode=single', 'mode=multi']],
+  ['pattern-playground', 'Flows 2–3', 'Nine patterns animated step by step on Task A (Friday status) or Task B (night alerts); handoff has a ping-pong failure toggle.',
+    ['pattern=chain&task=B', 'pattern=parallel', 'pattern=routing&task=B', 'pattern=orchestrator', 'pattern=evaluator', 'pattern=pipeline', 'pattern=fanout', 'pattern=supervisor&task=B', 'pattern=handoff']],
+  ['brief-builder', 'Flow 4.4', 'Switch goal, format, tools, boundaries and budget on or off; two workers show duplicates, gaps, over-effort and walls of text.', ['preset=vague', 'preset=bounded']],
+  ['failure-spotter', 'Flow 6.4', 'Eight scripted traces: click the line where it went wrong, name the MAST group, see the design fix.', ['trace=1', 'trace=4', 'trace=8']],
+];
+document.getElementById('t').insertAdjacentHTML('beforeend', D.map(([n, f, w, p], i) =>
+  `<tr><td>${i + 1}</td><td><a href="${n}.html">${n}</a></td><td>${f}</td><td>${Demo.esc(w)}</td><td class="p">${p.map(x => `<a href="${n}.html?${x}">${x}</a>`).join('')}</td></tr>`).join(''));
+</script>
+<div class="synthetic">Fictional Contoso data · illustrative numbers</div>
+</body>
+</html>
