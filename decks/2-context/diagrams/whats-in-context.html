@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>What the model sees</title>
+<style>
+  :root {
+    --bg: #fbfaf7; --ink: #1f2328; --muted: #5c6470; --line: #d9d5cc;
+    --sys: #f3d36b; --sys-bg: #fbf1c9;
+    --tool: #e98a7d; --tool-bg: #fadfd9;
+    --user: #6d9be8; --user-bg: #dbe6fa;
+    --file: #7fbf7a; --file-bg: #dff0dc;
+    --ai: #a985d6; --ai-bg: #e8ddf5;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: var(--bg); color: var(--ink);
+    font-family: -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif; }
+  .page { position: relative; width: 1920px; height: 1080px; padding: 44px 80px 40px; }
+  h1 { margin: 0 0 8px; font-size: 56px; font-weight: 700; letter-spacing: -0.5px; }
+  .sub { margin: 0 0 26px; font-size: 28px; color: var(--muted); }
+  .cols { display: grid; grid-template-columns: 1120px 1fr; column-gap: 80px; }
+
+  /* left: the stack */
+  .stack { display: flex; flex-direction: column; gap: 14px; }
+  .row { display: grid; grid-template-columns: 72px 1fr; column-gap: 20px; align-items: start; }
+  .row .icon { width: 64px; height: 64px; border-radius: 14px; display: grid; place-items: center; }
+  .row .icon svg { width: 36px; height: 36px; fill: none; stroke: #1f2328; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+  .row .label { font-size: 30px; font-weight: 700; margin: 4px 0 8px; }
+  .row .label small { font-weight: 400; color: var(--muted); font-size: 24px; margin-left: 10px; }
+  .row .body { font-size: 28px; line-height: 1.3; padding: 14px 20px; border-radius: 10px; }
+  .sys .icon { background: var(--sys); } .sys .body { background: var(--sys-bg); }
+  .tool .icon { background: var(--tool); } .tool .body { background: var(--tool-bg); }
+  .user .icon { background: var(--user); } .user .body { background: var(--user-bg); }
+  .ai .icon { background: var(--ai); } .ai .body { background: var(--ai-bg); }
+  .chip { display: inline-flex; align-items: center; gap: 10px; margin-top: 10px; padding: 8px 16px; border-radius: 999px;
+    background: var(--file-bg); border: 2px solid var(--file); font-size: 24px; }
+  .chip svg { width: 24px; height: 24px; fill: none; stroke: #1f2328; stroke-width: 2.4; stroke-linejoin: round; }
+  .chip code { font-family: Menlo, Consolas, monospace; font-size: 22px; }
+  .convo { position: relative; border: 3px dashed #8a8f99; border-radius: 16px; padding: 20px 20px 16px; margin-top: 8px;
+    display: flex; flex-direction: column; gap: 14px; }
+  .convo .tag { position: absolute; top: -20px; right: 24px; background: var(--bg); padding: 0 12px; font-size: 24px; color: var(--muted); font-weight: 600; }
+
+  /* right: the window */
+  .window { display: flex; flex-direction: column; align-items: center; }
+  .window h2 { margin: 0 0 20px; font-size: 34px; font-weight: 700; }
+  .frame { width: 560px; height: 560px; border: 4px solid var(--ink); border-radius: 28px; padding: 26px;
+    display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 1fr); gap: 18px; background: #fff; }
+  .cell { border: 2px dashed var(--line); border-radius: 12px; display: grid; place-items: center; }
+  .cell svg { width: 48px; height: 48px; fill: none; stroke: #1f2328; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .cell.f-sys { background: var(--sys); border-style: solid; border-color: transparent; }
+  .cell.f-tool { background: var(--tool); border-style: solid; border-color: transparent; }
+  .cell.f-user { background: var(--user); border-style: solid; border-color: transparent; }
+  .cell.f-file { background: var(--file); border-style: solid; border-color: transparent; }
+  .cell.f-ai { background: var(--ai); border-style: solid; border-color: transparent; }
+  .brace { width: 560px; height: 28px; margin-top: 14px; }
+  .brace svg { width: 100%; height: 100%; fill: none; stroke: var(--ink); stroke-width: 3; }
+  .caption { width: 560px; margin-top: 14px; font-size: 26px; line-height: 1.35; color: var(--ink); text-align: center; }
+  .caption b { display: block; font-size: 28px; margin-bottom: 6px; }
+
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>What the model actually sees</h1>
+  <p class="sub">Your prompt is only one part of it. All of this goes in, every turn.</p>
+
+  <div class="cols">
+    <div class="stack">
+
+      <div class="row sys">
+        <div class="icon"><svg viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13 4l-2 16"/></svg></div>
+        <div>
+          <div class="label">System prompt <small>set by the app, you never see it</small></div>
+          <div class="body">Today's date, which model this is, house rules for how to answer</div>
+        </div>
+      </div>
+
+      <div class="row tool">
+        <div class="icon"><svg viewBox="0 0 24 24"><path d="M20.5 6.5a4.5 4.5 0 0 1-6 5.5L7 19.5a2.1 2.1 0 0 1-3-3L11.5 9a4.5 4.5 0 0 1 5.5-6l-2.8 2.8 1 2.9 2.9 1z"/></svg></div>
+        <div>
+          <div class="label">Tool definitions <small>set by the app</small></div>
+          <div class="body">Web search, file reading, code runner &mdash; and when to use each</div>
+        </div>
+      </div>
+
+      <div class="convo">
+        <span class="tag">Conversation so far</span>
+
+        <div class="row user">
+          <div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>
+          <div>
+            <div class="label">Your prompt</div>
+            <div class="body">&ldquo;Summarise this pipeline for the BU head. What needs attention this quarter?&rdquo;</div>
+            <div class="chip"><svg viewBox="0 0 24 24"><path d="M6 3h8l5 5v13H6z"/><path d="M14 3v5h5"/><path d="M9 13h7M9 17h7"/></svg>Attached: <code>pipeline.csv</code> &middot; 10 deals</div>
+          </div>
+        </div>
+
+        <div class="row ai">
+          <div class="icon"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/></svg></div>
+          <div>
+            <div class="label">AI response</div>
+            <div class="body">&ldquo;3 deals need action this month, 2 have gone quiet since August, Finance is the largest volume&hellip;&rdquo;</div>
+          </div>
+        </div>
+
+        <div class="row user">
+          <div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>
+          <div>
+            <div class="label">Your next prompt</div>
+            <div class="body">&ldquo;Now draft the email to the BU head.&rdquo;</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="window">
+      <h2>The context window</h2>
+      <div class="frame">
+        <div class="cell f-sys"><svg viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13 4l-2 16"/></svg></div>
+        <div class="cell f-tool"><svg viewBox="0 0 24 24"><path d="M20.5 6.5a4.5 4.5 0 0 1-6 5.5L7 19.5a2.1 2.1 0 0 1-3-3L11.5 9a4.5 4.5 0 0 1 5.5-6l-2.8 2.8 1 2.9 2.9 1z"/></svg></div>
+        <div class="cell f-user"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>
+        <div class="cell f-file"><svg viewBox="0 0 24 24"><path d="M6 3h8l5 5v13H6z"/><path d="M14 3v5h5"/><path d="M9 13h7M9 17h7"/></svg></div>
+        <div class="cell f-file"><svg viewBox="0 0 24 24"><path d="M6 3h8l5 5v13H6z"/><path d="M14 3v5h5"/><path d="M9 13h7M9 17h7"/></svg></div>
+        <div class="cell f-file"><svg viewBox="0 0 24 24"><path d="M6 3h8l5 5v13H6z"/><path d="M14 3v5h5"/><path d="M9 13h7M9 17h7"/></svg></div>
+        <div class="cell f-file"><svg viewBox="0 0 24 24"><path d="M6 3h8l5 5v13H6z"/><path d="M14 3v5h5"/><path d="M9 13h7M9 17h7"/></svg></div>
+        <div class="cell f-ai"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/></svg></div>
+        <div class="cell f-user"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>
+        <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+        <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+      </div>
+      <div class="brace"><svg viewBox="0 0 560 28" preserveAspectRatio="none"><path d="M2 2 q0 12 12 12 h254 q12 0 12 12 q0 -12 12 -12 h254 q12 0 12 -12"/></svg></div>
+      <div class="caption">
+        <b>Finite, and re-read on every turn</b>
+        Roughly a few novels&rsquo; worth of text. Fill it with what matters; leave out what doesn&rsquo;t.
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

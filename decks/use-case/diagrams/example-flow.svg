@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="980" viewBox="0 0 1200 980">
+  <style>
+    text { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; fill: #1f2937; }
+    .h1 { font-size: 26px; font-weight: 700; }
+    .sub { font-size: 15px; fill: #6b7280; }
+    .t { font-size: 16.5px; font-weight: 700; }
+    .s { font-size: 14px; fill: #374151; }
+    .q { font-size: 14px; fill: #374151; font-style: italic; }
+    .m { font-family: Menlo, Consolas, monospace; font-size: 13px; fill: #0f172a; }
+    .r { font-size: 14px; font-weight: 700; }
+    .rs { font-size: 12.5px; fill: #4b5563; }
+    .n { font-size: 16px; font-weight: 700; fill: #ffffff; }
+    .note { font-size: 12.5px; fill: #6b7280; }
+    .rail { stroke: #cbd5e1; stroke-width: 3; }
+  </style>
+  <rect width="1200" height="980" fill="#ffffff"/>
+
+  <text x="30" y="44" class="h1">One request, end to end: "CSP shows 1.2M, we had 2M"</text>
+  <text x="30" y="70" class="sub">Engineer persona. Left: what happens. Right: the round in which the room builds that part.</text>
+  <text x="880" y="104" class="tag" font-size="12" font-weight="700" fill="#6b7280">TAUGHT IN</text>
+
+  <line x1="50" y1="140" x2="50" y2="900" class="rail"/>
+
+  <!-- 1 -->
+  <circle cx="50" cy="140" r="17" fill="#6b7280"/><text x="50" y="146" class="n" text-anchor="middle">1</text>
+  <rect x="82" y="116" width="770" height="96" rx="10" fill="#f3f4f6" stroke="#9ca3af"/>
+  <text x="100" y="142" class="t">A ticket arrives: INC-20417 (ServiceNow), from Finance</text>
+  <text x="100" y="168" class="q">"Our SharePoint had about 2 million invoices. CSP shows 1.2 million after the move.</text>
+  <text x="100" y="188" class="q">Are documents missing??"</text>
+  <rect x="872" y="116" width="298" height="96" rx="10" fill="#ffffff" stroke="#d1d5db"/>
+  <text x="890" y="146" class="r">The data</text>
+  <text x="890" y="170" class="rs">one of the 2,016 h of report</text>
+  <text x="890" y="188" class="rs">requests a year (CSV row 14)</text>
+
+  <!-- 2 -->
+  <circle cx="50" cy="252" r="17" fill="#2563eb"/><text x="50" y="258" class="n" text-anchor="middle">2</text>
+  <rect x="82" y="228" width="770" height="96" rx="10" fill="#ffffff" stroke="#2563eb"/>
+  <text x="100" y="254" class="t">The engineer asks the assistant</text>
+  <text x="100" y="278" class="q">"Look at INC-20417 and tell me what's going on."</text>
+  <text x="100" y="302" class="s">Request = engineer system prompt + tool definitions + conversation so far + this message</text>
+  <rect x="872" y="228" width="298" height="96" rx="10" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="890" y="258" class="r">R1 · R2 · R3</text>
+  <text x="890" y="282" class="rs">stateless call, memory =</text>
+  <text x="890" y="300" class="rs">resending, system prompt</text>
+
+  <!-- 3 -->
+  <circle cx="50" cy="364" r="17" fill="#2563eb"/><text x="50" y="370" class="n" text-anchor="middle">3</text>
+  <rect x="82" y="340" width="770" height="96" rx="10" fill="#ffffff" stroke="#2563eb"/>
+  <text x="100" y="366" class="t">First call: pull the facts out of the messy ticket</text>
+  <text x="100" y="392" class="m">{"client":"Finance", "source":"SharePoint", "target":"CSP",</text>
+  <text x="100" y="412" class="m"> "claimed":2000000, "seen":1200000, "type":"reconciliation"}</text>
+  <rect x="872" y="340" width="298" height="96" rx="10" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="890" y="370" class="r">R7</text>
+  <text x="890" y="394" class="rs">prompt chaining: extract,</text>
+  <text x="890" y="412" class="rs">then draft from the JSON</text>
+
+  <!-- 4 -->
+  <circle cx="50" cy="476" r="17" fill="#0f766e"/><text x="50" y="482" class="n" text-anchor="middle">4</text>
+  <rect x="82" y="452" width="770" height="150" rx="10" fill="#f0fdfa" stroke="#0f766e"/>
+  <text x="100" y="478" class="t">Agent loop: the model asks for tools, our code runs them, results go back in</text>
+  <text x="100" y="506" class="m">migration_status(Finance, SharePoint) → finished 3 Oct · in scope 1,211,000</text>
+  <text x="489" y="526" class="m">out of scope 792,400 (BRD: older than 10 yrs)</text>
+  <text x="100" y="550" class="m">doc_count(Finance, CSP)               → 1,204,880</text>
+  <text x="100" y="574" class="m">error_folder(run 3)                   → 6,120 = 4,980 too large + 1,140 bad metadata</text>
+  <text x="100" y="594" class="note">four calls in one turn; the model never touches CSP itself</text>
+  <rect x="872" y="452" width="298" height="150" rx="10" fill="#ccfbf1" stroke="#0f766e"/>
+  <text x="890" y="482" class="r">R5 · R6</text>
+  <text x="890" y="506" class="rs">tool calling; the agent loop</text>
+  <text x="890" y="524" class="rs">(think → act → observe)</text>
+  <text x="890" y="556" class="rs">Architecture: R10 sub-agents,</text>
+  <text x="890" y="574" class="rs">R11 coordinator, R12 MCP server</text>
+
+  <!-- 5 -->
+  <circle cx="50" cy="642" r="17" fill="#0f766e"/><text x="50" y="648" class="n" text-anchor="middle">5</text>
+  <rect x="82" y="618" width="770" height="76" rx="10" fill="#f0fdfa" stroke="#0f766e"/>
+  <text x="100" y="644" class="t">Look up what the team already knows</text>
+  <text x="100" y="672" class="m">known_issues("file too large") → KI-031: over the 2 GB limit; split, then rerun</text>
+  <rect x="872" y="618" width="298" height="76" rx="10" fill="#ccfbf1" stroke="#0f766e"/>
+  <text x="890" y="646" class="r">R4 → Track 2 RAG</text>
+  <text x="890" y="670" class="rs">pasted context, later retrieval</text>
+
+  <!-- 6 -->
+  <circle cx="50" cy="734" r="17" fill="#0f766e"/><text x="50" y="740" class="n" text-anchor="middle">6</text>
+  <rect x="82" y="710" width="770" height="96" rx="10" fill="#f0fdfa" stroke="#0f766e"/>
+  <text x="100" y="736" class="t">Explain the gap and draft the reply</text>
+  <text x="100" y="762" class="q">"2.0M = 1.21M in scope + 0.79M excluded by the BRD. Of the 1.21M, 6,120 failed:</text>
+  <text x="100" y="782" class="q">1,140 can be rerun now; 4,980 need splitting first (KI-031)."</text>
+  <rect x="872" y="710" width="298" height="96" rx="10" fill="#ccfbf1" stroke="#0f766e"/>
+  <text x="890" y="740" class="r">R8</text>
+  <text x="890" y="764" class="rs">skill: reply-to-client.md is</text>
+  <text x="890" y="782" class="rs">loaded only now</text>
+
+  <!-- 7 -->
+  <circle cx="50" cy="846" r="17" fill="#d97706"/><text x="50" y="852" class="n" text-anchor="middle">7</text>
+  <rect x="82" y="822" width="770" height="96" rx="10" fill="#fffbeb" stroke="#d97706"/>
+  <text x="100" y="848" class="t">Propose the fix; a person decides</text>
+  <text x="100" y="874" class="m">propose_rerun(run=3, ids=[1,140 items])   Approve? [y/n] y</text>
+  <text x="100" y="900" class="s">→ rerun queued · reply posted on INC-20417 · who, what and why logged</text>
+  <rect x="872" y="822" width="298" height="96" rx="10" fill="#fef3c7" stroke="#d97706"/>
+  <text x="890" y="852" class="r">R6 · R13 · R14</text>
+  <text x="890" y="876" class="rs">approval in the loop, policy per</text>
+  <text x="890" y="894" class="rs">tool, session store and log</text>
+
+  <text x="30" y="956" class="note">All numbers are invented for the mini-LoDA data pack. The point: the web client shows 1,204,880; only the checks across systems explain why it is not 2M.</text>
+</svg>

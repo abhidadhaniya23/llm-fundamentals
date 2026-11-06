@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The double diamond</title>
+<style>
+  :root {
+    --bg: #fbfaf7; --ink: #1f2328; --muted: #5c6470; --line: #d9d5cc;
+    --user: #6d9be8; --user-bg: #dbe6fa;
+    --file: #7fbf7a; --file-bg: #dff0dc;
+    --ai: #a985d6; --ai-bg: #e8ddf5;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: var(--bg); color: var(--ink);
+    font-family: -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif; }
+  .page { position: relative; width: 1920px; height: 1080px; padding: 44px 80px 40px; }
+  h1 { margin: 0 0 8px; font-size: 56px; font-weight: 700; letter-spacing: -0.5px; }
+  .sub { margin: 0 0 22px; font-size: 28px; color: var(--muted); }
+
+  /* the diagram: two spaces, two diamonds, three chips, one loop */
+  .diagram { position: relative; width: 1760px; height: 372px; }
+  .diagram svg.shape { position: absolute; left: 0; top: 0; width: 1760px; height: 372px; }
+  .diagram .space { position: absolute; top: 0; width: 600px; text-align: center; font-size: 24px; font-weight: 700; color: var(--muted); letter-spacing: 0.5px; text-transform: uppercase; }
+  .diagram .phase { position: absolute; top: 148px; width: 300px; text-align: center; }
+  .diagram .phase b { display: block; font-size: 32px; font-weight: 700; }
+  .diagram .phase small { display: block; margin-top: 4px; font-size: 22px; color: var(--muted); }
+  .diagram .loop { position: absolute; top: 328px; left: 0; width: 1760px; text-align: center; font-size: 22px; color: var(--muted); }
+  .diagram .loop span { background: var(--bg); padding: 0 14px; }
+  .chip { position: absolute; top: 157px; display: inline-flex; align-items: center; gap: 10px; padding: 10px 18px; border-radius: 999px;
+    font-size: 24px; font-weight: 600; white-space: nowrap; }
+  .chip svg { width: 26px; height: 26px; fill: none; stroke: #1f2328; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+  .chip.challenge { left: 0; background: var(--user-bg); border: 2px solid var(--user); }
+  .chip.brief { left: 792px; background: var(--file-bg); border: 2px solid var(--file); }
+  .chip.outcome { right: 0; background: var(--ai-bg); border: 2px solid var(--ai); }
+
+  /* under each half: question, what you do, what comes out */
+  .cards { position: relative; width: 1760px; height: 270px; margin-top: 18px; }
+  .card { position: absolute; top: 0; width: 284px; height: 270px; padding: 18px 20px 16px; border-radius: 12px; display: flex; flex-direction: column; }
+  .card .q { font-size: 27px; font-weight: 700; line-height: 1.25; margin-bottom: 10px; }
+  .card .do { font-size: 24px; line-height: 1.35; }
+  .card .out { margin-top: auto; padding-top: 12px; font-size: 24px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .card .out svg { width: 22px; height: 22px; fill: none; stroke: #1f2328; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+  .card.problem { background: var(--user-bg); }
+  .card.solution { background: var(--ai-bg); }
+
+  .caption { margin-top: 26px; font-size: 26px; line-height: 1.35; text-align: center; }
+  .caption b { display: block; font-size: 28px; margin-bottom: 4px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>The double diamond</h1>
+  <p class="sub">Design Council, 2005. Understand the problem before you answer it, and explore both before you choose either.</p>
+
+  <div class="diagram">
+    <svg class="shape" viewBox="0 0 1760 372">
+      <!-- space brackets -->
+      <path d="M162 50 v-10 h600 v10" fill="none" stroke="#8a8f99" stroke-width="2.5"/>
+      <path d="M998 50 v-10 h600 v10" fill="none" stroke="#8a8f99" stroke-width="2.5"/>
+      <!-- diamond 1: discover / define -->
+      <polygon points="162,187 462,62 462,312" fill="#dbe6fa" stroke="#6d9be8" stroke-width="3" stroke-linejoin="round"/>
+      <polygon points="462,62 762,187 462,312" fill="#dbe6fa" stroke="#6d9be8" stroke-width="3" stroke-linejoin="round"/>
+      <line x1="462" y1="62" x2="462" y2="312" stroke="#6d9be8" stroke-width="3" stroke-dasharray="10 10"/>
+      <!-- diamond 2: develop / deliver -->
+      <polygon points="998,187 1298,62 1298,312" fill="#e8ddf5" stroke="#a985d6" stroke-width="3" stroke-linejoin="round"/>
+      <polygon points="1298,62 1598,187 1298,312" fill="#e8ddf5" stroke="#a985d6" stroke-width="3" stroke-linejoin="round"/>
+      <line x1="1298" y1="62" x2="1298" y2="312" stroke="#a985d6" stroke-width="3" stroke-dasharray="10 10"/>
+      <!-- iterate loop: from deliver back to discover -->
+      <path d="M1298 314 v28 H462 v-16" fill="none" stroke="#8a8f99" stroke-width="2.5" stroke-dasharray="8 8"/>
+      <path d="M452 336 l10 -12 l10 12" fill="none" stroke="#8a8f99" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+
+    <div class="space" style="left:162px">Problem space</div>
+    <div class="space" style="left:998px">Solution space</div>
+
+    <div class="chip challenge"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>the challenge</div>
+
+    <div class="phase" style="left:162px"><b>Discover</b><small>diverge</small></div>
+    <div class="phase" style="left:462px"><b>Define</b><small>converge</small></div>
+
+    <div class="chip brief"><svg viewBox="0 0 24 24"><path d="M6 3h8l5 5v13H6z"/><path d="M14 3v5h5"/><path d="M9 13h7M9 17h7"/></svg>the brief</div>
+
+    <div class="phase" style="left:998px"><b>Develop</b><small>diverge</small></div>
+    <div class="phase" style="left:1298px"><b>Deliver</b><small>converge</small></div>
+
+    <div class="chip outcome"><svg viewBox="0 0 24 24"><path d="M5 12l4 4 10-10"/></svg>the outcome</div>
+
+    <div class="loop"><span>iterate</span></div>
+  </div>
+
+  <div class="cards">
+    <div class="card problem" style="left:170px">
+      <div class="q">What&rsquo;s really going on?</div>
+      <div class="do">Talk to the people affected. Look at what&rsquo;s there. Don&rsquo;t assume.</div>
+      <div class="out"><svg viewBox="0 0 24 24"><path d="M4 12h14M13 6l6 6-6 6"/></svg>insights</div>
+    </div>
+    <div class="card problem" style="left:470px">
+      <div class="q">Which problem, exactly?</div>
+      <div class="do">Sort the insights. Choose one problem. Write it down.</div>
+      <div class="out"><svg viewBox="0 0 24 24"><path d="M4 12h14M13 6l6 6-6 6"/></svg>the brief</div>
+    </div>
+    <div class="card solution" style="left:1006px">
+      <div class="q">What could we do?</div>
+      <div class="do">Many options, rough versions. Try them with people.</div>
+      <div class="out"><svg viewBox="0 0 24 24"><path d="M4 12h14M13 6l6 6-6 6"/></svg>prototypes</div>
+    </div>
+    <div class="card solution" style="left:1306px">
+      <div class="q">What actually works?</div>
+      <div class="do">Test small. Drop what fails, improve what works. Roll out.</div>
+      <div class="out"><svg viewBox="0 0 24 24"><path d="M4 12h14M13 6l6 6-6 6"/></svg>the outcome</div>
+    </div>
+  </div>
+
+  <div class="caption">
+    <b>Two spaces, two decisions: which problem, then which answer.</b>
+    The diamond exists to stop one move: from the challenge straight to an answer.
+  </div>
+</div>
+</body>
+</html>

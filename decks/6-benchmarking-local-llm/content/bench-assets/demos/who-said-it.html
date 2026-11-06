@@ -1,0 +1,53 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Who said it?</title>
+<link rel="stylesheet" href="demo.css">
+<style>
+  body { font-size: 16px; }
+  .claim { font-size: 1.3rem; font-weight: 700; color: var(--ink); background: var(--zebra); border-left: 6px solid var(--navy); border-radius: 0 10px 10px 0; padding: 14px 18px; margin: 4px 0 14px; }
+  .opts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .opt { border: 2px solid var(--line); border-radius: 10px; padding: 10px; cursor: pointer; text-align: center; background: var(--card); }
+  .opt b { display: block; color: var(--navy); font-size: 1.05rem; }
+  .opt small { color: var(--muted); }
+  .opt .n { color: var(--orange); font-weight: 700; }
+  .opt.right { border-color: var(--good); background: var(--good-tint); } .opt.wrong { opacity: .4; }
+  .src { margin-top: 12px; padding: 10px 14px; border-left: 5px solid var(--good); background: var(--good-tint); border-radius: 0 8px 8px 0; }
+  .src a { color: var(--navy); }
+</style></head>
+<body>
+<div class="bar"><button id="prev">←</button><b id="num"></b><button id="next">→</button>
+  <span class="muted">Who published this number? Click an option per hand.</span><button id="show" class="warn">Reveal source</button></div>
+<div class="claim" id="claim"></div>
+<div class="opts" id="opts"></div>
+<div id="src"></div>
+<script src="demo-kit.js"></script>
+<script>
+const KINDS = [['Vendor', 'the model maker'], ['Independent lab', 'runs everyone the same way'], ['Crowd vote', 'people pick A or B'], ['Test creator', 'wrote the benchmark']];
+// Every claim is a real published number; see sources/public-scores.md.
+const C = [
+  ['Claude Fable 5.1 scores 60.9% on Humanity\'s Last Exam, no tools.', 0, 'Anthropic, Claude Fable 5.1 launch page (2026-09).'],
+  ['Claude Fable 5.1 scores 46.5% ±2.0 on Humanity\'s Last Exam.', 1, 'Scale Labs HLE leaderboard (accessed 2026-10-08). All 2,500 questions incl. images, xhigh effort. Same model as the card before.'],
+  ['Gemini 4 Argon is #1 with a score of 1525.', 2, 'Arena text leaderboard, snapshot 2026-10-02. Flagged preliminary: only 4,932 votes.'],
+  ['Qwen3-8B scores 62.0% on GPQA Diamond.', 0, 'Qwen3 Technical Report, thinking mode (2025-05-14).'],
+  ['Qwen3-8B scores 56.8% on GPQA Diamond.', 1, 'Epoch AI Benchmarking Hub (updated 2026-09-29). Same model, 5 points lower.'],
+  ['Phi-4-mini scores 25.2% on GPQA.', 0, 'Microsoft Phi-4-mini-instruct model card. Artificial Analysis measured 33.1%: here the vendor number is the lower one.'],
+  ['MMLU has 57 subjects and about 14,000 test questions.', 3, 'Hendrycks et al., UC Berkeley, arXiv 2020-09-07. Unchanged since.'],
+  ['Claude Opus 5.5 has an Intelligence Index of 57.6.', 1, 'Artificial Analysis, Intelligence Index v4.3.2 (accessed 2026-10-08). An index that combines many tests; it is rescaled between versions.'],
+];
+const S = { i: 0, shown: false, votes: {} };
+const set = Demo.sync('who', S, s => {
+  const [claim, right, src] = C[s.i], v = s.votes[s.i] || [0, 0, 0, 0];
+  document.getElementById('num').textContent = `Claim ${s.i + 1} of ${C.length}`;
+  document.getElementById('claim').textContent = '"' + claim + '"';
+  document.getElementById('opts').innerHTML = KINDS.map(([k, d], j) =>
+    `<div class="opt ${s.shown ? (j === right ? 'right' : 'wrong') : ''}" data-j="${j}"><b>${k}</b><small>${d}</small><div class="n">${v[j] ? v[j] + ' ✋' : '&nbsp;'}</div></div>`).join('');
+  document.getElementById('src').innerHTML = s.shown ? `<div class="src"><b>${KINDS[right][0]}:</b> ${Demo.esc(src)}</div>` : '';
+});
+document.getElementById('opts').addEventListener('click', e => {
+  const o = e.target.closest('.opt'); if (!o || S.shown) return;
+  const v = [...(S.votes[S.i] || [0, 0, 0, 0])]; v[+o.dataset.j]++; set({ votes: { ...S.votes, [S.i]: v } });
+});
+document.getElementById('show').onclick = () => set({ shown: true });
+document.getElementById('next').onclick = () => set({ i: Math.min(C.length - 1, S.i + 1), shown: false });
+document.getElementById('prev').onclick = () => set({ i: Math.max(0, S.i - 1), shown: false });
+</script>
+</body></html>

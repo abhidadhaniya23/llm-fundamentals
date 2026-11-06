@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="620" viewBox="0 0 1200 620">
+  <style>
+    text { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; fill: #1f2937; }
+    .h1 { font-size: 26px; font-weight: 700; }
+    .sub { font-size: 15px; fill: #6b7280; }
+    .t { font-size: 17px; font-weight: 700; }
+    .s { font-size: 14px; fill: #374151; }
+    .q { font-size: 13.5px; fill: #4b5563; font-style: italic; }
+    .note { font-size: 12.5px; fill: #6b7280; }
+    .tag { font-size: 12px; font-weight: 700; letter-spacing: .5px; }
+    .line { stroke: #6b7280; stroke-width: 2; fill: none; marker-end: url(#a); }
+    .hot { stroke: #0f766e; stroke-width: 3; fill: none; marker-end: url(#b); }
+  </style>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#6b7280"/></marker>
+    <marker id="b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#0f766e"/></marker>
+  </defs>
+  <rect width="1200" height="620" fill="#ffffff"/>
+
+  <text x="30" y="44" class="h1">Where the assistant fits: where the web client stops</text>
+  <text x="30" y="70" class="sub">Departments already self-serve simple questions in the CSP and Classic web clients (Told). The rest still reaches LoDA.</text>
+
+  <!-- requester -->
+  <rect x="30" y="230" width="190" height="120" rx="12" fill="#f3f4f6" stroke="#9ca3af"/>
+  <text x="48" y="262" class="t">Department user</text>
+  <text x="48" y="286" class="s">e.g. Finance's</text>
+  <text x="48" y="304" class="s">records manager</text>
+  <text x="48" y="332" class="note">the requester</text>
+
+  <!-- easy lane -->
+  <text x="262" y="118" class="tag" fill="#6b7280">EASY QUESTION</text>
+  <rect x="262" y="128" width="330" height="96" rx="10" fill="#ffffff" stroke="#d1d5db"/>
+  <text x="280" y="156" class="q">"How many invoices do we have?"</text>
+  <text x="280" y="180" class="q">"Find invoice 4711"</text>
+  <text x="280" y="204" class="q">"What's in our HR folder?"</text>
+  <path d="M220,260 C240,200 240,176 260,176" class="line"/>
+  <path d="M592,176 L650,176" class="line"/>
+  <rect x="652" y="128" width="236" height="96" rx="10" fill="#f3f4f6" stroke="#9ca3af"/>
+  <text x="670" y="160" class="t">Web client</text>
+  <text x="670" y="184" class="s">CSP / Classic UI,</text>
+  <text x="670" y="204" class="s">self-service</text>
+  <path d="M888,176 L946,176" class="line"/>
+  <rect x="948" y="128" width="222" height="96" rx="10" fill="#ffffff" stroke="#d1d5db" stroke-dasharray="5 4"/>
+  <text x="966" y="164" class="t" fill="#6b7280">Answered.</text>
+  <text x="966" y="190" class="s" fill="#6b7280">Leave it alone: no</text>
+  <text x="966" y="208" class="s" fill="#6b7280">assistant needed here</text>
+
+  <!-- hard lane -->
+  <text x="262" y="290" class="tag" fill="#0f766e">HARD QUESTION: STILL A TICKET</text>
+  <rect x="262" y="300" width="330" height="160" rx="10" fill="#ffffff" stroke="#0f766e"/>
+  <text x="280" y="328" class="q">"We had 2M invoices; CSP shows 1.2M"</text>
+  <text x="280" y="352" class="q">"Who exactly can see HR, and why?"</text>
+  <text x="280" y="376" class="q">"Invoice 4711 is missing since the move"</text>
+  <text x="280" y="400" class="q">"Did the migration finish?"</text>
+  <text x="280" y="424" class="q">"Counts across Classic and CSP"</text>
+  <text x="280" y="448" class="note">needs several systems, admin views or a diagnosis</text>
+  <path d="M220,320 C240,370 240,380 260,380" class="hot"/>
+  <path d="M592,380 L650,380" class="hot"/>
+  <rect x="652" y="330" width="236" height="100" rx="10" fill="#f3f4f6" stroke="#9ca3af"/>
+  <text x="670" y="362" class="t">ServiceNow ·</text>
+  <text x="670" y="384" class="t">email · Teams</text>
+  <text x="670" y="410" class="s">three channels, by hand</text>
+  <path d="M888,380 L946,380" class="hot"/>
+
+  <rect x="948" y="270" width="222" height="250" rx="12" fill="#ccfbf1" stroke="#0f766e" stroke-width="2"/>
+  <text x="966" y="300" class="t">LoDA engineer</text>
+  <text x="966" y="322" class="t" fill="#0f766e">+ Archive Assistant</text>
+  <text x="966" y="352" class="s">1 reads the request</text>
+  <text x="966" y="376" class="s">2 runs the checks (tools)</text>
+  <text x="966" y="400" class="s">3 explains the mismatch</text>
+  <text x="966" y="424" class="s">4 drafts the reply</text>
+  <text x="966" y="448" class="s">5 proposes the fix</text>
+  <rect x="966" y="466" width="186" height="38" rx="8" fill="#fef3c7" stroke="#d97706"/>
+  <text x="980" y="490" class="s" font-weight="700">the engineer approves</text>
+
+  <!-- footer -->
+  <rect x="30" y="540" width="1140" height="60" rx="10" fill="#f9fafb" stroke="#e5e7eb"/>
+  <text x="48" y="566" class="s">Still reaching engineers (Sure, CSV): reports on request 2,016 h · issues 1,200 h · export reruns 1,040 h · migration 450 h a year.</text>
+  <text x="48" y="586" class="note">Why the web client isn't enough for these is our Inference: to be confirmed with the LoDA team in Fundamentals slot 4.</text>
+</svg>

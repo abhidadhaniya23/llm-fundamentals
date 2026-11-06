@@ -1,0 +1,48 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Benchmark noise</title>
+<link rel="stylesheet" href="demo.css">
+<style>.lay { display: grid; grid-template-columns: 1fr 260px; gap: 14px; } .stat { margin-bottom: 10px; }</style></head>
+<body>
+<div class="bar">
+  <label>Questions in the test</label>
+  <button data-n="198">198 (GPQA Diamond)</button><button data-n="1000">1,000</button><button data-n="14000">14,000 (MMLU size)</button>
+  <label>True skill of both models: <b id="pv"></b></label><input type="range" id="p" min="30" max="95" value="92">
+  <button id="run" class="warn">Run the benchmark 20 times</button><button id="clear">Clear</button></div>
+<div class="lay">
+  <div class="card"><svg id="plot" viewBox="0 0 640 300" width="100%"></svg></div>
+  <div>
+    <div class="card stat"><div class="muted">Real pair on Epoch: Grok 4.7 <b>92.7</b>, DeepSeek V4 Pro <b>91.7</b>. Here both are equally good. Runs where A "won":</div><div class="big" id="wins">–</div></div>
+    <div class="card stat"><div class="muted">Biggest gap between them in one run:</div><div class="big" id="gap">–</div></div>
+    <div class="card stat"><div class="muted">95% margin of error on one score:</div><div class="big" id="moe">–</div></div>
+  </div>
+</div>
+<script src="demo-kit.js"></script>
+<script>
+const S = { n: 198, p: 92, runs: [] }; // default: Grok 4.7 (92.7) vs DeepSeek V4 Pro (91.7) on GPQA Diamond, Epoch AI 2026-09-29
+const set = Demo.sync('noise', S, s => {
+  document.querySelectorAll('[data-n]').forEach(b => b.classList.toggle('on', +b.dataset.n === s.n));
+  document.getElementById('p').value = s.p; document.getElementById('pv').textContent = s.p + '%';
+  const runs = s.runs;
+  const lo = s.p - 12, hi = Math.min(100, s.p + 12), y = v => 270 - (Math.max(lo, Math.min(hi, v)) - lo) / (hi - lo) * 250, x = i => 50 + i * 28;
+  let g = '';
+  for (let t = Math.ceil(lo / 4) * 4; t <= hi; t += 4) g += `<line x1="44" x2="630" y1="${y(t)}" y2="${y(t)}" stroke="#e2dfd7"/><text x="38" y="${y(t) + 4}" font-size="15" text-anchor="end" fill="#5d6874">${t}%</text>`;
+  g += `<line x1="44" x2="630" y1="${y(s.p)}" y2="${y(s.p)}" stroke="#F47421" stroke-dasharray="5 4"/><text x="630" y="${y(s.p) - 5}" font-size="16" text-anchor="end" fill="#F47421">true skill ${s.p}%</text>`;
+  runs.forEach((r, i) => {
+    g += `<line x1="${x(i)}" x2="${x(i)}" y1="${y(r.a)}" y2="${y(r.b)}" stroke="#5d6874"/>` +
+      `<circle cx="${x(i)}" cy="${y(r.a)}" r="6" fill="#134F7C"/><circle cx="${x(i)}" cy="${y(r.b)}" r="6" fill="#1e8449"/>` +
+      `<text x="${x(i)}" y="292" font-size="14" text-anchor="middle" fill="${r.a > r.b ? '#134F7C' : r.b > r.a ? '#1e8449' : '#5d6874'}">${r.a > r.b ? 'A' : r.b > r.a ? 'B' : '='}</text>`;
+  });
+  g += `<text x="50" y="16" font-size="16" fill="#134F7C">● Model A</text><text x="140" y="16" font-size="16" fill="#1e8449">● Model B</text><text x="230" y="16" font-size="16" fill="#5d6874">(each column is one run, letter = who "won")</text>`;
+  document.getElementById('plot').innerHTML = g;
+  document.getElementById('wins').textContent = runs.length ? `${runs.filter(r => r.a > r.b).length} of ${runs.length}` : '–';
+  document.getElementById('gap').textContent = runs.length ? Math.max(...runs.map(r => Math.abs(r.a - r.b))).toFixed(1) + ' points' : '–';
+  const p = s.p / 100;
+  document.getElementById('moe').textContent = '± ' + (196 * Math.sqrt(p * (1 - p) / s.n)).toFixed(1) + ' points';
+});
+const score = (n, p) => { let c = 0; for (let i = 0; i < n; i++) if (Math.random() < p) c++; return Math.round(c / n * 1000) / 10; };
+document.querySelectorAll('[data-n]').forEach(b => b.onclick = () => set({ n: +b.dataset.n, runs: [] }));
+document.getElementById('p').oninput = e => set({ p: +e.target.value, runs: [] });
+document.getElementById('run').onclick = () => set({ runs: Array.from({ length: 20 }, () => ({ a: score(S.n, S.p / 100), b: score(S.n, S.p / 100) })) });
+document.getElementById('clear').onclick = () => set({ runs: [] });
+</script>
+</body></html>

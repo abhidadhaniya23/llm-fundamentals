@@ -1,0 +1,13 @@
+/* Student static decks (final/build_student.py): loaded after theme.css. */
+body.self #open-students, body.self .clock { display: none; }
+body.self .home { color: inherit; text-decoration: none; font-weight: 600; margin-right: 12px; white-space: nowrap; }
+body.self .home:hover { text-decoration: underline; }
+body.self .bar { display: flex; align-items: center; }
+body.self .bar .where-btn { flex: 1 1 auto; min-width: 0; }
+
+/* Reveals: hidden ones collapse to a "Show" button; shown ones keep a quiet border to click again. */
+body.self .fence.reveal.hidden { padding: 8px 14px; border-style: dashed; }
+body.self .fence.reveal.hidden > :not(.fence-tag) { display: none; }
+body.self .fence.reveal.hidden .fence-tag { position: static; display: inline-block; }
+body.self .fence.reveal.hidden:hover { background: var(--zebra); }
+body.self .fence.reveal.shown { animation: reveal .4s ease-out; }

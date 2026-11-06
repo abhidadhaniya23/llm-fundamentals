@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>LoDA training &middot; Context</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; width: auto; height: auto; overflow: auto; background: #d9d5cc; }
+  .page { width: 1920px; height: 1080px; margin: 0 auto; page-break-after: always; break-after: page; }
+  .slide-frame { width: 1920px; height: 1080px; border: 0; display: block; }
+  @page { size: 1920px 1080px; margin: 0; }
+</style>
+</head>
+<body>
+<div class="page"><iframe class="slide-frame" srcdoc="&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;utf-8&quot;&gt;
+&lt;title&gt;The double diamond&lt;/title&gt;
+&lt;style&gt;
+  :root {
+    --bg: #fbfaf7; --ink: #1f2328; --muted: #5c6470; --line: #d9d5cc;
+    --user: #6d9be8; --user-bg: #dbe6fa;
+    --file: #7fbf7a; --file-bg: #dff0dc;
+    --ai: #a985d6; --ai-bg: #e8ddf5;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: var(--bg); color: var(--ink);
+    font-family: -apple-system, &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif; }
+  .page { position: relative; width: 1920px; height: 1080px; padding: 44px 80px 40px; }
+  h1 { margin: 0 0 8px; font-size: 56px; font-weight: 700; letter-spacing: -0.5px; }
+  .sub { margin: 0 0 22px; font-size: 28px; color: var(--muted); }
+
+  /* the diagram: two spaces, two diamonds, three chips, one loop */
+  .diagram { position: relative; width: 1760px; height: 372px; }
+  .diagram svg.shape { position: absolute; left: 0; top: 0; width: 1760px; height: 372px; }
+  .diagram .space { position: absolute; top: 0; width: 600px; text-align: center; font-size: 24px; font-weight: 700; color: var(--muted); letter-spacing: 0.5px; text-transform: uppercase; }
+  .diagram .phase { position: absolute; top: 148px; width: 300px; text-align: center; }
+  .diagram .phase b { display: block; font-size: 32px; font-weight: 700; }
+  .diagram .phase small { display: block; margin-top: 4px; font-size: 22px; color: var(--muted); }
+  .diagram .loop { position: absolute; top: 328px; left: 0; width: 1760px; text-align: center; font-size: 22px; color: var(--muted); }
+  .diagram .loop span { background: var(--bg); padding: 0 14px; }
+  .chip { position: absolute; top: 157px; display: inline-flex; align-items: center; gap: 10px; padding: 10px 18px; border-radius: 999px;
+    font-size: 24px; font-weight: 600; white-space: nowrap; }
+  .chip svg { width: 26px; height: 26px; fill: none; stroke: #1f2328; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+  .chip.challenge { left: 0; background: var(--user-bg); border: 2px solid var(--user); }
+  .chip.brief { left: 792px; background: var(--file-bg); border: 2px solid var(--file); }
+  .chip.outcome { right: 0; background: var(--ai-bg); border: 2px solid var(--ai); }
+
+  /* under each half: question, what you do, what comes out */
+  .cards { position: relative; width: 1760px; height: 270px; margin-top: 18px; }
+  .card { position: absolute; top: 0; width: 284px; height: 270px; padding: 18px 20px 16px; border-radius: 12px; display: flex; flex-direction: column; }
+  .card .q { font-size: 27px; font-weight: 700; line-height: 1.25; margin-bottom: 10px; }
+  .card .do { font-size: 24px; line-height: 1.35; }
+  .card .out { margin-top: auto; padding-top: 12px; font-size: 24px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .card .out svg { width: 22px; height: 22px; fill: none; stroke: #1f2328; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+  .card.problem { background: var(--user-bg); }
+  .card.solution { background: var(--ai-bg); }
+
+  .caption { margin-top: 26px; font-size: 26px; line-height: 1.35; text-align: center; }
+  .caption b { display: block; font-size: 28px; margin-bottom: 4px; }
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div class=&quot;page&quot;&gt;
+  &lt;h1&gt;The double diamond&lt;/h1&gt;
+  &lt;p class=&quot;sub&quot;&gt;Design Council, 2005. Understand the problem before you answer it, and explore both before you choose either.&lt;/p&gt;
+
+  &lt;div class=&quot;diagram&quot;&gt;
+    &lt;svg class=&quot;shape&quot; viewBox=&quot;0 0 1760 372&quot;&gt;
+      &lt;!-- space brackets --&gt;
+      &lt;path d=&quot;M162 50 v-10 h600 v10&quot; fill=&quot;none&quot; stroke=&quot;#8a8f99&quot; stroke-width=&quot;2.5&quot;/&gt;
+      &lt;path d=&quot;M998 50 v-10 h600 v10&quot; fill=&quot;none&quot; stroke=&quot;#8a8f99&quot; stroke-width=&quot;2.5&quot;/&gt;
+      &lt;!-- diamond 1: discover / define --&gt;
+      &lt;polygon points=&quot;162,187 462,62 462,312&quot; fill=&quot;#dbe6fa&quot; stroke=&quot;#6d9be8&quot; stroke-width=&quot;3&quot; stroke-linejoin=&quot;round&quot;/&gt;
+      &lt;polygon points=&quot;462,62 762,187 462,312&quot; fill=&quot;#dbe6fa&quot; stroke=&quot;#6d9be8&quot; stroke-width=&quot;3&quot; stroke-linejoin=&quot;round&quot;/&gt;
+      &lt;line x1=&quot;462&quot; y1=&quot;62&quot; x2=&quot;462&quot; y2=&quot;312&quot; stroke=&quot;#6d9be8&quot; stroke-width=&quot;3&quot; stroke-dasharray=&quot;10 10&quot;/&gt;
+      &lt;!-- diamond 2: develop / deliver --&gt;
+      &lt;polygon points=&quot;998,187 1298,62 1298,312&quot; fill=&quot;#e8ddf5&quot; stroke=&quot;#a985d6&quot; stroke-width=&quot;3&quot; stroke-linejoin=&quot;round&quot;/&gt;
+      &lt;polygon points=&quot;1298,62 1598,187 1298,312&quot; fill=&quot;#e8ddf5&quot; stroke=&quot;#a985d6&quot; stroke-width=&quot;3&quot; stroke-linejoin=&quot;round&quot;/&gt;
+      &lt;line x1=&quot;1298&quot; y1=&quot;62&quot; x2=&quot;1298&quot; y2=&quot;312&quot; stroke=&quot;#a985d6&quot; stroke-width=&quot;3&quot; stroke-dasharray=&quot;10 10&quot;/&gt;
+      &lt;!-- iterate loop: from deliver back to discover --&gt;
+      &lt;path d=&quot;M1298 314 v28 H462 v-16&quot; fill=&quot;none&quot; stroke=&quot;#8a8f99&quot; stroke-width=&quot;2.5&quot; stroke-dasharray=&quot;8 8&quot;/&gt;
+      &lt;path d=&quot;M452 336 l10 -12 l10 12&quot; fill=&quot;none&quot; stroke=&quot;#8a8f99&quot; stroke-width=&quot;2.5&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;/&gt;
+    &lt;/svg&gt;
+
+    &lt;div class=&quot;space&quot; style=&quot;left:162px&quot;&gt;Problem space&lt;/div&gt;
+    &lt;div class=&quot;space&quot; style=&quot;left:998px&quot;&gt;Solution space&lt;/div&gt;
+
+    &lt;div class=&quot;chip challenge&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;circle cx=&quot;12&quot; cy=&quot;12&quot; r=&quot;9&quot;/&gt;&lt;path d=&quot;M12 8v5M12 16h.01&quot;/&gt;&lt;/svg&gt;the challenge&lt;/div&gt;
+
+    &lt;div class=&quot;phase&quot; style=&quot;left:162px&quot;&gt;&lt;b&gt;Discover&lt;/b&gt;&lt;small&gt;diverge&lt;/small&gt;&lt;/div&gt;
+    &lt;div class=&quot;phase&quot; style=&quot;left:462px&quot;&gt;&lt;b&gt;Define&lt;/b&gt;&lt;small&gt;converge&lt;/small&gt;&lt;/div&gt;
+
+    &lt;div class=&quot;chip brief&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;path d=&quot;M6 3h8l5 5v13H6z&quot;/&gt;&lt;path d=&quot;M14 3v5h5&quot;/&gt;&lt;path d=&quot;M9 13h7M9 17h7&quot;/&gt;&lt;/svg&gt;the brief&lt;/div&gt;
+
+    &lt;div class=&quot;phase&quot; style=&quot;left:998px&quot;&gt;&lt;b&gt;Develop&lt;/b&gt;&lt;small&gt;diverge&lt;/small&gt;&lt;/div&gt;
+    &lt;div class=&quot;phase&quot; style=&quot;left:1298px&quot;&gt;&lt;b&gt;Deliver&lt;/b&gt;&lt;small&gt;converge&lt;/small&gt;&lt;/div&gt;
+
+    &lt;div class=&quot;chip outcome&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;path d=&quot;M5 12l4 4 10-10&quot;/&gt;&lt;/svg&gt;the outcome&lt;/div&gt;
+
+    &lt;div class=&quot;loop&quot;&gt;&lt;span&gt;iterate&lt;/span&gt;&lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div class=&quot;cards&quot;&gt;
+    &lt;div class=&quot;card problem&quot; style=&quot;left:170px&quot;&gt;
+      &lt;div class=&quot;q&quot;&gt;What&amp;rsquo;s really going on?&lt;/div&gt;
+      &lt;div class=&quot;do&quot;&gt;Talk to the people affected. Look at what&amp;rsquo;s there. Don&amp;rsquo;t assume.&lt;/div&gt;
+      &lt;div class=&quot;out&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;path d=&quot;M4 12h14M13 6l6 6-6 6&quot;/&gt;&lt;/svg&gt;insights&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;card problem&quot; style=&quot;left:470px&quot;&gt;
+      &lt;div class=&quot;q&quot;&gt;Which problem, exactly?&lt;/div&gt;
+      &lt;div class=&quot;do&quot;&gt;Sort the insights. Choose one problem. Write it down.&lt;/div&gt;
+      &lt;div class=&quot;out&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;path d=&quot;M4 12h14M13 6l6 6-6 6&quot;/&gt;&lt;/svg&gt;the brief&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;card solution&quot; style=&quot;left:1006px&quot;&gt;
+      &lt;div class=&quot;q&quot;&gt;What could we do?&lt;/div&gt;
+      &lt;div class=&quot;do&quot;&gt;Many options, rough versions. Try them with people.&lt;/div&gt;
+      &lt;div class=&quot;out&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;path d=&quot;M4 12h14M13 6l6 6-6 6&quot;/&gt;&lt;/svg&gt;prototypes&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;card solution&quot; style=&quot;left:1306px&quot;&gt;
+      &lt;div class=&quot;q&quot;&gt;What actually works?&lt;/div&gt;
+      &lt;div class=&quot;do&quot;&gt;Test small. Drop what fails, improve what works. Roll out.&lt;/div&gt;
+      &lt;div class=&quot;out&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;path d=&quot;M4 12h14M13 6l6 6-6 6&quot;/&gt;&lt;/svg&gt;the outcome&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div class=&quot;caption&quot;&gt;
+    &lt;b&gt;Two spaces, two decisions: which problem, then which answer.&lt;/b&gt;
+    The diamond exists to stop one move: from the challenge straight to an answer.
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+"></iframe></div>
+
+<div class="page"><iframe class="slide-frame" srcdoc="&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;utf-8&quot;&gt;
+&lt;title&gt;The double diamond, with AI&lt;/title&gt;
+&lt;style&gt;
+  :root {
+    --bg: #fbfaf7; --ink: #1f2328; --muted: #5c6470; --line: #d9d5cc;
+    --tell: #f3d36b; --tell-bg: #fbf1c9;
+    --user: #6d9be8; --user-bg: #dbe6fa;
+    --file: #7fbf7a; --file-bg: #dff0dc;
+    --ai: #a985d6; --ai-bg: #e8ddf5;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: var(--bg); color: var(--ink);
+    font-family: -apple-system, &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif; }
+  .page { position: relative; width: 1920px; height: 1080px; padding: 44px 80px 40px; }
+  h1 { margin: 0 0 8px; font-size: 56px; font-weight: 700; letter-spacing: -0.5px; }
+  .sub { margin: 0 0 26px; font-size: 28px; color: var(--muted); }
+
+  /* the diagram: two diamonds, three chips */
+  .diagram { position: relative; width: 1760px; height: 270px; }
+  .diagram svg.shape { position: absolute; left: 0; top: 0; width: 1760px; height: 270px; }
+  .diagram .phase { position: absolute; top: 96px; width: 300px; text-align: center; }
+  .diagram .phase b { display: block; font-size: 32px; font-weight: 700; }
+  .diagram .phase small { display: block; margin-top: 4px; font-size: 22px; color: var(--muted); }
+  .chip { position: absolute; top: 105px; display: inline-flex; align-items: center; gap: 10px; padding: 10px 18px; border-radius: 999px;
+    font-size: 24px; font-weight: 600; white-space: nowrap; background: #fff; }
+  .chip svg { width: 26px; height: 26px; fill: none; stroke: #1f2328; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+  .chip.ask { left: 0; background: var(--user-bg); border: 2px solid var(--user); }
+  .chip.plan { left: 792px; background: var(--file-bg); border: 2px solid var(--file); }
+  .chip.answer { right: 0; background: var(--ai-bg); border: 2px solid var(--ai); }
+
+  /* below: the two ways of working */
+  .cols { display: grid; grid-template-columns: 840px 840px; column-gap: 80px; margin-top: 26px; }
+  .col h2 { margin: 0 0 18px; font-size: 34px; font-weight: 700; }
+  .col h2 small { font-weight: 400; color: var(--muted); font-size: 24px; margin-left: 12px; }
+  .stack { display: flex; flex-direction: column; gap: 18px; }
+  .row { display: grid; grid-template-columns: 72px 1fr; column-gap: 20px; align-items: start; }
+  .row .icon { width: 64px; height: 64px; border-radius: 14px; display: grid; place-items: center; }
+  .row .icon svg { width: 36px; height: 36px; fill: none; stroke: #1f2328; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+  .row .label { font-size: 29px; font-weight: 700; margin: 4px 0 8px; }
+  .row .body { font-size: 26px; line-height: 1.35; padding: 14px 20px; border-radius: 10px; }
+  .tell .icon { background: var(--tell); } .tell .body { background: var(--tell-bg); }
+  .work .icon { background: var(--user); } .work .body { background: var(--user-bg); }
+
+  .caption { margin-top: 26px; font-size: 26px; line-height: 1.35; text-align: center; }
+  .caption b { display: block; font-size: 28px; margin-bottom: 4px; }
+
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div class=&quot;page&quot;&gt;
+  &lt;h1&gt;The double diamond, with AI&lt;/h1&gt;
+  &lt;p class=&quot;sub&quot;&gt;Working out what to ask and getting it made are different jobs &amp;mdash; they need different instructions, and a different way of working.&lt;/p&gt;
+
+  &lt;div class=&quot;diagram&quot;&gt;
+    &lt;svg class=&quot;shape&quot; viewBox=&quot;0 0 1760 270&quot;&gt;
+      &lt;!-- diamond 1: discover / define --&gt;
+      &lt;polygon points=&quot;162,135 462,10 462,260&quot; fill=&quot;#dbe6fa&quot; stroke=&quot;#6d9be8&quot; stroke-width=&quot;3&quot; stroke-linejoin=&quot;round&quot;/&gt;
+      &lt;polygon points=&quot;462,10 762,135 462,260&quot; fill=&quot;#dbe6fa&quot; stroke=&quot;#6d9be8&quot; stroke-width=&quot;3&quot; stroke-linejoin=&quot;round&quot;/&gt;
+      &lt;line x1=&quot;462&quot; y1=&quot;10&quot; x2=&quot;462&quot; y2=&quot;260&quot; stroke=&quot;#6d9be8&quot; stroke-width=&quot;3&quot; stroke-dasharray=&quot;10 10&quot;/&gt;
+      &lt;!-- diamond 2: develop / deliver --&gt;
+      &lt;polygon points=&quot;998,135 1298,10 1298,260&quot; fill=&quot;#e8ddf5&quot; stroke=&quot;#a985d6&quot; stroke-width=&quot;3&quot; stroke-linejoin=&quot;round&quot;/&gt;
+      &lt;polygon points=&quot;1298,10 1598,135 1298,260&quot; fill=&quot;#e8ddf5&quot; stroke=&quot;#a985d6&quot; stroke-width=&quot;3&quot; stroke-linejoin=&quot;round&quot;/&gt;
+      &lt;line x1=&quot;1298&quot; y1=&quot;10&quot; x2=&quot;1298&quot; y2=&quot;260&quot; stroke=&quot;#a985d6&quot; stroke-width=&quot;3&quot; stroke-dasharray=&quot;10 10&quot;/&gt;
+    &lt;/svg&gt;
+
+    &lt;div class=&quot;chip ask&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;circle cx=&quot;12&quot; cy=&quot;8&quot; r=&quot;4&quot;/&gt;&lt;path d=&quot;M4 21c0-4 3.6-7 8-7s8 3 8 7&quot;/&gt;&lt;/svg&gt;a fuzzy ask&lt;/div&gt;
+
+    &lt;div class=&quot;phase&quot; style=&quot;left:162px&quot;&gt;&lt;b&gt;Discover&lt;/b&gt;&lt;small&gt;diverge&lt;/small&gt;&lt;/div&gt;
+    &lt;div class=&quot;phase&quot; style=&quot;left:462px&quot;&gt;&lt;b&gt;Define&lt;/b&gt;&lt;small&gt;converge&lt;/small&gt;&lt;/div&gt;
+
+    &lt;div class=&quot;chip plan&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;path d=&quot;M6 3h8l5 5v13H6z&quot;/&gt;&lt;path d=&quot;M14 3v5h5&quot;/&gt;&lt;path d=&quot;M9 13h7M9 17h7&quot;/&gt;&lt;/svg&gt;the plan&lt;/div&gt;
+
+    &lt;div class=&quot;phase&quot; style=&quot;left:998px&quot;&gt;&lt;b&gt;Develop&lt;/b&gt;&lt;small&gt;diverge&lt;/small&gt;&lt;/div&gt;
+    &lt;div class=&quot;phase&quot; style=&quot;left:1298px&quot;&gt;&lt;b&gt;Deliver&lt;/b&gt;&lt;small&gt;converge&lt;/small&gt;&lt;/div&gt;
+
+    &lt;div class=&quot;chip answer&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;path d=&quot;M4 5h16v11H9l-5 4z&quot;/&gt;&lt;path d=&quot;M8 9h8M8 12h5&quot;/&gt;&lt;/svg&gt;the answer&lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div class=&quot;cols&quot;&gt;
+    &lt;div class=&quot;col&quot;&gt;
+      &lt;h2&gt;Before the plan: think with it&lt;/h2&gt;
+      &lt;div class=&quot;stack&quot;&gt;
+        &lt;div class=&quot;row tell&quot;&gt;
+          &lt;div class=&quot;icon&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;path d=&quot;M4 5h16v11H9l-5 4z&quot;/&gt;&lt;path d=&quot;M10 9.2a2 2 0 1 1 2.9 1.8c-.6.3-.9.7-.9 1.3&quot;/&gt;&lt;path d=&quot;M12 14.6h.01&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;
+          &lt;div&gt;
+            &lt;div class=&quot;label&quot;&gt;What you tell it&lt;/div&gt;
+            &lt;div class=&quot;body&quot;&gt;Open asks, few rules: &amp;ldquo;give me five ways to&amp;hellip;&amp;rdquo;, &amp;ldquo;what would you need to know?&amp;rdquo;, &amp;ldquo;what am I assuming?&amp;rdquo; Ask for options, and for questions back.&lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;row work&quot;&gt;
+          &lt;div class=&quot;icon&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;path d=&quot;M4 8h13l-3-3&quot;/&gt;&lt;path d=&quot;M20 16H7l3 3&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;
+          &lt;div&gt;
+            &lt;div class=&quot;label&quot;&gt;How you work with it&lt;/div&gt;
+            &lt;div class=&quot;body&quot;&gt;Many short turns, one chat. React to options instead of specifying up front &amp;mdash; your reaction is the context it was missing. End by writing the plan down.&lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div class=&quot;col&quot;&gt;
+      &lt;h2&gt;After the plan: build with it&lt;/h2&gt;
+      &lt;div class=&quot;stack&quot;&gt;
+        &lt;div class=&quot;row tell&quot;&gt;
+          &lt;div class=&quot;icon&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;path d=&quot;M4 6l2 2 3-3M4 12l2 2 3-3M4 18l2 2 3-3&quot;/&gt;&lt;path d=&quot;M12 7h8M12 13h8M12 19h8&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;
+          &lt;div&gt;
+            &lt;div class=&quot;label&quot;&gt;What you tell it&lt;/div&gt;
+            &lt;div class=&quot;body&quot;&gt;The plan, as written: one task, the context it needs, the labels defined, the constraints, one example of the shape. Nothing extra.&lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;row work&quot;&gt;
+          &lt;div class=&quot;icon&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;path d=&quot;M7 4l13 8-13 8z&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;
+          &lt;div&gt;
+            &lt;div class=&quot;label&quot;&gt;How you work with it&lt;/div&gt;
+            &lt;div class=&quot;body&quot;&gt;New chat, one ask &amp;mdash; three drafts if you like. Judge them against the plan, not the chat; fix the plan, run again. Same plan, same shape: that is what a skill saves.&lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div class=&quot;caption&quot;&gt;
+    &lt;b&gt;The plan is the hinge: the first diamond writes it, the second runs on it.&lt;/b&gt;
+    Skip the first and you build a guess. Never leave it and nothing ships.
+  &lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+"></iframe></div>
+
+<div class="page"><iframe class="slide-frame" srcdoc="&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;utf-8&quot;&gt;
+&lt;title&gt;What the model sees&lt;/title&gt;
+&lt;style&gt;
+  :root {
+    --bg: #fbfaf7; --ink: #1f2328; --muted: #5c6470; --line: #d9d5cc;
+    --sys: #f3d36b; --sys-bg: #fbf1c9;
+    --tool: #e98a7d; --tool-bg: #fadfd9;
+    --user: #6d9be8; --user-bg: #dbe6fa;
+    --file: #7fbf7a; --file-bg: #dff0dc;
+    --ai: #a985d6; --ai-bg: #e8ddf5;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: var(--bg); color: var(--ink);
+    font-family: -apple-system, &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif; }
+  .page { position: relative; width: 1920px; height: 1080px; padding: 44px 80px 40px; }
+  h1 { margin: 0 0 8px; font-size: 56px; font-weight: 700; letter-spacing: -0.5px; }
+  .sub { margin: 0 0 26px; font-size: 28px; color: var(--muted); }
+  .cols { display: grid; grid-template-columns: 1120px 1fr; column-gap: 80px; }
+
+  /* left: the stack */
+  .stack { display: flex; flex-direction: column; gap: 14px; }
+  .row { display: grid; grid-template-columns: 72px 1fr; column-gap: 20px; align-items: start; }
+  .row .icon { width: 64px; height: 64px; border-radius: 14px; display: grid; place-items: center; }
+  .row .icon svg { width: 36px; height: 36px; fill: none; stroke: #1f2328; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+  .row .label { font-size: 30px; font-weight: 700; margin: 4px 0 8px; }
+  .row .label small { font-weight: 400; color: var(--muted); font-size: 24px; margin-left: 10px; }
+  .row .body { font-size: 28px; line-height: 1.3; padding: 14px 20px; border-radius: 10px; }
+  .sys .icon { background: var(--sys); } .sys .body { background: var(--sys-bg); }
+  .tool .icon { background: var(--tool); } .tool .body { background: var(--tool-bg); }
+  .user .icon { background: var(--user); } .user .body { background: var(--user-bg); }
+  .ai .icon { background: var(--ai); } .ai .body { background: var(--ai-bg); }
+  .chip { display: inline-flex; align-items: center; gap: 10px; margin-top: 10px; padding: 8px 16px; border-radius: 999px;
+    background: var(--file-bg); border: 2px solid var(--file); font-size: 24px; }
+  .chip svg { width: 24px; height: 24px; fill: none; stroke: #1f2328; stroke-width: 2.4; stroke-linejoin: round; }
+  .chip code { font-family: Menlo, Consolas, monospace; font-size: 22px; }
+  .convo { position: relative; border: 3px dashed #8a8f99; border-radius: 16px; padding: 20px 20px 16px; margin-top: 8px;
+    display: flex; flex-direction: column; gap: 14px; }
+  .convo .tag { position: absolute; top: -20px; right: 24px; background: var(--bg); padding: 0 12px; font-size: 24px; color: var(--muted); font-weight: 600; }
+
+  /* right: the window */
+  .window { display: flex; flex-direction: column; align-items: center; }
+  .window h2 { margin: 0 0 20px; font-size: 34px; font-weight: 700; }
+  .frame { width: 560px; height: 560px; border: 4px solid var(--ink); border-radius: 28px; padding: 26px;
+    display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 1fr); gap: 18px; background: #fff; }
+  .cell { border: 2px dashed var(--line); border-radius: 12px; display: grid; place-items: center; }
+  .cell svg { width: 48px; height: 48px; fill: none; stroke: #1f2328; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .cell.f-sys { background: var(--sys); border-style: solid; border-color: transparent; }
+  .cell.f-tool { background: var(--tool); border-style: solid; border-color: transparent; }
+  .cell.f-user { background: var(--user); border-style: solid; border-color: transparent; }
+  .cell.f-file { background: var(--file); border-style: solid; border-color: transparent; }
+  .cell.f-ai { background: var(--ai); border-style: solid; border-color: transparent; }
+  .brace { width: 560px; height: 28px; margin-top: 14px; }
+  .brace svg { width: 100%; height: 100%; fill: none; stroke: var(--ink); stroke-width: 3; }
+  .caption { width: 560px; margin-top: 14px; font-size: 26px; line-height: 1.35; color: var(--ink); text-align: center; }
+  .caption b { display: block; font-size: 28px; margin-bottom: 6px; }
+
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div class=&quot;page&quot;&gt;
+  &lt;h1&gt;What the model actually sees&lt;/h1&gt;
+  &lt;p class=&quot;sub&quot;&gt;Your prompt is only one part of it. All of this goes in, every turn.&lt;/p&gt;
+
+  &lt;div class=&quot;cols&quot;&gt;
+    &lt;div class=&quot;stack&quot;&gt;
+
+      &lt;div class=&quot;row sys&quot;&gt;
+        &lt;div class=&quot;icon&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;path d=&quot;M8 7l-5 5 5 5M16 7l5 5-5 5M13 4l-2 16&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;
+        &lt;div&gt;
+          &lt;div class=&quot;label&quot;&gt;System prompt &lt;small&gt;set by the app, you never see it&lt;/small&gt;&lt;/div&gt;
+          &lt;div class=&quot;body&quot;&gt;Today&#x27;s date, which model this is, house rules for how to answer&lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;div class=&quot;row tool&quot;&gt;
+        &lt;div class=&quot;icon&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;path d=&quot;M20.5 6.5a4.5 4.5 0 0 1-6 5.5L7 19.5a2.1 2.1 0 0 1-3-3L11.5 9a4.5 4.5 0 0 1 5.5-6l-2.8 2.8 1 2.9 2.9 1z&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;
+        &lt;div&gt;
+          &lt;div class=&quot;label&quot;&gt;Tool definitions &lt;small&gt;set by the app&lt;/small&gt;&lt;/div&gt;
+          &lt;div class=&quot;body&quot;&gt;Web search, file reading, code runner &amp;mdash; and when to use each&lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;div class=&quot;convo&quot;&gt;
+        &lt;span class=&quot;tag&quot;&gt;Conversation so far&lt;/span&gt;
+
+        &lt;div class=&quot;row user&quot;&gt;
+          &lt;div class=&quot;icon&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;circle cx=&quot;12&quot; cy=&quot;8&quot; r=&quot;4&quot;/&gt;&lt;path d=&quot;M4 21c0-4 3.6-7 8-7s8 3 8 7&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;
+          &lt;div&gt;
+            &lt;div class=&quot;label&quot;&gt;Your prompt&lt;/div&gt;
+            &lt;div class=&quot;body&quot;&gt;&amp;ldquo;Summarise this pipeline for the BU head. What needs attention this quarter?&amp;rdquo;&lt;/div&gt;
+            &lt;div class=&quot;chip&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;path d=&quot;M6 3h8l5 5v13H6z&quot;/&gt;&lt;path d=&quot;M14 3v5h5&quot;/&gt;&lt;path d=&quot;M9 13h7M9 17h7&quot;/&gt;&lt;/svg&gt;Attached: &lt;code&gt;pipeline.csv&lt;/code&gt; &amp;middot; 10 deals&lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+
+        &lt;div class=&quot;row ai&quot;&gt;
+          &lt;div class=&quot;icon&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;path d=&quot;M4 5h16v11H9l-5 4z&quot;/&gt;&lt;path d=&quot;M8 9h8M8 12h5&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;
+          &lt;div&gt;
+            &lt;div class=&quot;label&quot;&gt;AI response&lt;/div&gt;
+            &lt;div class=&quot;body&quot;&gt;&amp;ldquo;3 deals need action this month, 2 have gone quiet since August, Finance is the largest volume&amp;hellip;&amp;rdquo;&lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+
+        &lt;div class=&quot;row user&quot;&gt;
+          &lt;div class=&quot;icon&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;circle cx=&quot;12&quot; cy=&quot;8&quot; r=&quot;4&quot;/&gt;&lt;path d=&quot;M4 21c0-4 3.6-7 8-7s8 3 8 7&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;
+          &lt;div&gt;
+            &lt;div class=&quot;label&quot;&gt;Your next prompt&lt;/div&gt;
+            &lt;div class=&quot;body&quot;&gt;&amp;ldquo;Now draft the email to the BU head.&amp;rdquo;&lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+    &lt;/div&gt;
+
+    &lt;div class=&quot;window&quot;&gt;
+      &lt;h2&gt;The context window&lt;/h2&gt;
+      &lt;div class=&quot;frame&quot;&gt;
+        &lt;div class=&quot;cell f-sys&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;path d=&quot;M8 7l-5 5 5 5M16 7l5 5-5 5M13 4l-2 16&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;
+        &lt;div class=&quot;cell f-tool&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;path d=&quot;M20.5 6.5a4.5 4.5 0 0 1-6 5.5L7 19.5a2.1 2.1 0 0 1-3-3L11.5 9a4.5 4.5 0 0 1 5.5-6l-2.8 2.8 1 2.9 2.9 1z&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;
+        &lt;div class=&quot;cell f-user&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;circle cx=&quot;12&quot; cy=&quot;8&quot; r=&quot;4&quot;/&gt;&lt;path d=&quot;M4 21c0-4 3.6-7 8-7s8 3 8 7&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;
+        &lt;div class=&quot;cell f-file&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;path d=&quot;M6 3h8l5 5v13H6z&quot;/&gt;&lt;path d=&quot;M14 3v5h5&quot;/&gt;&lt;path d=&quot;M9 13h7M9 17h7&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;
+        &lt;div class=&quot;cell f-file&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;path d=&quot;M6 3h8l5 5v13H6z&quot;/&gt;&lt;path d=&quot;M14 3v5h5&quot;/&gt;&lt;path d=&quot;M9 13h7M9 17h7&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;
+        &lt;div class=&quot;cell f-file&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;path d=&quot;M6 3h8l5 5v13H6z&quot;/&gt;&lt;path d=&quot;M14 3v5h5&quot;/&gt;&lt;path d=&quot;M9 13h7M9 17h7&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;
+        &lt;div class=&quot;cell f-file&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;path d=&quot;M6 3h8l5 5v13H6z&quot;/&gt;&lt;path d=&quot;M14 3v5h5&quot;/&gt;&lt;path d=&quot;M9 13h7M9 17h7&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;
+        &lt;div class=&quot;cell f-ai&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;path d=&quot;M4 5h16v11H9l-5 4z&quot;/&gt;&lt;path d=&quot;M8 9h8M8 12h5&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;
+        &lt;div class=&quot;cell f-user&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;circle cx=&quot;12&quot; cy=&quot;8&quot; r=&quot;4&quot;/&gt;&lt;path d=&quot;M4 21c0-4 3.6-7 8-7s8 3 8 7&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;
+        &lt;div class=&quot;cell&quot;&gt;&lt;/div&gt;&lt;div class=&quot;cell&quot;&gt;&lt;/div&gt;&lt;div class=&quot;cell&quot;&gt;&lt;/div&gt;
+        &lt;div class=&quot;cell&quot;&gt;&lt;/div&gt;&lt;div class=&quot;cell&quot;&gt;&lt;/div&gt;&lt;div class=&quot;cell&quot;&gt;&lt;/div&gt;&lt;div class=&quot;cell&quot;&gt;&lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;brace&quot;&gt;&lt;svg viewBox=&quot;0 0 560 28&quot; preserveAspectRatio=&quot;none&quot;&gt;&lt;path d=&quot;M2 2 q0 12 12 12 h254 q12 0 12 12 q0 -12 12 -12 h254 q12 0 12 -12&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;
+      &lt;div class=&quot;caption&quot;&gt;
+        &lt;b&gt;Finite, and re-read on every turn&lt;/b&gt;
+        Roughly a few novels&amp;rsquo; worth of text. Fill it with what matters; leave out what doesn&amp;rsquo;t.
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+"></iframe></div>
+
+<div class="page"><iframe class="slide-frame" srcdoc="&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;utf-8&quot;&gt;
+&lt;title&gt;Four ways context breaks&lt;/title&gt;
+&lt;style&gt;
+  :root {
+    --bg: #fbfaf7; --ink: #1f2328; --muted: #5c6470; --line: #d9d5cc;
+    --clash: #f3d36b; --clash-bg: #fbf1c9;
+    --confusion: #e98a7d; --confusion-bg: #fadfd9;
+    --distraction: #6d9be8; --distraction-bg: #dbe6fa;
+    --poisoning: #a985d6; --poisoning-bg: #e8ddf5;
+    --user: #6d9be8; --user-bg: #dbe6fa;
+    --ai: #a985d6; --ai-bg: #e8ddf5;
+    --bad: #cf5b4a; --bad-bg: #f7d9d3;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: var(--bg); color: var(--ink);
+    font-family: -apple-system, &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif; }
+  .page { position: relative; width: 1920px; height: 1080px; padding: 44px 80px 40px; }
+  h1 { margin: 0 0 8px; font-size: 56px; font-weight: 700; letter-spacing: -0.5px; }
+  .sub { margin: 0 0 26px; font-size: 28px; color: var(--muted); }
+  .cols { display: grid; grid-template-columns: 1120px 1fr; column-gap: 80px; }
+
+  /* left: the four breaks */
+  .stack { display: flex; flex-direction: column; gap: 36px; }
+  .row { display: grid; grid-template-columns: 80px 1fr; column-gap: 24px; align-items: start; }
+  .row .icon { width: 72px; height: 72px; border-radius: 16px; display: grid; place-items: center; }
+  .row .icon svg { width: 40px; height: 40px; fill: none; stroke: #1f2328; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+  .row .label { font-size: 33px; font-weight: 700; margin: 6px 0 10px; }
+  .row .label small { font-weight: 400; color: var(--muted); font-size: 24px; margin-left: 10px; }
+  .row .body { font-size: 29px; line-height: 1.4; padding: 22px 26px; border-radius: 12px; }
+  .clash .icon { background: var(--clash); } .clash .body { background: var(--clash-bg); }
+  .confusion .icon { background: var(--confusion); } .confusion .body { background: var(--confusion-bg); }
+  .distraction .icon { background: var(--distraction); } .distraction .body { background: var(--distraction-bg); }
+  .poisoning .icon { background: var(--poisoning); } .poisoning .body { background: var(--poisoning-bg); }
+
+  /* right: concrete distraction example, reusing the &quot;conversation&quot; component */
+  .window { display: flex; flex-direction: column; align-items: center; }
+  .window h2 { margin: 0 0 20px; font-size: 34px; font-weight: 700; }
+  .convo { position: relative; width: 620px; border: 3px dashed #8a8f99; border-radius: 16px; padding: 26px 24px 20px;
+    display: flex; flex-direction: column; gap: 16px; background: #fff; }
+  .convo .tag { position: absolute; top: -20px; right: 24px; background: var(--bg); padding: 0 12px; font-size: 24px; color: var(--muted); font-weight: 600; }
+  .crow { display: grid; grid-template-columns: 56px 1fr; column-gap: 16px; align-items: start; }
+  .crow .icon { width: 52px; height: 52px; border-radius: 12px; display: grid; place-items: center; }
+  .crow .icon svg { width: 28px; height: 28px; fill: none; stroke: #1f2328; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+  .crow .label { font-size: 24px; font-weight: 700; margin: 2px 0 6px; }
+  .crow .body { font-size: 24px; line-height: 1.3; padding: 12px 16px; border-radius: 10px; }
+  .crow.user .icon { background: var(--user); } .crow.user .body { background: var(--user-bg); }
+  .crow.ai .icon { background: var(--ai); } .crow.ai .body { background: var(--ai-bg); }
+  .crow.bad .icon { background: var(--bad); } .crow.bad .body { background: var(--bad-bg); border: 2px solid var(--bad); }
+  .divider { border: none; border-top: 2px dashed var(--line); margin: 2px 0; }
+  .caption { width: 620px; margin-top: 22px; font-size: 26px; line-height: 1.35; color: var(--ink); text-align: center; }
+  .caption b { display: block; font-size: 28px; margin-bottom: 6px; }
+
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div class=&quot;page&quot;&gt;
+  &lt;h1&gt;Four ways context breaks&lt;/h1&gt;
+  &lt;p class=&quot;sub&quot;&gt;Curate, don&amp;rsquo;t dump &amp;mdash; the model can&amp;rsquo;t tell what matters to you.&lt;/p&gt;
+
+  &lt;div class=&quot;cols&quot;&gt;
+    &lt;div class=&quot;stack&quot;&gt;
+
+      &lt;div class=&quot;row clash&quot;&gt;
+        &lt;div class=&quot;icon&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;path d=&quot;M6 3h7l4 4v14H6z&quot;/&gt;&lt;path d=&quot;M13 3v4h4&quot;/&gt;&lt;path d=&quot;M17 3h4v4l-1.5 1.5&quot;/&gt;&lt;path d=&quot;M17 3l4 4&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;
+        &lt;div&gt;
+          &lt;div class=&quot;label&quot;&gt;Clash&lt;/div&gt;
+          &lt;div class=&quot;body&quot;&gt;Two sources quietly contradict each other; it trusts one. Fixed by evidence in the pile &amp;mdash; dates, versions, a second document &amp;mdash; not by asking.&lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;div class=&quot;row confusion&quot;&gt;
+        &lt;div class=&quot;icon&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;path d=&quot;M3 12h3l2-6 3 12 2-9 2 5h6&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;
+        &lt;div&gt;
+          &lt;div class=&quot;label&quot;&gt;Confusion&lt;/div&gt;
+          &lt;div class=&quot;body&quot;&gt;Noise nudges the output. A runbook pasted into the prompt gets absorbed into the answer; the same runbook read from a folder gets ignored.&lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;div class=&quot;row distraction&quot;&gt;
+        &lt;div class=&quot;icon&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;path d=&quot;M4 6h11a4 4 0 0 1 0 8H9&quot;/&gt;&lt;path d=&quot;M12 10l-4 4 4 4&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;
+        &lt;div&gt;
+          &lt;div class=&quot;label&quot;&gt;Distraction&lt;/div&gt;
+          &lt;div class=&quot;body&quot;&gt;Trailing context that isn&amp;rsquo;t about this task bleeds in. Fix: new topic, new chat.&lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;div class=&quot;row poisoning&quot;&gt;
+        &lt;div class=&quot;icon&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;path d=&quot;M9 3h6l1 5-4 4-4-4z&quot;/&gt;&lt;path d=&quot;M8 12l-3 7a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-3-7&quot;/&gt;&lt;path d=&quot;M9.5 17h5&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;
+        &lt;div&gt;
+          &lt;div class=&quot;label&quot;&gt;Poisoning&lt;/div&gt;
+          &lt;div class=&quot;body&quot;&gt;A wrong fact planted early gets trusted later, turn after turn. Fix: new chat, or name the stale source out of scope.&lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+    &lt;/div&gt;
+
+    &lt;div class=&quot;window&quot;&gt;
+      &lt;h2&gt;Distraction, live&lt;/h2&gt;
+      &lt;div class=&quot;convo&quot;&gt;
+        &lt;span class=&quot;tag&quot;&gt;Same thread&lt;/span&gt;
+
+        &lt;div class=&quot;crow user&quot;&gt;
+          &lt;div class=&quot;icon&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;circle cx=&quot;12&quot; cy=&quot;8&quot; r=&quot;4&quot;/&gt;&lt;path d=&quot;M4 21c0-4 3.6-7 8-7s8 3 8 7&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;
+          &lt;div&gt;
+            &lt;div class=&quot;label&quot;&gt;Your prompt&lt;/div&gt;
+            &lt;div class=&quot;body&quot;&gt;&amp;ldquo;Chase this overdue invoice with Anita.&amp;rdquo;&lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+
+        &lt;div class=&quot;crow ai&quot;&gt;
+          &lt;div class=&quot;icon&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;path d=&quot;M4 5h16v11H9l-5 4z&quot;/&gt;&lt;path d=&quot;M8 9h8M8 12h5&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;
+          &lt;div&gt;
+            &lt;div class=&quot;label&quot;&gt;AI response&lt;/div&gt;
+            &lt;div class=&quot;body&quot;&gt;&amp;ldquo;Following up &amp;mdash; 3 days overdue, &amp;euro;4,200, last reminder sent Monday.&amp;rdquo;&lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+
+        &lt;hr class=&quot;divider&quot;&gt;
+
+        &lt;div class=&quot;crow user&quot;&gt;
+          &lt;div class=&quot;icon&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;circle cx=&quot;12&quot; cy=&quot;8&quot; r=&quot;4&quot;/&gt;&lt;path d=&quot;M4 21c0-4 3.6-7 8-7s8 3 8 7&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;
+          &lt;div&gt;
+            &lt;div class=&quot;label&quot;&gt;Your next prompt&lt;/div&gt;
+            &lt;div class=&quot;body&quot;&gt;&amp;ldquo;Now plan the team outing.&amp;rdquo;&lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+
+        &lt;div class=&quot;crow bad&quot;&gt;
+          &lt;div class=&quot;icon&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;path d=&quot;M4 5h16v11H9l-5 4z&quot;/&gt;&lt;path d=&quot;M8 9h8M8 12h5&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;
+          &lt;div&gt;
+            &lt;div class=&quot;label&quot;&gt;AI response&lt;/div&gt;
+            &lt;div class=&quot;body&quot;&gt;&amp;ldquo;Following up &amp;mdash; the outing is 3 days overdue&amp;hellip;&amp;rdquo;&lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;div class=&quot;caption&quot;&gt;
+        &lt;b&gt;One thread, one topic &amp;mdash; bleed-through is a chat away.&lt;/b&gt;
+        New topic, new chat.
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+"></iframe></div>
+
+<div class="page"><iframe class="slide-frame" srcdoc="&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;utf-8&quot;&gt;
+&lt;title&gt;When one ask isn&amp;#39;t enough&lt;/title&gt;
+&lt;style&gt;
+  :root {
+    --bg: #fbfaf7; --ink: #1f2328; --muted: #5c6470; --line: #d9d5cc;
+    --plan: #f3d36b; --plan-bg: #fbf1c9;
+    --write: #7fbf7a; --write-bg: #dff0dc;
+    --isolate: #6d9be8; --isolate-bg: #dbe6fa;
+    --compress: #a985d6; --compress-bg: #e8ddf5;
+    --file: #7fbf7a; --file-bg: #dff0dc;
+    --ai: #a985d6; --ai-bg: #e8ddf5;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: var(--bg); color: var(--ink);
+    font-family: -apple-system, &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif; }
+  .page { position: relative; width: 1920px; height: 1080px; padding: 44px 80px 40px; }
+  h1 { margin: 0 0 8px; font-size: 56px; font-weight: 700; letter-spacing: -0.5px; }
+  .sub { margin: 0 0 26px; font-size: 28px; color: var(--muted); }
+  .cols { display: grid; grid-template-columns: 1120px 1fr; column-gap: 80px; }
+
+  /* left: the four moves */
+  .stack { display: flex; flex-direction: column; gap: 36px; }
+  .row { display: grid; grid-template-columns: 80px 1fr; column-gap: 24px; align-items: start; }
+  .row .icon { width: 72px; height: 72px; border-radius: 16px; display: grid; place-items: center; }
+  .row .icon svg { width: 40px; height: 40px; fill: none; stroke: #1f2328; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+  .row .label { font-size: 33px; font-weight: 700; margin: 6px 0 10px; }
+  .row .label small { font-weight: 400; color: var(--muted); font-size: 24px; margin-left: 10px; }
+  .row .body { font-size: 29px; line-height: 1.4; padding: 22px 26px; border-radius: 12px; }
+  .row .body code { font-family: Menlo, Consolas, monospace; font-size: 26px; }
+  .plan .icon { background: var(--plan); } .plan .body { background: var(--plan-bg); }
+  .write .icon { background: var(--write); } .write .body { background: var(--write-bg); }
+  .isolate .icon { background: var(--isolate); } .isolate .body { background: var(--isolate-bg); }
+  .compress .icon { background: var(--compress); } .compress .body { background: var(--compress-bg); }
+
+  /* right: the chain */
+  .window { display: flex; flex-direction: column; align-items: center; }
+  .window h2 { margin: 0 0 30px; font-size: 34px; font-weight: 700; }
+  .chain { display: flex; flex-direction: column; align-items: center; gap: 0; }
+  .cbox { width: 600px; border-radius: 16px; padding: 26px 30px; display: flex; align-items: center; gap: 20px; }
+  .cbox .icon { width: 60px; height: 60px; border-radius: 14px; display: grid; place-items: center; flex: none; }
+  .cbox .icon svg { width: 34px; height: 34px; fill: none; stroke: #1f2328; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+  .cbox .label { font-size: 29px; font-weight: 700; }
+  .cbox .label code { font-family: Menlo, Consolas, monospace; font-size: 26px; font-weight: 400; }
+  .cbox .desc { font-size: 23px; color: var(--muted); margin-top: 4px; }
+  .cbox.file { background: var(--file-bg); border: 2px solid var(--file); }
+  .cbox.file .icon { background: var(--file); }
+  .cbox.ai { background: var(--ai-bg); border: 2px solid var(--ai); }
+  .cbox.ai .icon { background: var(--ai); }
+  .arrow { width: 600px; display: flex; align-items: center; justify-content: center; padding: 16px 0; }
+  .arrow svg { width: 44px; height: 62px; fill: none; stroke: var(--ink); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+  .caption { width: 620px; margin-top: 26px; font-size: 26px; line-height: 1.35; color: var(--ink); text-align: center; }
+  .caption b { display: block; font-size: 28px; margin-bottom: 6px; }
+
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div class=&quot;page&quot;&gt;
+  &lt;h1&gt;When one ask isn&amp;rsquo;t enough&lt;/h1&gt;
+  &lt;p class=&quot;sub&quot;&gt;A complex task isn&amp;rsquo;t a bigger prompt &amp;mdash; it&amp;rsquo;s steps, each with the context it needs.&lt;/p&gt;
+
+  &lt;div class=&quot;cols&quot;&gt;
+    &lt;div class=&quot;stack&quot;&gt;
+
+      &lt;div class=&quot;row plan&quot;&gt;
+        &lt;div class=&quot;icon&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;circle cx=&quot;12&quot; cy=&quot;12&quot; r=&quot;9&quot;/&gt;&lt;path d=&quot;M12 8l2 4-2 4-2-4z&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;
+        &lt;div&gt;
+          &lt;div class=&quot;label&quot;&gt;Plan&lt;/div&gt;
+          &lt;div class=&quot;body&quot;&gt;State the task, take the plan, critique it, then say go. A checkpoint you can read &amp;mdash; cheaper to fix than the output.&lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;div class=&quot;row write&quot;&gt;
+        &lt;div class=&quot;icon&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;path d=&quot;M6 3h9l5 5v13H6z&quot;/&gt;&lt;path d=&quot;M15 3v5h5&quot;/&gt;&lt;path d=&quot;M9 13l6-6 2 2-6 6H9z&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;
+        &lt;div&gt;
+          &lt;div class=&quot;label&quot;&gt;Write&lt;/div&gt;
+          &lt;div class=&quot;body&quot;&gt;Save the plan and each step&amp;rsquo;s output to a file; the file is context that survives the chat.&lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;div class=&quot;row isolate&quot;&gt;
+        &lt;div class=&quot;icon&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;circle cx=&quot;6&quot; cy=&quot;6&quot; r=&quot;2.4&quot;/&gt;&lt;circle cx=&quot;18&quot; cy=&quot;9&quot; r=&quot;2.4&quot;/&gt;&lt;circle cx=&quot;18&quot; cy=&quot;18&quot; r=&quot;2.4&quot;/&gt;&lt;path d=&quot;M8 7l8 2M8 7l8 10&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;
+        &lt;div&gt;
+          &lt;div class=&quot;label&quot;&gt;Isolate&lt;/div&gt;
+          &lt;div class=&quot;body&quot;&gt;Separate tasks get separate threads or sub-agents.&lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;div class=&quot;row compress&quot;&gt;
+        &lt;div class=&quot;icon&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;path d=&quot;M4 5h16M4 9h16M8 13h8M10 17h4&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;
+        &lt;div&gt;
+          &lt;div class=&quot;label&quot;&gt;Compress&lt;/div&gt;
+          &lt;div class=&quot;body&quot;&gt;A long history gets summarised; in Devin that&amp;rsquo;s &lt;code&gt;/compact&lt;/code&gt;.&lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+    &lt;/div&gt;
+
+    &lt;div class=&quot;window&quot;&gt;
+      &lt;h2&gt;The chain&lt;/h2&gt;
+      &lt;div class=&quot;chain&quot;&gt;
+        &lt;div class=&quot;cbox file&quot;&gt;
+          &lt;div class=&quot;icon&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;path d=&quot;M6 3h8l5 5v13H6z&quot;/&gt;&lt;path d=&quot;M14 3v5h5&quot;/&gt;&lt;path d=&quot;M9 13h7M9 17h7&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;
+          &lt;div&gt;&lt;div class=&quot;label&quot;&gt;&lt;code&gt;tags.md&lt;/code&gt;&lt;/div&gt;&lt;div class=&quot;desc&quot;&gt;written once&lt;/div&gt;&lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;arrow&quot;&gt;&lt;svg viewBox=&quot;0 0 40 56&quot;&gt;&lt;path d=&quot;M20 2v46M8 36l12 14 12-14&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;
+        &lt;div class=&quot;cbox ai&quot;&gt;
+          &lt;div class=&quot;icon&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;path d=&quot;M4 5h16v11H9l-5 4z&quot;/&gt;&lt;path d=&quot;M8 9h8M8 12h5&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;
+          &lt;div&gt;&lt;div class=&quot;label&quot;&gt;Anita&amp;rsquo;s email&lt;/div&gt;&lt;div class=&quot;desc&quot;&gt;from tags.md + current pricing&lt;/div&gt;&lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;arrow&quot;&gt;&lt;svg viewBox=&quot;0 0 40 56&quot;&gt;&lt;path d=&quot;M20 2v46M8 36l12 14 12-14&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;
+        &lt;div class=&quot;cbox ai&quot;&gt;
+          &lt;div class=&quot;icon&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;path d=&quot;M4 5h16v11H9l-5 4z&quot;/&gt;&lt;path d=&quot;M8 9h8M8 12h5&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;
+          &lt;div&gt;&lt;div class=&quot;label&quot;&gt;Stand-up summary&lt;/div&gt;&lt;div class=&quot;desc&quot;&gt;from tags.md&lt;/div&gt;&lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;div class=&quot;caption&quot;&gt;
+        &lt;b&gt;Write once, reused three times.&lt;/b&gt;
+        Each step writes to a file; the next step reads it.
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+"></iframe></div>
+
+<script>
+  const pages = [...document.querySelectorAll('.page')];
+  let i = 0;
+  const go = n => { i = Math.max(0, Math.min(pages.length - 1, n)); pages[i].scrollIntoView({block: 'start'}); };
+  document.addEventListener('keydown', e => {
+    if (['ArrowRight','PageDown',' '].includes(e.key)) { e.preventDefault(); go(i + 1); }
+    else if (['ArrowLeft','PageUp'].includes(e.key)) { e.preventDefault(); go(i - 1); }
+    else if (e.key === 'Home') go(0);
+    else if (e.key === 'End') go(pages.length - 1);
+    else if (e.key.toLowerCase() === 'f') document.documentElement.requestFullscreen();
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760">
+  <style>
+    text { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; fill: #1f2937; }
+    .h1 { font-size: 26px; font-weight: 700; }
+    .sub { font-size: 15px; fill: #6b7280; }
+    .col { font-size: 17px; font-weight: 700; }
+    .cs { font-size: 13px; fill: #6b7280; }
+    .code { font-size: 12.5px; font-weight: 700; fill: #ffffff; }
+    .b { font-size: 14.5px; font-weight: 700; }
+    .f { font-size: 12.5px; fill: #4b5563; }
+    .note { font-size: 12.5px; fill: #6b7280; }
+  </style>
+  <rect width="1200" height="760" fill="#ffffff"/>
+  <text x="30" y="44" class="h1">The staircase: every box exists because something failed</text>
+  <text x="30" y="70" class="sub">Read each column bottom-up. Each card: the box we add, and the failure that forced it.</text>
+
+  <!-- column headers -->
+  <text x="30" y="110" class="col">LLM Fundamentals</text><text x="30" y="128" class="cs">6 slots · R0–R9 · "what happens when I press Enter?"</text>
+  <text x="430" y="110" class="col">AI Application Architecture</text><text x="430" y="128" class="cs">6 slots · R10–R15 · "what before a team relies on it?"</text>
+  <text x="830" y="110" class="col">Track 2</text><text x="830" y="128" class="cs">five topics · production concerns</text>
+
+  <!-- Fundamentals: bottom-up, card h 52, step 58, top y=146 -->
+  <g>
+    <rect x="30" y="146" width="370" height="52" rx="8" fill="#ccfbf1" stroke="#0f766e"/><rect x="40" y="158" width="42" height="26" rx="5" fill="#0f766e"/><text x="61" y="176" class="code" text-anchor="middle">R9</text>
+    <text x="94" y="167" class="b">Swap the model</text><text x="94" y="187" class="f">which model may see which data?</text>
+    <rect x="30" y="204" width="370" height="52" rx="8" fill="#ccfbf1" stroke="#0f766e"/><rect x="40" y="216" width="42" height="26" rx="5" fill="#0f766e"/><text x="61" y="234" class="code" text-anchor="middle">R8</text>
+    <text x="94" y="225" class="b">Skills</text><text x="94" y="245" class="f">reply instructions are long, rarely needed</text>
+    <rect x="30" y="262" width="370" height="52" rx="8" fill="#ccfbf1" stroke="#0f766e"/><rect x="40" y="274" width="42" height="26" rx="5" fill="#0f766e"/><text x="61" y="292" class="code" text-anchor="middle">R7</text>
+    <text x="94" y="283" class="b">Prompt chaining</text><text x="94" y="303" class="f">some tasks are a fixed sequence</text>
+    <rect x="30" y="320" width="370" height="52" rx="8" fill="#fef3c7" stroke="#d97706"/><rect x="40" y="332" width="42" height="26" rx="5" fill="#d97706"/><text x="61" y="350" class="code" text-anchor="middle">R6</text>
+    <text x="94" y="341" class="b">Agent loop + approval</text><text x="94" y="361" class="f">one question needs two tools; writes need a yes</text>
+    <rect x="30" y="378" width="370" height="52" rx="8" fill="#ccfbf1" stroke="#0f766e"/><rect x="40" y="390" width="42" height="26" rx="5" fill="#0f766e"/><text x="61" y="408" class="code" text-anchor="middle">R5</text>
+    <text x="94" y="399" class="b">Tools (mock CSP)</text><text x="94" y="419" class="f">"Doc count for Finance?" → it has no access</text>
+    <rect x="30" y="436" width="370" height="52" rx="8" fill="#f3f4f6" stroke="#9ca3af"/><rect x="40" y="448" width="42" height="26" rx="5" fill="#6b7280"/><text x="61" y="466" class="code" text-anchor="middle">R4</text>
+    <text x="94" y="457" class="b">Pasted context</text><text x="94" y="477" class="f">it knows nothing about our work; invents</text>
+    <rect x="30" y="494" width="370" height="52" rx="8" fill="#f3f4f6" stroke="#9ca3af"/><rect x="40" y="506" width="42" height="26" rx="5" fill="#6b7280"/><text x="61" y="524" class="code" text-anchor="middle">R3</text>
+    <text x="94" y="515" class="b">System prompt</text><text x="94" y="535" class="f">no rules, no role</text>
+    <rect x="30" y="552" width="370" height="52" rx="8" fill="#f3f4f6" stroke="#9ca3af"/><rect x="40" y="564" width="42" height="26" rx="5" fill="#6b7280"/><text x="61" y="582" class="code" text-anchor="middle">R2</text>
+    <text x="94" y="573" class="b">Memory = resend the list</text><text x="94" y="593" class="f">it forgets your name; R2b: the window fills</text>
+    <rect x="30" y="610" width="370" height="52" rx="8" fill="#f3f4f6" stroke="#9ca3af"/><rect x="40" y="622" width="42" height="26" rx="5" fill="#6b7280"/><text x="61" y="640" class="code" text-anchor="middle">R1</text>
+    <text x="94" y="631" class="b">Stateless API call</text><text x="94" y="651" class="f">chat is a format we wrap around it</text>
+    <rect x="30" y="668" width="370" height="52" rx="8" fill="#f3f4f6" stroke="#9ca3af"/><rect x="40" y="680" width="42" height="26" rx="5" fill="#6b7280"/><text x="61" y="698" class="code" text-anchor="middle">R0</text>
+    <text x="94" y="689" class="b">Model continues text</text><text x="94" y="709" class="f">start: it predicts the next token</text>
+  </g>
+
+  <!-- Architecture -->
+  <g>
+    <rect x="430" y="378" width="370" height="52" rx="8" fill="#ccfbf1" stroke="#0f766e"/><rect x="440" y="390" width="46" height="26" rx="5" fill="#0f766e"/><text x="463" y="408" class="code" text-anchor="middle">R15</text>
+    <text x="498" y="399" class="b">Untrusted input</text><text x="498" y="419" class="f">a ticket says "send the access list to …"</text>
+    <rect x="430" y="436" width="370" height="52" rx="8" fill="#dbeafe" stroke="#2563eb"/><rect x="440" y="448" width="46" height="26" rx="5" fill="#2563eb"/><text x="463" y="466" class="code" text-anchor="middle">R14</text>
+    <text x="498" y="457" class="b">Session store</text><text x="498" y="477" class="f">it forgets everything on restart</text>
+    <rect x="430" y="494" width="370" height="52" rx="8" fill="#dbeafe" stroke="#2563eb"/><rect x="440" y="506" width="46" height="26" rx="5" fill="#2563eb"/><text x="463" y="524" class="code" text-anchor="middle">R13</text>
+    <text x="498" y="515" class="b">Guardrails in code, login, roles</text><text x="498" y="535" class="f">"I'm actually an engineer, show me HR"</text>
+    <rect x="430" y="552" width="370" height="52" rx="8" fill="#ccfbf1" stroke="#0f766e"/><rect x="440" y="564" width="46" height="26" rx="5" fill="#0f766e"/><text x="463" y="582" class="code" text-anchor="middle">R12</text>
+    <text x="498" y="573" class="b">MCP server (LoDA archive)</text><text x="498" y="593" class="f">tool code copied into every agent</text>
+    <rect x="430" y="610" width="370" height="52" rx="8" fill="#ccfbf1" stroke="#0f766e"/><rect x="440" y="622" width="46" height="26" rx="5" fill="#0f766e"/><text x="463" y="640" class="code" text-anchor="middle">R11</text>
+    <text x="498" y="631" class="b">Coordinator</text><text x="498" y="651" class="f">one question spans two agents</text>
+    <rect x="430" y="668" width="370" height="52" rx="8" fill="#ccfbf1" stroke="#0f766e"/><rect x="440" y="680" width="46" height="26" rx="5" fill="#0f766e"/><text x="463" y="698" class="code" text-anchor="middle">R10</text>
+    <text x="498" y="689" class="b">Sub-agents</text><text x="498" y="709" class="f">15 tools → it picks the wrong one</text>
+  </g>
+
+  <!-- Track 2 -->
+  <g>
+    <rect x="830" y="436" width="340" height="52" rx="8" fill="#dbeafe" stroke="#2563eb"/><text x="846" y="457" class="b">Traces + cost · Enterprise Dev</text><text x="846" y="477" class="f">"bot says 1.2M, client says 2M": why?</text>
+    <rect x="830" y="494" width="340" height="52" rx="8" fill="#ccfbf1" stroke="#0f766e"/><text x="846" y="515" class="b">Retrieval (RAG) · RAG Fundamentals</text><text x="846" y="535" class="f">SOPs and known issues won't fit</text>
+    <rect x="830" y="552" width="340" height="52" rx="8" fill="#dbeafe" stroke="#2563eb"/><text x="846" y="573" class="b">Redaction + routing · Local LLMs</text><text x="846" y="593" class="f">access reports carry names</text>
+    <rect x="830" y="610" width="340" height="52" rx="8" fill="#ccfbf1" stroke="#0f766e"/><text x="846" y="631" class="b">Evaluation · Multi-Agent</text><text x="846" y="651" class="f">a prompt edit breaks a confirmation</text>
+    <rect x="830" y="668" width="340" height="52" rx="8" fill="#fef3c7" stroke="#d97706"/><text x="846" y="689" class="b">n8n + another approver · Deep Dive</text><text x="846" y="709" class="f">the requester can't approve their own rerun</text>
+  </g>
+
+  <!-- legend -->
+  <rect x="830" y="150" width="340" height="210" rx="10" fill="#f9fafb" stroke="#e5e7eb"/>
+  <text x="850" y="178" class="b">Colours</text>
+  <rect x="850" y="194" width="22" height="16" rx="3" fill="#f3f4f6" stroke="#9ca3af"/><text x="882" y="207" class="f">neutral examples (R0–R4: Priya, badge SOP)</text>
+  <rect x="850" y="222" width="22" height="16" rx="3" fill="#ccfbf1" stroke="#0f766e"/><text x="882" y="235" class="f">AI engineering (green)</text>
+  <rect x="850" y="250" width="22" height="16" rx="3" fill="#dbeafe" stroke="#2563eb"/><text x="882" y="263" class="f">software engineering they know (blue)</text>
+  <rect x="850" y="278" width="22" height="16" rx="3" fill="#fef3c7" stroke="#d97706"/><text x="882" y="291" class="f">a person approves</text>
+  <text x="850" y="326" class="f">LoDA enters at R5. Everything below</text>
+  <text x="850" y="344" class="f">it is general; everything above is theirs.</text>
+</svg>

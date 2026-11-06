@@ -9,4 +9,6 @@ Material for the participants of the LoDA AI training: programs to run on your o
 | [`rag-exercises/`](rag-exercises/) | RAG Fundamentals: chunking, hybrid search, rerank, permissions, eval and an agent over a fictional archive team's documents, in Python and in n8n |
 | [`multi-agent-architecture-patterns/`](multi-agent-architecture-patterns/) | Multi-Agent Architecture: six patterns, each run as a hands-on lab against the DAS chatbot |
 
+**Slides:** open [`decks/index.html`](decks/index.html) in a browser (double-click it; no server needed). It links every session's deck, flow by flow, plus the demos and recorded runs.
+
 Each folder's README covers setup and how to run it. The day-1 and architecture programs can run **live** (with a key from the trainer) or as a **replay** of the trainer's recorded answers (no key needed); the RAG exercises run live against Nexus, or retrieval-only with `--dry` and no key.

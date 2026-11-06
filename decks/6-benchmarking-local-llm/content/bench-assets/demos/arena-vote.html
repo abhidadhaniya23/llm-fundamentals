@@ -1,0 +1,53 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Arena vote</title>
+<link rel="stylesheet" href="demo.css">
+<style>
+  .log { font-family: var(--mono); font-size: .85rem; background: #0f2536; color: #e6edf3; padding: 8px 10px; border-radius: 6px; margin-bottom: 10px; }
+  .ans { min-height: 150px; max-height: 210px; overflow: hidden; }
+  .ans h3 { display: flex; justify-content: space-between; }
+  .ans p { margin: 4px 0; font-size: .9rem; white-space: pre-wrap; }
+  .elo { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+  .elo .card { display: flex; justify-content: space-between; align-items: center; }
+</style></head>
+<body>
+<div class="bar"><b id="round"></b>
+  <button data-v="A">A is better</button><button data-v="tie">Tie</button><button data-v="B">B is better</button>
+  <button id="truth" class="warn">Show the right category</button>
+  <button id="next">Next log line →</button><button id="reset">Reset</button></div>
+<div class="log" id="log"></div>
+<div class="grid2"><div class="card ans" id="A"></div><div class="card ans" id="B"></div></div>
+<div class="elo" id="elo"></div>
+<script src="demo-kit.js"></script>
+<script src="../data/arena.js"></script>
+<script>
+// Real, unedited answers from qwen3:8b and llama3.2:3b (Ollama on the trainer laptop), sources/bench/arena.py.
+const D = window.ARENA, [M1, M2] = D.models, K = 32;
+const CATS = ['storage', 'auth', 'network', 'config', 'other'];
+const named = a => { const hits = CATS.map(c => [a.toLowerCase().search(new RegExp('\\b' + c + '\\b')), c]).filter(h => h[0] >= 0).sort((x, y) => x[0] - y[0]); return hits.length ? hits[0][1] : 'none'; };
+// Alternate which model is A so the room can't learn the side.
+const sides = r => r % 2 ? [M2, M1] : [M1, M2];
+const S = { r: 0, voted: false, truth: false, rating: { [M1]: 1000, [M2]: 1000 } };
+const set = Demo.sync('arena', S, s => {
+  const R = D.rounds[s.r], [a, b] = sides(s.r);
+  document.getElementById('round').textContent = `Log line ${s.r + 1} of ${D.rounds.length}`;
+  document.getElementById('log').textContent = R.log;
+  [['A', a], ['B', b]].forEach(([side, m]) => {
+    const cat = named(R.answers[m]), ok = cat === R.expected;
+    document.getElementById(side).innerHTML = `<h3><span>Answer ${side}</span><span class="muted">${s.voted ? m : 'anonymous'}</span></h3><p>${Demo.esc(R.answers[m])}</p>` +
+      (s.truth ? `<span class="pill ${ok ? 'good' : 'bad'}">${ok ? 'right' : 'wrong'}: says ${cat}, expected ${R.expected}</span>` : '');
+  });
+  document.getElementById('elo').innerHTML = [M1, M2].map(m =>
+    `<div class="card"><b>${m}</b><span><span class="big">${Math.round(s.rating[m])}</span> <span class="muted">Elo from your votes</span></span></div>`).join('');
+});
+document.querySelectorAll('[data-v]').forEach(btn => btn.onclick = () => {
+  if (S.voted) return;
+  const [a, b] = sides(S.r), ea = 1 / (1 + 10 ** ((S.rating[b] - S.rating[a]) / 400));
+  const sa = btn.dataset.v === 'A' ? 1 : btn.dataset.v === 'B' ? 0 : 0.5;
+  set({ voted: true, rating: { ...S.rating, [a]: S.rating[a] + K * (sa - ea), [b]: S.rating[b] - K * (sa - ea) } });
+});
+document.getElementById('truth').onclick = () => set({ truth: true });
+document.getElementById('next').onclick = () => set({ r: (S.r + 1) % D.rounds.length, voted: false, truth: false });
+document.getElementById('reset').onclick = () => set({ r: 0, voted: false, truth: false, rating: { [M1]: 1000, [M2]: 1000 } });
+Demo.label();
+</script>
+</body></html>

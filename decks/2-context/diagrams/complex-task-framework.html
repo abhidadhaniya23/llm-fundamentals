@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>When one ask isn&#39;t enough</title>
+<style>
+  :root {
+    --bg: #fbfaf7; --ink: #1f2328; --muted: #5c6470; --line: #d9d5cc;
+    --plan: #f3d36b; --plan-bg: #fbf1c9;
+    --write: #7fbf7a; --write-bg: #dff0dc;
+    --isolate: #6d9be8; --isolate-bg: #dbe6fa;
+    --compress: #a985d6; --compress-bg: #e8ddf5;
+    --file: #7fbf7a; --file-bg: #dff0dc;
+    --ai: #a985d6; --ai-bg: #e8ddf5;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: var(--bg); color: var(--ink);
+    font-family: -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif; }
+  .page { position: relative; width: 1920px; height: 1080px; padding: 44px 80px 40px; }
+  h1 { margin: 0 0 8px; font-size: 56px; font-weight: 700; letter-spacing: -0.5px; }
+  .sub { margin: 0 0 26px; font-size: 28px; color: var(--muted); }
+  .cols { display: grid; grid-template-columns: 1120px 1fr; column-gap: 80px; }
+
+  /* left: the four moves */
+  .stack { display: flex; flex-direction: column; gap: 36px; }
+  .row { display: grid; grid-template-columns: 80px 1fr; column-gap: 24px; align-items: start; }
+  .row .icon { width: 72px; height: 72px; border-radius: 16px; display: grid; place-items: center; }
+  .row .icon svg { width: 40px; height: 40px; fill: none; stroke: #1f2328; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+  .row .label { font-size: 33px; font-weight: 700; margin: 6px 0 10px; }
+  .row .label small { font-weight: 400; color: var(--muted); font-size: 24px; margin-left: 10px; }
+  .row .body { font-size: 29px; line-height: 1.4; padding: 22px 26px; border-radius: 12px; }
+  .row .body code { font-family: Menlo, Consolas, monospace; font-size: 26px; }
+  .plan .icon { background: var(--plan); } .plan .body { background: var(--plan-bg); }
+  .write .icon { background: var(--write); } .write .body { background: var(--write-bg); }
+  .isolate .icon { background: var(--isolate); } .isolate .body { background: var(--isolate-bg); }
+  .compress .icon { background: var(--compress); } .compress .body { background: var(--compress-bg); }
+
+  /* right: the chain */
+  .window { display: flex; flex-direction: column; align-items: center; }
+  .window h2 { margin: 0 0 30px; font-size: 34px; font-weight: 700; }
+  .chain { display: flex; flex-direction: column; align-items: center; gap: 0; }
+  .cbox { width: 600px; border-radius: 16px; padding: 26px 30px; display: flex; align-items: center; gap: 20px; }
+  .cbox .icon { width: 60px; height: 60px; border-radius: 14px; display: grid; place-items: center; flex: none; }
+  .cbox .icon svg { width: 34px; height: 34px; fill: none; stroke: #1f2328; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+  .cbox .label { font-size: 29px; font-weight: 700; }
+  .cbox .label code { font-family: Menlo, Consolas, monospace; font-size: 26px; font-weight: 400; }
+  .cbox .desc { font-size: 23px; color: var(--muted); margin-top: 4px; }
+  .cbox.file { background: var(--file-bg); border: 2px solid var(--file); }
+  .cbox.file .icon { background: var(--file); }
+  .cbox.ai { background: var(--ai-bg); border: 2px solid var(--ai); }
+  .cbox.ai .icon { background: var(--ai); }
+  .arrow { width: 600px; display: flex; align-items: center; justify-content: center; padding: 16px 0; }
+  .arrow svg { width: 44px; height: 62px; fill: none; stroke: var(--ink); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+  .caption { width: 620px; margin-top: 26px; font-size: 26px; line-height: 1.35; color: var(--ink); text-align: center; }
+  .caption b { display: block; font-size: 28px; margin-bottom: 6px; }
+
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>When one ask isn&rsquo;t enough</h1>
+  <p class="sub">A complex task isn&rsquo;t a bigger prompt &mdash; it&rsquo;s steps, each with the context it needs.</p>
+
+  <div class="cols">
+    <div class="stack">
+
+      <div class="row plan">
+        <div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8l2 4-2 4-2-4z"/></svg></div>
+        <div>
+          <div class="label">Plan</div>
+          <div class="body">State the task, take the plan, critique it, then say go. A checkpoint you can read &mdash; cheaper to fix than the output.</div>
+        </div>
+      </div>
+
+      <div class="row write">
+        <div class="icon"><svg viewBox="0 0 24 24"><path d="M6 3h9l5 5v13H6z"/><path d="M15 3v5h5"/><path d="M9 13l6-6 2 2-6 6H9z"/></svg></div>
+        <div>
+          <div class="label">Write</div>
+          <div class="body">Save the plan and each step&rsquo;s output to a file; the file is context that survives the chat.</div>
+        </div>
+      </div>
+
+      <div class="row isolate">
+        <div class="icon"><svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.4"/><circle cx="18" cy="9" r="2.4"/><circle cx="18" cy="18" r="2.4"/><path d="M8 7l8 2M8 7l8 10"/></svg></div>
+        <div>
+          <div class="label">Isolate</div>
+          <div class="body">Separate tasks get separate threads or sub-agents.</div>
+        </div>
+      </div>
+
+      <div class="row compress">
+        <div class="icon"><svg viewBox="0 0 24 24"><path d="M4 5h16M4 9h16M8 13h8M10 17h4"/></svg></div>
+        <div>
+          <div class="label">Compress</div>
+          <div class="body">A long history gets summarised; in Devin that&rsquo;s <code>/compact</code>.</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="window">
+      <h2>The chain</h2>
+      <div class="chain">
+        <div class="cbox file">
+          <div class="icon"><svg viewBox="0 0 24 24"><path d="M6 3h8l5 5v13H6z"/><path d="M14 3v5h5"/><path d="M9 13h7M9 17h7"/></svg></div>
+          <div><div class="label"><code>tags.md</code></div><div class="desc">written once</div></div>
+        </div>
+        <div class="arrow"><svg viewBox="0 0 40 56"><path d="M20 2v46M8 36l12 14 12-14"/></svg></div>
+        <div class="cbox ai">
+          <div class="icon"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/></svg></div>
+          <div><div class="label">Anita&rsquo;s email</div><div class="desc">from tags.md + current pricing</div></div>
+        </div>
+        <div class="arrow"><svg viewBox="0 0 40 56"><path d="M20 2v46M8 36l12 14 12-14"/></svg></div>
+        <div class="cbox ai">
+          <div class="icon"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/></svg></div>
+          <div><div class="label">Stand-up summary</div><div class="desc">from tags.md</div></div>
+        </div>
+      </div>
+
+      <div class="caption">
+        <b>Write once, reused three times.</b>
+        Each step writes to a file; the next step reads it.
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

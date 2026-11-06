@@ -1,0 +1,49 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Local or cloud</title>
+<link rel="stylesheet" href="demo.css">
+<style>
+  table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+  th { background: var(--navy); color: #fff; text-align: left; padding: 6px 8px; font-weight: 600; }
+  td { padding: 3px 8px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  tr:nth-child(even) td { background: var(--zebra); }
+  .tg { border: 1.5px solid var(--line); border-radius: 999px; padding: 2px 10px; cursor: pointer; background: var(--card); color: var(--muted); font-size: .82rem; }
+  .tg.on { background: var(--orange-tint); border-color: var(--orange); color: #a24b10; font-weight: 700; }
+  .where { font-weight: 700; } .where.local { color: var(--good); } .where.cloud { color: var(--navy); } .where.either { color: var(--warn); }
+  .why { font-size: .78rem; color: var(--muted); }
+</style></head>
+<body>
+<div class="bar"><b>Contoso log assistant: where should each step run?</b> <span class="muted">Click a tag to switch it. The rule decides; the room argues.</span> <button id="reset">Reset</button></div>
+<table><thead><tr><th>Step</th><th>Sensitive data?</th><th>High volume?</th><th>Hard reasoning?</th><th>Runs</th></tr></thead><tbody id="rows"></tbody></table>
+<script src="demo-kit.js"></script>
+<script>
+const STEPS = [
+  ['Mask names and customer IDs in raw log lines', [1, 1, 0]],
+  ['Classify 50,000 log lines a day (storage, auth, network, config)', [1, 1, 0]],
+  ['Group repeated errors into incidents', [1, 1, 0]],
+  ['Find the root cause across Legacy Archive and Content Hub', [0, 0, 1]],
+  ['Write the weekly incident summary for management', [0, 0, 1]],
+  ['Draft the ticket text for the platform team', [0, 0, 0]],
+];
+const decide = ([sens, vol, hard]) =>
+  sens && hard ? ['either', 'Sensitive and hard: mask locally first, then send the masked text to the cloud model.'] :
+  sens ? ['local', 'Data must not leave the building; a small model is good enough.'] :
+  vol && !hard ? ['local', 'High volume, easy task: no per-token cost on premises.'] :
+  hard ? ['cloud', 'Needs the strongest reasoning; the input is already masked.'] :
+  ['either', 'Easy and not sensitive: pick by cost and speed in your eval.'];
+const S = { tags: STEPS.map(s => s[1]) };
+const set = Demo.sync('decide', S, s => {
+  document.getElementById('rows').innerHTML = STEPS.map(([name], i) => {
+    const t = s.tags[i], [w, why] = decide(t);
+    return `<tr><td>${name}</td>${['sensitive', 'volume', 'hard'].map((k, j) => `<td><span class="tg ${t[j] ? 'on' : ''}" data-i="${i}" data-j="${j}">${t[j] ? 'yes' : 'no'}</span></td>`).join('')}
+      <td><span class="where ${w}">${w === 'either' ? 'local or cloud' : w}</span><div class="why">${why}</div></td></tr>`;
+  }).join('');
+});
+document.body.addEventListener('click', e => {
+  const t = e.target.closest('.tg'); if (!t) return;
+  const tags = S.tags.map(r => [...r]); tags[t.dataset.i][t.dataset.j] = 1 - tags[t.dataset.i][t.dataset.j];
+  set({ tags });
+});
+document.getElementById('reset').onclick = () => set({ tags: STEPS.map(s => s[1]) });
+Demo.label();
+</script>
+</body></html>

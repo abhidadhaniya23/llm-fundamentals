@@ -1,0 +1,63 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Benchmark quiz</title>
+<link rel="stylesheet" href="demo.css">
+<style>
+  body { font-size: 17px; }
+  .q { font-size: 1.25rem; font-weight: 700; color: var(--navy); margin: 6px 0 12px; }
+  .opts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .opt { border: 2px solid var(--line); border-radius: 10px; padding: 10px 14px; cursor: pointer; background: var(--card); display: flex; gap: 10px; align-items: center; }
+  .opt b { color: var(--navy); font-size: 1.1rem; }
+  .opt .n { margin-left: auto; font-weight: 700; color: var(--orange); font-variant-numeric: tabular-nums; }
+  .opt.right { border-color: var(--good); background: var(--good-tint); }
+  .opt.wrong { opacity: .45; }
+  .why { margin-top: 12px; padding: 10px 14px; border-left: 5px solid var(--good); background: var(--good-tint); border-radius: 0 8px 8px 0; }
+  .dots { margin-left: auto; color: var(--muted); }
+</style></head>
+<body>
+<div class="bar"><button id="prev">←</button><b id="num"></b><button id="next">→</button>
+  <span class="muted">Click an option to count a hand.</span>
+  <button id="show" class="warn">Reveal</button><span class="dots" id="score"></span></div>
+<div class="q" id="q"></div>
+<div class="opts" id="opts"></div>
+<div id="why"></div>
+<script src="demo-kit.js"></script>
+<script>
+const Q = [
+  ['A benchmark is made of…', ['a fixed set of questions, a scoring rule and a leaderboard', 'a vendor\'s launch slide', 'the model\'s training data', 'a price list'], 0,
+   'Questions, a rule that scores the answers, and a table that ranks the models. Our golden set has the same three parts.'],
+  ['LMArena\'s Elo score measures…', ['how often the model is correct', 'which answer people prefer in blind A/B votes', 'speed in tokens per second', 'how many people downloaded it'], 1,
+   'People vote between two anonymous answers. Preference, not correctness: a confident wrong answer can win the vote.'],
+  ['On GPQA Diamond (198 questions) model A scores 61%, model B 60%. Which is better at reasoning?', ['A', 'B', 'Can\'t tell from this', 'Both are bad'], 2,
+   'One question is worth half a point. The 95% margin on a single score is about ±7 points. A 1-point gap is noise.'],
+  ['The same model appears on SWE-bench Verified with very different scores. Why?', ['the test changed', 'a different agent (harness) was wrapped around it', 'the model got lazy', 'rounding'], 1,
+   'SWE-bench ranks model + agent pairs. The scaffold around the model moves the score a lot.'],
+  ['A vendor reports a higher score than an independent evaluator for the same model and benchmark. Most likely reason?', ['the evaluator made a mistake', 'different settings: thinking, attempts, prompts, tools', 'the vendor lied', 'different hardware'], 1,
+   'Self-reported numbers use the vendor\'s best settings. Independent labs run every model the same way. Compare under the same settings.'],
+  ['Which benchmark is saturated, so it no longer separates the top models?', ['MMLU', 'Humanity\'s Last Exam', 'SWE-bench Pro', 'our own golden set'], 0,
+   'Frontier models score roughly 88–99% on MMLU. Harder tests (MMLU-Pro, HLE) took over.'],
+  ['You find a leaderboard screenshot from nine months ago. What do you do?', ['use it, scores are stable', 're-check: the top of the board changes within weeks', 'ignore all leaderboards', 'ask the vendor'], 1,
+   'New frontier models arrive every few weeks and the #1 spot changes several times a year. Every number needs a date.'],
+  ['What decides which model runs our log assistant?', ['the LMArena #1', 'the highest MMLU score', 'our golden set, on our hardware, with our settings', 'the cheapest price'], 2,
+   'Public benchmarks shortlist. Our own test of our own work decides, and measures speed and cost on the machine we will actually use.'],
+];
+const S = { i: 0, shown: false, votes: {} };
+const set = Demo.sync('quiz', S, s => {
+  const [q, opts, right, why] = Q[s.i], v = s.votes[s.i] || [0, 0, 0, 0];
+  document.getElementById('num').textContent = `Question ${s.i + 1} of ${Q.length}`;
+  document.getElementById('q').textContent = q;
+  document.getElementById('opts').innerHTML = opts.map((o, j) =>
+    `<div class="opt ${s.shown ? (j === right ? 'right' : 'wrong') : ''}" data-j="${j}"><b>${'ABCD'[j]}</b><span>${Demo.esc(o)}</span><span class="n">${v[j] ? v[j] + ' ✋' : ''}</span></div>`).join('');
+  document.getElementById('why').innerHTML = s.shown ? `<div class="why">${Demo.esc(why)}</div>` : '';
+  const done = Object.keys(s.votes).length;
+  document.getElementById('score').textContent = done ? `${done} answered` : '';
+});
+document.getElementById('opts').addEventListener('click', e => {
+  const o = e.target.closest('.opt'); if (!o || S.shown) return;
+  const v = [...(S.votes[S.i] || [0, 0, 0, 0])]; v[+o.dataset.j]++;
+  set({ votes: { ...S.votes, [S.i]: v } });
+});
+document.getElementById('show').onclick = () => set({ shown: true });
+document.getElementById('next').onclick = () => set({ i: Math.min(Q.length - 1, S.i + 1), shown: false });
+document.getElementById('prev').onclick = () => set({ i: Math.max(0, S.i - 1), shown: false });
+</script>
+</body></html>

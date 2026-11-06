@@ -1,0 +1,46 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Quantisation</title>
+<link rel="stylesheet" href="demo.css">
+<style>
+  .lay { display: grid; grid-template-columns: 1.5fr 1fr; gap: 14px; }
+  .sz { margin: 4px 0; } .sz .track { height: 22px; background: var(--zebra); border-radius: 4px; position: relative; }
+  .sz .fill { height: 100%; background: var(--navy); border-radius: 4px; }
+  .sz .fill.cur { background: var(--orange); }
+  .sz .lab { display: flex; justify-content: space-between; font-size: .82rem; }
+</style></head>
+<body>
+<div class="bar"><b>Bits per weight:</b><span id="btns"></span></div>
+<div class="lay">
+  <div class="card"><h3>16 weights from one block: original vs stored</h3><svg id="plot" viewBox="0 0 560 270" width="100%"></svg>
+    <div id="err" class="muted"></div></div>
+  <div class="card"><h3>File size of an 8.2B model <span class="muted">(params × bits ÷ 8)</span></h3><div id="sizes"></div>
+    <div class="muted" style="font-size:.8rem;margin-top:6px">Real GGUF files are a little larger: each block also stores a scale.</div></div>
+</div>
+<script src="demo-kit.js"></script>
+<script>
+const LEVELS = [[16, 'FP16'], [8, 'Q8_0'], [6, 'Q6_K'], [5, 'Q5_K_M'], [4, 'Q4_K_M'], [2, 'Q2_K']];
+const W = [0.412, -0.137, 0.088, -0.561, 0.233, 0.019, -0.302, 0.645, -0.044, 0.171, -0.498, 0.356, -0.211, 0.072, 0.529, -0.389];
+const quant = (w, b) => { if (b >= 16) return w; const m = Math.max(...W.map(Math.abs)), q = 2 ** (b - 1) - 1, sc = m / Math.max(q, 1); return Math.round(w / sc) * sc; };
+const S = { b: 4 };
+const set = Demo.sync('quant', S, s => {
+  document.getElementById('btns').innerHTML = LEVELS.map(([b, n]) => `<button data-b="${b}" class="${b === s.b ? 'on' : ''}">${b} · ${n}</button>`).join(' ');
+  document.querySelectorAll('[data-b]').forEach(el => el.onclick = () => set({ b: +el.dataset.b }));
+  const y = v => 130 - v * 170, x = i => 30 + i * 33;
+  let g = `<line x1="20" x2="555" y1="${y(0)}" y2="${y(0)}" stroke="#5d6874"/>`;
+  if (s.b <= 6) { const m = Math.max(...W.map(Math.abs)), q = 2 ** (s.b - 1) - 1, sc = m / Math.max(q, 1);
+    for (let l = -q; l <= q; l++) g += `<line x1="20" x2="555" y1="${y(l * sc)}" y2="${y(l * sc)}" stroke="#F47421" stroke-opacity=".25"/>`;
+    g += `<text x="555" y="14" font-size="15" text-anchor="end" fill="#F47421">${2 * q + 1} allowed values (orange lines)</text>`; }
+  let err = 0;
+  W.forEach((w, i) => { const qv = quant(w, s.b); err += Math.abs(w - qv);
+    g += `<rect x="${x(i)}" y="${Math.min(y(w), y(0))}" width="13" height="${Math.abs(y(w) - y(0))}" fill="#134F7C"/>` +
+         `<rect x="${x(i) + 14}" y="${Math.min(y(qv), y(0))}" width="13" height="${Math.abs(y(qv) - y(0))}" fill="#F47421"/>`; });
+  g += `<text x="20" y="262" font-size="16" fill="#134F7C">■ original</text><text x="125" y="262" font-size="16" fill="#F47421">■ stored at ${s.b} bits</text>`;
+  document.getElementById('plot').innerHTML = g;
+  document.getElementById('err').textContent = `Average rounding error per weight: ${(err / W.length).toFixed(4)}` + (s.b === 2 ? ' — only 3 values left to choose from.' : '');
+  const max = 8.2e9 * 16 / 8 / 1e9;
+  document.getElementById('sizes').innerHTML = LEVELS.map(([b, n]) => { const gb = 8.2e9 * b / 8 / 1e9;
+    return `<div class="sz"><div class="lab"><span>${n}${n === 'Q4_K_M' ? ' <b>(usual default)</b>' : ''}</span><b>${gb.toFixed(1)} GB</b></div><div class="track"><div class="fill ${b === s.b ? 'cur' : ''}" style="width:${gb / max * 100}%"></div></div></div>`; }).join('') +
+    `<div class="muted" style="margin-top:6px">${s.b < 16 ? `${Math.round((1 - s.b / 16) * 100)}% smaller than FP16` : 'the starting point'}</div>`;
+});
+</script>
+</body></html>

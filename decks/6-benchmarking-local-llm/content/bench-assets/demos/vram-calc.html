@@ -1,0 +1,49 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Will it fit?</title>
+<link rel="stylesheet" href="demo.css">
+<style>
+  .lay { display: grid; grid-template-columns: 1.3fr 1fr; gap: 14px; }
+  .stack { display: flex; height: 40px; border-radius: 6px; overflow: hidden; margin: 8px 0; background: var(--zebra); }
+  .stack div { color: #fff; font-size: .8rem; display: flex; align-items: center; justify-content: center; white-space: nowrap; overflow: hidden; }
+  .hw { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; margin-bottom: 6px; }
+  .hw.fit { border-color: var(--good); background: var(--good-tint); } .hw.nofit { border-color: var(--bad); background: var(--bad-tint); }
+</style></head>
+<body>
+<div class="bar"><label>Model</label><span id="models"></span></div>
+<div class="bar"><label>Quantisation</label><span id="quants"></span>
+  <label>Context: <b id="cv"></b> tokens</label><input type="range" id="ctx" min="0" max="6" value="1"></div>
+<div class="lay">
+  <div class="card"><h3>Memory needed ≈ <span id="total" class="big"></span></h3>
+    <div class="stack" id="stack"></div>
+    <div id="explain" class="muted" style="font-size:.85rem"></div></div>
+  <div class="card"><h3>Does it fit?</h3><div id="hw"></div></div>
+</div>
+<script src="demo-kit.js"></script>
+<script>
+// KV cache per token = 2 (K and V) × layers × KV heads × head size × 2 bytes (FP16). Shapes from the published model configs.
+const MODELS = [
+  ['Phi-3.5-mini 3.8B', 3.8, 32, 32, 96], ['Llama 3.1 8B', 8, 32, 8, 128], ['Qwen2.5 14B', 14.7, 48, 8, 128],
+  ['Qwen2.5 32B', 32.8, 64, 8, 128], ['Llama 3.3 70B', 70.6, 80, 8, 128],
+];
+const QUANTS = [['FP16', 16], ['Q8', 8], ['Q6', 6], ['Q5', 5], ['Q4', 4]];
+const CTX = [2048, 4096, 8192, 16384, 32768, 65536, 131072];
+const HW = [['Office laptop, 16 GB RAM (CPU)', 16 * 0.6], ['Copilot+ PC, 32 GB shared (NPU/GPU)', 32 * 0.6], ['Workstation GPU, 24 GB', 24], ['Server, 2 × 48 GB GPUs', 96]];
+const S = { m: 1, q: 4, c: 1 };
+const set = Demo.sync('vram', S, s => {
+  document.getElementById('models').innerHTML = MODELS.map((m, i) => `<button data-m="${i}" class="${i === s.m ? 'on' : ''}">${m[0]}</button>`).join(' ');
+  document.getElementById('quants').innerHTML = QUANTS.map((q, i) => `<button data-q="${i}" class="${i === s.q ? 'on' : ''}">${q[0]}</button>`).join(' ');
+  document.querySelectorAll('[data-m]').forEach(b => b.onclick = () => set({ m: +b.dataset.m }));
+  document.querySelectorAll('[data-q]').forEach(b => b.onclick = () => set({ q: +b.dataset.q }));
+  document.getElementById('ctx').value = s.c; document.getElementById('cv').textContent = CTX[s.c].toLocaleString('en');
+  const [name, p, L, kvh, hd] = MODELS[s.m], [qn, bits] = QUANTS[s.q], ctx = CTX[s.c];
+  const w = p * bits / 8, over = w * 0.15, kv = 2 * L * kvh * hd * 2 * ctx / 1e9, tot = w + over + kv;
+  document.getElementById('total').textContent = tot.toFixed(1) + ' GB';
+  const seg = (v, c, t) => `<div style="width:${v / tot * 100}%;background:${c}" title="${t}">${v / tot > .12 ? t + ' ' + v.toFixed(1) : ''}</div>`;
+  document.getElementById('stack').innerHTML = seg(w, '#134F7C', 'weights') + seg(over, '#5d6874', 'overhead') + seg(kv, '#F47421', 'KV cache');
+  document.getElementById('explain').innerHTML = `weights ${p}B × ${bits} bits ÷ 8 = <b>${w.toFixed(1)} GB</b> · overhead ~15% = <b>${over.toFixed(1)}</b> · KV cache for ${ctx.toLocaleString('en')} tokens = <b>${kv.toFixed(1)}</b>`;
+  document.getElementById('hw').innerHTML = HW.map(([n, gb]) => `<div class="card hw ${tot <= gb ? 'fit' : 'nofit'}"><span>${n}</span><b>${tot <= gb ? '✓ fits' : '✗ too big'}</b></div>`).join('') +
+    '<div class="muted" style="font-size:.78rem">RAM machines: we assume ~60% is free for the model.</div>';
+});
+document.getElementById('ctx').oninput = e => set({ c: +e.target.value });
+</script>
+</body></html>

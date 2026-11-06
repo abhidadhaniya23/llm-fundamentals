@@ -1,0 +1,13 @@
+/* Benchmarking & local LLMs: interactive demos sit in an iframe inside a .diagram box. */
+#slide .diagram.demo { padding: 0; overflow: hidden; }
+#slide .diagram.demo iframe { display: block; width: 100%; height: 440px; border: 0; }
+body.students #slide .diagram.demo iframe { height: 40vh; }
+body.students #slide .diagram:not(.demo) svg { max-height: 30vh; }
+#slide .shots { display: flex; gap: 12px; align-items: flex-start; }
+#slide .shots img { width: 49%; border: 1px solid var(--line); border-radius: 6px; }
+body.students #slide .shots img { max-height: 24vh; object-fit: cover; object-position: top; }
+body.students #slide img.short { max-height: 28vh; }
+#slide img { border: 1px solid var(--line); border-radius: 6px; }
+#gold table { font-size: .78em; }
+#gold small { display: inline; }
+body.students #slide img.shorter { max-height: 22vh; }

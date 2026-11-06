@@ -1,0 +1,67 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Sort the benchmarks</title>
+<link rel="stylesheet" href="demo.css">
+<style>
+  .pool { display: flex; flex-wrap: wrap; gap: 8px; min-height: 44px; margin-bottom: 12px; }
+  .bm { border: 2px solid var(--navy); border-radius: 8px; padding: 6px 12px; font-weight: 700; color: var(--navy); background: var(--card); cursor: pointer; }
+  .bm.sel { background: var(--orange); border-color: var(--orange); color: #fff; }
+  .bm.ok { border-color: var(--good); color: var(--good); background: var(--good-tint); }
+  .bm.no { border-color: var(--bad); color: var(--bad); background: var(--bad-tint); }
+  .bins { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  .bin { border: 2px dashed var(--line); border-radius: 10px; padding: 8px; min-height: 230px; cursor: pointer; background: var(--zebra); }
+  .bin:hover { border-color: var(--orange); }
+  .bin h3 { font-size: .95rem; margin-bottom: 2px; }
+  .bin .q { font-size: .78rem; color: var(--muted); margin-bottom: 8px; min-height: 2.4em; }
+  .bin .bm { display: block; margin-bottom: 6px; font-size: .9rem; }
+  .why { font-size: .72rem; font-weight: 400; color: var(--muted); display: block; }
+</style></head>
+<body>
+<div class="bar"><b>Click a benchmark, then the bin it belongs in.</b>
+  <button id="check" class="warn">Check</button><button id="reset">Reset</button><span id="score" class="muted"></span></div>
+<div class="pool" id="pool"></div>
+<div class="bins" id="bins"></div>
+<script src="demo-kit.js"></script>
+<script>
+const BINS = [
+  ['know', 'Knowledge', 'Does it know the facts?'],
+  ['reason', 'Reasoning', 'Can it think through hard questions?'],
+  ['code', 'Coding', 'Does the code it writes pass tests?'],
+  ['agent', 'Agentic work', 'Can it finish a task with tools?'],
+  ['pref', 'Human preference', 'Which answer do people like more?'],
+];
+const BMS = [
+  ['MMLU', 'know', '57 subjects, 4 choices'],
+  ['MMLU-Pro', 'know', 'harder, 10 choices'],
+  ['GPQA Diamond', 'reason', '198 expert science Qs'],
+  ["Humanity's Last Exam", 'reason', 'frontier-hard questions'],
+  ['HumanEval', 'code', 'write a function, run tests'],
+  ['LiveCodeBench', 'code', 'only problems after the cutoff'],
+  ['SWE-bench Verified', 'code', 'fix real GitHub issues'],
+  ['Terminal-Bench', 'agent', 'tasks in a shell'],
+  ['OSWorld', 'agent', 'use a desktop computer'],
+  ['LMArena', 'pref', 'people vote A vs B'],
+];
+const shuffled = [3, 9, 0, 6, 8, 1, 4, 7, 2, 5];
+const S = { place: {}, sel: null, checked: false };
+const set = Demo.sync('sort', S, s => {
+  const card = (i, inBin) => {
+    const [name, bin, why] = BMS[i];
+    const cls = ['bm', s.sel === i ? 'sel' : '', s.checked && inBin ? (bin === s.place[i] ? 'ok' : 'no') : ''].join(' ');
+    return `<span class="${cls}" data-i="${i}">${Demo.esc(name)}${s.checked && inBin ? `<span class="why">${why}</span>` : ''}</span>`;
+  };
+  document.getElementById('pool').innerHTML = shuffled.filter(i => !(i in s.place)).map(i => card(i, false)).join('') || '<span class="muted">All sorted. Press Check.</span>';
+  document.getElementById('bins').innerHTML = BINS.map(([k, t, q]) =>
+    `<div class="bin" data-b="${k}"><h3>${t}</h3><div class="q">${q}</div>${shuffled.filter(i => s.place[i] === k).map(i => card(i, true)).join('')}</div>`).join('');
+  const right = Object.entries(s.place).filter(([i, b]) => BMS[i][1] === b).length;
+  document.getElementById('score').textContent = s.checked ? `${right} of ${BMS.length} right` : '';
+});
+document.body.addEventListener('click', e => {
+  const c = e.target.closest('.bm'), b = e.target.closest('.bin');
+  if (c && !b) return set({ sel: +c.dataset.i, checked: false });
+  if (c && b && S.sel === null) { const place = { ...S.place }; delete place[c.dataset.i]; return set({ place, sel: +c.dataset.i, checked: false }); }
+  if (b && S.sel !== null) return set({ place: { ...S.place, [S.sel]: b.dataset.b }, sel: null, checked: false });
+});
+document.getElementById('check').onclick = () => set({ checked: true, sel: null });
+document.getElementById('reset').onclick = () => set({ place: {}, sel: null, checked: false });
+</script>
+</body></html>

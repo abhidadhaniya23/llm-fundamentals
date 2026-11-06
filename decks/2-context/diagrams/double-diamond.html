@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The double diamond, with AI</title>
+<style>
+  :root {
+    --bg: #fbfaf7; --ink: #1f2328; --muted: #5c6470; --line: #d9d5cc;
+    --tell: #f3d36b; --tell-bg: #fbf1c9;
+    --user: #6d9be8; --user-bg: #dbe6fa;
+    --file: #7fbf7a; --file-bg: #dff0dc;
+    --ai: #a985d6; --ai-bg: #e8ddf5;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: var(--bg); color: var(--ink);
+    font-family: -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif; }
+  .page { position: relative; width: 1920px; height: 1080px; padding: 44px 80px 40px; }
+  h1 { margin: 0 0 8px; font-size: 56px; font-weight: 700; letter-spacing: -0.5px; }
+  .sub { margin: 0 0 26px; font-size: 28px; color: var(--muted); }
+
+  /* the diagram: two diamonds, three chips */
+  .diagram { position: relative; width: 1760px; height: 270px; }
+  .diagram svg.shape { position: absolute; left: 0; top: 0; width: 1760px; height: 270px; }
+  .diagram .phase { position: absolute; top: 96px; width: 300px; text-align: center; }
+  .diagram .phase b { display: block; font-size: 32px; font-weight: 700; }
+  .diagram .phase small { display: block; margin-top: 4px; font-size: 22px; color: var(--muted); }
+  .chip { position: absolute; top: 105px; display: inline-flex; align-items: center; gap: 10px; padding: 10px 18px; border-radius: 999px;
+    font-size: 24px; font-weight: 600; white-space: nowrap; background: #fff; }
+  .chip svg { width: 26px; height: 26px; fill: none; stroke: #1f2328; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+  .chip.ask { left: 0; background: var(--user-bg); border: 2px solid var(--user); }
+  .chip.plan { left: 792px; background: var(--file-bg); border: 2px solid var(--file); }
+  .chip.answer { right: 0; background: var(--ai-bg); border: 2px solid var(--ai); }
+
+  /* below: the two ways of working */
+  .cols { display: grid; grid-template-columns: 840px 840px; column-gap: 80px; margin-top: 26px; }
+  .col h2 { margin: 0 0 18px; font-size: 34px; font-weight: 700; }
+  .col h2 small { font-weight: 400; color: var(--muted); font-size: 24px; margin-left: 12px; }
+  .stack { display: flex; flex-direction: column; gap: 18px; }
+  .row { display: grid; grid-template-columns: 72px 1fr; column-gap: 20px; align-items: start; }
+  .row .icon { width: 64px; height: 64px; border-radius: 14px; display: grid; place-items: center; }
+  .row .icon svg { width: 36px; height: 36px; fill: none; stroke: #1f2328; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+  .row .label { font-size: 29px; font-weight: 700; margin: 4px 0 8px; }
+  .row .body { font-size: 26px; line-height: 1.35; padding: 14px 20px; border-radius: 10px; }
+  .tell .icon { background: var(--tell); } .tell .body { background: var(--tell-bg); }
+  .work .icon { background: var(--user); } .work .body { background: var(--user-bg); }
+
+  .caption { margin-top: 26px; font-size: 26px; line-height: 1.35; text-align: center; }
+  .caption b { display: block; font-size: 28px; margin-bottom: 4px; }
+
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>The double diamond, with AI</h1>
+  <p class="sub">Working out what to ask and getting it made are different jobs &mdash; they need different instructions, and a different way of working.</p>
+
+  <div class="diagram">
+    <svg class="shape" viewBox="0 0 1760 270">
+      <!-- diamond 1: discover / define -->
+      <polygon points="162,135 462,10 462,260" fill="#dbe6fa" stroke="#6d9be8" stroke-width="3" stroke-linejoin="round"/>
+      <polygon points="462,10 762,135 462,260" fill="#dbe6fa" stroke="#6d9be8" stroke-width="3" stroke-linejoin="round"/>
+      <line x1="462" y1="10" x2="462" y2="260" stroke="#6d9be8" stroke-width="3" stroke-dasharray="10 10"/>
+      <!-- diamond 2: develop / deliver -->
+      <polygon points="998,135 1298,10 1298,260" fill="#e8ddf5" stroke="#a985d6" stroke-width="3" stroke-linejoin="round"/>
+      <polygon points="1298,10 1598,135 1298,260" fill="#e8ddf5" stroke="#a985d6" stroke-width="3" stroke-linejoin="round"/>
+      <line x1="1298" y1="10" x2="1298" y2="260" stroke="#a985d6" stroke-width="3" stroke-dasharray="10 10"/>
+    </svg>
+
+    <div class="chip ask"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>a fuzzy ask</div>
+
+    <div class="phase" style="left:162px"><b>Discover</b><small>diverge</small></div>
+    <div class="phase" style="left:462px"><b>Define</b><small>converge</small></div>
+
+    <div class="chip plan"><svg viewBox="0 0 24 24"><path d="M6 3h8l5 5v13H6z"/><path d="M14 3v5h5"/><path d="M9 13h7M9 17h7"/></svg>the plan</div>
+
+    <div class="phase" style="left:998px"><b>Develop</b><small>diverge</small></div>
+    <div class="phase" style="left:1298px"><b>Deliver</b><small>converge</small></div>
+
+    <div class="chip answer"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/></svg>the answer</div>
+  </div>
+
+  <div class="cols">
+    <div class="col">
+      <h2>Before the plan: think with it</h2>
+      <div class="stack">
+        <div class="row tell">
+          <div class="icon"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/><path d="M10 9.2a2 2 0 1 1 2.9 1.8c-.6.3-.9.7-.9 1.3"/><path d="M12 14.6h.01"/></svg></div>
+          <div>
+            <div class="label">What you tell it</div>
+            <div class="body">Open asks, few rules: &ldquo;give me five ways to&hellip;&rdquo;, &ldquo;what would you need to know?&rdquo;, &ldquo;what am I assuming?&rdquo; Ask for options, and for questions back.</div>
+          </div>
+        </div>
+        <div class="row work">
+          <div class="icon"><svg viewBox="0 0 24 24"><path d="M4 8h13l-3-3"/><path d="M20 16H7l3 3"/></svg></div>
+          <div>
+            <div class="label">How you work with it</div>
+            <div class="body">Many short turns, one chat. React to options instead of specifying up front &mdash; your reaction is the context it was missing. End by writing the plan down.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col">
+      <h2>After the plan: build with it</h2>
+      <div class="stack">
+        <div class="row tell">
+          <div class="icon"><svg viewBox="0 0 24 24"><path d="M4 6l2 2 3-3M4 12l2 2 3-3M4 18l2 2 3-3"/><path d="M12 7h8M12 13h8M12 19h8"/></svg></div>
+          <div>
+            <div class="label">What you tell it</div>
+            <div class="body">The plan, as written: one task, the context it needs, the labels defined, the constraints, one example of the shape. Nothing extra.</div>
+          </div>
+        </div>
+        <div class="row work">
+          <div class="icon"><svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg></div>
+          <div>
+            <div class="label">How you work with it</div>
+            <div class="body">New chat, one ask &mdash; three drafts if you like. Judge them against the plan, not the chat; fix the plan, run again. Same plan, same shape: that is what a skill saves.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="caption">
+    <b>The plan is the hinge: the first diamond writes it, the second runs on it.</b>
+    Skip the first and you build a guess. Never leave it and nothing ships.
+  </div>
+
+</div>
+</body>
+</html>

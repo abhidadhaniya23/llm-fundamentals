@@ -1,0 +1,57 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>The board over time</title>
+<link rel="stylesheet" href="demo.css">
+<style>
+  body { font-size: 16px; }
+  .lay { display: grid; grid-template-columns: 1fr 1.1fr; gap: 14px; }
+  .row { display: grid; grid-template-columns: 34px 1fr 70px; gap: 8px; align-items: center; padding: 4px 8px; border-radius: 8px; margin-bottom: 3px; font-size: .92rem; }
+  .row .rk { font-weight: 800; color: var(--muted); font-size: 1.2rem; }
+  .row .el { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .date { font-size: 1.6rem; font-weight: 800; color: var(--orange); }
+  input[type=range] { width: 100%; }
+  .corner { position: fixed; right: 10px; bottom: 6px; font-size: 12px; color: var(--muted); }
+  svg { max-height: 50vh; }
+</style></head>
+<body>
+<div class="bar"><button id="play" class="warn">▶ Play</button><input type="range" id="t" min="0" value="0"><span class="date" id="date"></span></div>
+<div class="lay">
+  <div class="card"><h3>Arena text top 5 on this date</h3><div id="top"></div><div class="muted" id="tnote" style="font-size:.8rem"></div></div>
+  <div class="card"><h3>Score of the #1 model, every change since 2023</h3><svg id="strip" viewBox="0 0 560 300" width="100%"></svg></div>
+</div>
+<div class="corner">Arena (ex-LMArena) leaderboard dataset and LMSYS blog · collected 2026-10-08</div>
+<script src="demo-kit.js"></script>
+<script src="../data/public-scores.js"></script>
+<script>
+const TL = window.PUBLIC.timeline, SNAP = TL.arenaTop5, NO1 = TL.arenaNo1;
+const ORG = [[/claude|anthropic/i, '#c2603e', 'Anthropic'], [/gpt|o1|o3|chatgpt|openai/i, '#1d2733', 'OpenAI'], [/gemini|google/i, '#2f7de1', 'Google'], [/grok|xai/i, '#7a4cc2', 'xAI'], [/deepseek/i, '#4a63d6', 'DeepSeek'], [/muse|meta|llama/i, '#1e8449', 'Meta']];
+const org = m => ORG.find(([r]) => r.test(m)) || [null, '#5d6874', 'other'];
+const T = d => new Date(d).getTime(), t0 = T('2023-04-01'), t1 = T('2026-11-01');
+const x = d => 60 + (T(d) - t0) / (t1 - t0) * 480;
+const ey = e => 240 - (e - 1200) / 350 * 200; // Arena score of the #1 model
+document.getElementById('t').max = SNAP.length - 1;
+const S = { i: 0, playing: false };
+let timer = null, driver = false; // only the window that pressed play advances the slides
+const set = Demo.sync('timeline', S, s => {
+  const snap = SNAP[s.i];
+  document.getElementById('t').value = s.i;
+  document.getElementById('date').textContent = snap.on;
+  document.getElementById('play').textContent = s.playing ? '❚❚ Pause' : '▶ Play';
+  document.getElementById('top').innerHTML = snap.top5.map((m, k) => { const [, c, o] = org(m.model);
+    return `<div class="row" style="background:${c}18;border-left:5px solid ${c}"><span class="rk">${k + 1}</span><span><b>${Demo.esc(m.model)}</b> <span class="muted">${o}</span></span><span class="el">${m.elo ?? ''}</span></div>`; }).join('');
+  document.getElementById('tnote').textContent = snap.note || '';
+  let g = `<line x1="60" x2="540" y1="250" y2="250" stroke="#5d6874"/>`;
+  for (const e of [1200, 1300, 1400, 1500]) g += `<text x="52" y="${ey(e) + 5}" font-size="14" text-anchor="end" fill="#5d6874">${e}</text><line x1="60" x2="540" y1="${ey(e)}" y2="${ey(e)}" stroke="#f0ede6"/>`;
+  for (const y of [2024, 2025, 2026]) g += `<line x1="${x(y + '-01-01')}" x2="${x(y + '-01-01')}" y1="20" y2="255" stroke="#e2dfd7"/><text x="${x(y + '-01-01')}" y="275" font-size="15" text-anchor="middle" fill="#5d6874">${y}</text>`;
+  NO1.forEach((p, k) => { const [, c] = org(p.model), past = T(p.on) <= T(snap.on);
+    g += `<circle cx="${x(p.on)}" cy="${ey(p.elo)}" r="8" fill="${c}" opacity="${past ? 1 : .15}"/>`; });
+  g += `<line x1="${x(snap.on)}" x2="${x(snap.on)}" y1="10" y2="255" stroke="#F47421" stroke-width="3"/>`;
+  const n = NO1.filter(p => T(p.on) <= T(snap.on)).length;
+  g += `<text x="60" y="18" font-size="16" font-weight="700" fill="#F47421">${n} dated #1 entries up to ${snap.on}</text>`;
+  document.getElementById('strip').innerHTML = g;
+  clearInterval(timer);
+  if (s.playing && driver) timer = setInterval(() => { if (S.i >= SNAP.length - 1) set({ playing: false }); else set({ i: S.i + 1 }); }, 1800);
+});
+document.getElementById('t').oninput = e => { driver = false; set({ i: +e.target.value, playing: false }); };
+document.getElementById('play').onclick = () => { driver = !S.playing; set({ playing: !S.playing, i: S.playing ? S.i : (S.i >= SNAP.length - 1 ? 0 : S.i) }); };
+</script>
+</body></html>

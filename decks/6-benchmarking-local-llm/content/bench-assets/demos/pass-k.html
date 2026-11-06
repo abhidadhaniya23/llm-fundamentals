@@ -1,0 +1,49 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>pass^k</title>
+<link rel="stylesheet" href="demo.css">
+<style>
+  .lay { display: grid; grid-template-columns: 1.2fr 1fr; gap: 14px; }
+  .trow { display: flex; gap: 8px; align-items: center; margin-bottom: 4px; } .trow .rowlab { width: 82px; }
+  .grid { flex: 1; display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; }
+  .cell { height: 22px; border-radius: 4px; background: var(--zebra); font-size: 11px; text-align: center; line-height: 22px; color: #fff; }
+  .cell.ok { background: var(--good); } .cell.no { background: var(--bad); }
+  .rowlab { font-size: .8rem; color: var(--muted); }
+</style></head>
+<body>
+<div class="bar"><label>One run gets the ticket right: <b id="pv"></b></label><input type="range" id="p" min="50" max="99" value="90">
+  <label>runs per ticket (k): <b id="kv"></b></label><input type="range" id="k" min="1" max="10" value="5">
+  <button id="roll" class="warn">Run 8 tickets k times</button></div>
+<div class="bar"><label>Measured on our logs:</label><span id="presets"></span></div>
+<div class="lay">
+  <div class="card"><h3>Chance over k runs</h3><svg id="plot" viewBox="0 0 460 250" width="100%"></svg></div>
+  <div class="card"><h3>8 tickets × k runs</h3><div id="grid"></div><div id="sum" class="muted" style="margin-top:6px"></div></div>
+</div>
+<script src="demo-kit.js"></script>
+<script src="../data/our-run.js"></script>
+<script>
+const S = { p: 90, k: 5, rolls: [] };
+const set = Demo.sync('passk', S, s => {
+  document.getElementById('p').value = s.p; document.getElementById('k').value = s.k;
+  document.getElementById('pv').textContent = s.p + '%'; document.getElementById('kv').textContent = s.k;
+  const p = s.p / 100, x = k => 40 + (k - 1) * 45, y = v => 220 - v * 200;
+  let g = '';
+  for (let t = 0; t <= 1; t += .25) g += `<line x1="36" x2="450" y1="${y(t)}" y2="${y(t)}" stroke="#e2dfd7"/><text x="32" y="${y(t) + 4}" font-size="15" text-anchor="end" fill="#5d6874">${t * 100}%</text>`;
+  for (let k = 1; k <= 10; k++) g += `<text x="${x(k)}" y="240" font-size="15" text-anchor="middle" fill="${k === s.k ? '#F47421' : '#5d6874'}">k=${k}</text>`;
+  const line = (f, c) => `<polyline fill="none" stroke="${c}" stroke-width="3" points="${Array.from({ length: 10 }, (_, i) => `${x(i + 1)},${y(f(i + 1))}`).join(' ')}"/>` +
+    `<circle cx="${x(s.k)}" cy="${y(f(s.k))}" r="6" fill="${c}"/><text x="${x(s.k) + 9}" y="${y(f(s.k)) + (c === '#1e8449' ? -8 : 16)}" font-size="17" font-weight="700" fill="${c}">${(f(s.k) * 100).toFixed(0)}%</text>`;
+  g += line(k => 1 - (1 - p) ** k, '#1e8449') + line(k => p ** k, '#c0392b');
+  g += `<text x="40" y="14" font-size="16" fill="#1e8449">● pass@k: any run right</text><text x="240" y="14" font-size="16" fill="#c0392b">● pass^k: all runs right</text>`;
+  document.getElementById('plot').innerHTML = g;
+  const rows = s.rolls.map((r, i) => `<div class="trow"><div class="rowlab">Ticket ${i + 1} ${r.every(Boolean) ? '✅' : '❌'}</div><div class="grid">${r.map(v => `<div class="cell ${v ? 'ok' : 'no'}">${v ? '✓' : '✗'}</div>`).join('')}</div></div>`);
+  document.getElementById('grid').innerHTML = rows.join('') || '<span class="muted">Press the button.</span>';
+  document.getElementById('sum').textContent = s.rolls.length ? `${s.rolls.filter(r => r.every(Boolean)).length} of ${s.rolls.length} tickets right on every run.` : '';
+});
+// Presets: per-run accuracy measured on the 24 Contoso log lines (our-run.js).
+const PRE = window.OURRUN.summary.filter(x => x.repeats > 1).map(x => [x.label, x.lenient]);
+document.getElementById('presets').innerHTML = PRE.map(([l, v]) => `<button data-p="${Math.max(50, Math.min(99, Math.round(v)))}">${l} · ${v}%</button>`).join(' ');
+document.querySelectorAll('[data-p]').forEach(b => b.onclick = () => set({ p: +b.dataset.p, rolls: [] }));
+document.getElementById('p').oninput = e => set({ p: +e.target.value, rolls: [] });
+document.getElementById('k').oninput = e => set({ k: +e.target.value, rolls: [] });
+document.getElementById('roll').onclick = () => set({ rolls: Array.from({ length: 8 }, () => Array.from({ length: S.k }, () => Math.random() < S.p / 100)) });
+</script>
+</body></html>

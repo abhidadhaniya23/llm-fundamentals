@@ -1,0 +1,54 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Guessing odds</title>
+<link rel="stylesheet" href="demo.css">
+<style>
+  .opts { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 16px; font-size: .9rem; margin-top: 6px; }
+  .opts div { padding: 2px 6px; border-radius: 4px; }
+  .opts .right { background: var(--good-tint); color: var(--good); font-weight: 700; }
+  .lay { display: grid; grid-template-columns: 1fr 1.3fr; gap: 14px; }
+</style></head>
+<body>
+<div class="bar"><b>Answer choices:</b>
+  <button data-n="4">4 (MMLU)</button><button data-n="10">10 (MMLU-Pro)</button>
+  <button id="sim" class="warn">30 monkeys take a 100-question test</button><button id="clear">Clear</button>
+  <label><input type="checkbox" id="showright"> show right answer</label></div>
+<div class="lay">
+  <div class="card"><h3>One question</h3>
+    <div>A retention rule says "keep 10 years after the contract ends". The contract ended 2019-03-31. When may the record be deleted at the earliest?</div>
+    <div class="opts" id="opts"></div></div>
+  <div class="card"><h3>Score of a model that only guesses</h3><svg id="plot" viewBox="0 0 520 250" width="100%"></svg>
+    <div id="sum" class="muted"></div></div>
+</div>
+<script src="demo-kit.js"></script>
+<script>
+const OPTS = ['2029-04-01', '2029-03-31', '2028-12-31', '2030-01-01', '2029-01-01', '2029-12-31', '2028-04-01', '2039-03-31', '2019-04-01', '2030-03-31'];
+const S = { n: 4, runs: [], showRight: false };
+const set = Demo.sync('guess', S, s => {
+  document.querySelectorAll('[data-n]').forEach(b => b.classList.toggle('on', +b.dataset.n === s.n));
+  document.getElementById('showright').checked = s.showRight;
+  document.getElementById('opts').innerHTML = OPTS.slice(0, s.n).map((o, i) =>
+    `<div class="${s.showRight && i === 0 ? 'right' : ''}">${'ABCDEFGHIJ'[i]}. ${o}</div>`).join('');
+  const W = 520, H = 250, x = v => 30 + v / 100 * 470;
+  let g = `<line x1="30" y1="200" x2="500" y2="200" stroke="#5d6874"/>`;
+  for (let t = 0; t <= 100; t += 10) g += `<text x="${x(t)}" y="220" font-size="16" text-anchor="middle" fill="#5d6874">${t}%</text>`;
+  g += `<line x1="${x(100 / s.n)}" y1="20" x2="${x(100 / s.n)}" y2="200" stroke="#F47421" stroke-dasharray="4 3"/><text x="${x(100 / s.n) + 4}" y="32" font-size="17" fill="#F47421">expected ${100 / s.n}%</text>`;
+  const stack = {};
+  s.runs.forEach(r => { const k = r.n + ':' + r.score; stack[k] = (stack[k] || 0) + 1;
+    g += `<circle cx="${x(r.score)}" cy="${(r.n === 4 ? 190 : 120) - (stack[k] - 1) * 9}" r="4" fill="${r.n === 4 ? '#134F7C' : '#1e8449'}" opacity=".85"/>`; });
+  g += `<text x="30" y="245" font-size="16" fill="#134F7C">● 4 choices</text><text x="160" y="245" font-size="16" fill="#1e8449">● 10 choices</text>`;
+  document.getElementById('plot').innerHTML = g;
+  const by = n => s.runs.filter(r => r.n === n).map(r => r.score);
+  const f = a => a.length ? `${Math.min(...a)}–${Math.max(...a)}%` : '–';
+  document.getElementById('sum').textContent = `Guessing with 4 choices: ${f(by(4))}. With 10 choices: ${f(by(10))}.`;
+});
+document.querySelectorAll('[data-n]').forEach(b => b.onclick = () => set({ n: +b.dataset.n }));
+document.getElementById('showright').onchange = e => set({ showRight: e.target.checked });
+document.getElementById('sim').onclick = () => {
+  const runs = [...S.runs];
+  for (let m = 0; m < 30; m++) { let c = 0; for (let q = 0; q < 100; q++) if (Math.random() < 1 / S.n) c++; runs.push({ n: S.n, score: c }); }
+  set({ runs });
+};
+document.getElementById('clear').onclick = () => set({ runs: [] });
+Demo.label();
+</script>
+</body></html>

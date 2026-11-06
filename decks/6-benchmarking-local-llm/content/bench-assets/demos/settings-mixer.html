@@ -1,0 +1,48 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Same model, other settings</title>
+<link rel="stylesheet" href="demo.css">
+<style>
+  body { font-size: 16px; }
+  .ex { margin-bottom: 12px; }
+  .ex h3 { font-size: 1rem; margin-bottom: 4px; display: flex; justify-content: space-between; }
+  .ex h3 small { color: var(--muted); font-weight: 400; font-size: .8rem; }
+  .r { display: grid; grid-template-columns: 230px 1fr 60px; gap: 8px; align-items: center; margin: 2px 0; font-size: .88rem; }
+  .r .lab { text-align: right; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .r .tr { background: var(--zebra); height: 18px; border-radius: 4px; }
+  .r .f { height: 100%; border-radius: 4px; background: var(--navy); }
+  .r .f.hi { background: var(--orange); }
+  .r .v { font-weight: 700; font-variant-numeric: tabular-nums; color: var(--navy); }
+  .note { font-size: .8rem; color: var(--muted); }
+  .corner { position: fixed; right: 10px; bottom: 6px; font-size: 12px; color: var(--muted); }
+</style></head>
+<body>
+<div class="bar"><b>Setting:</b><span id="tabs"></span></div>
+<div id="body"></div>
+<div class="corner">Published numbers · sources in sources/public-scores.md · collected 2026-10-08</div>
+<script src="demo-kit.js"></script>
+<script src="../data/public-scores.js"></script>
+<script>
+const P = window.PUBLIC.settings;
+const TABS = {
+  thinking: ['Thinking on/off', x => [['thinking off', x.off], ['thinking on', x.on]], x => `${x.model} · ${x.benchmark}`, [0, 2, 7]],
+  effort: ['Effort level', x => Object.entries(x.levels), x => `${x.model} · ${x.benchmark}`, [0, 3]],
+  passk: ['One try or many', x => [['pass@1 (one answer)', x.pass1], [`majority of ${x.k} answers`, x.consk]], x => `${x.model} · ${x.benchmark}`, [0, 1]],
+  shots: ['Examples in prompt', x => [[`${x.fewShot.shots} examples (5-shot)`, x.fewShot.value], ['0 examples, think step by step', x.zeroShotCoT.value]], x => `${x.model} · ${x.benchmark}`, [0, 1]],
+  tools: ['Tools on/off', x => [['no tools', x.noTools], ['with tools', x.withTools]], x => `${x.model} · ${x.benchmark}`, [0, 2]],
+  harness: ['Agent harness', x => x.runs.map(r => [r.agent, r.value]), x => `${x.model} · ${x.benchmark}`, [0]],
+};
+const S = { tab: 'thinking' };
+const set = Demo.sync('mixer', S, s => {
+  document.getElementById('tabs').innerHTML = Object.entries(TABS).map(([k, t]) => `<button data-t="${k}" class="${k === s.tab ? 'on' : ''}">${t[0]}</button>`).join(' ');
+  document.querySelectorAll('[data-t]').forEach(b => b.onclick = () => set({ tab: b.dataset.t }));
+  const [, rows, title, pick] = TABS[s.tab];
+  const list = pick.map(i => P[s.tab][i]).filter(x => x && rows(x).every(r => typeof r[1] === 'number'));
+  document.getElementById('body').innerHTML = list.map(x => {
+    const rs = rows(x), max = Math.max(...rs.map(r => r[1])), min = Math.min(...rs.map(r => r[1]));
+    return `<div class="ex card"><h3><span>${Demo.esc(title(x))}</span><small>${Demo.esc(x.src)} · ${Demo.esc(x.date)}</small></h3>` +
+      rs.map(([l, v]) => `<div class="r"><span class="lab">${Demo.esc(l)}</span><div class="tr"><div class="f ${v === max ? 'hi' : ''}" style="width:${v}%"></div></div><span class="v">${v}</span></div>`).join('') +
+      `<div class="note">Spread: <b>${(max - min).toFixed(1)} points</b> for the same model on the same test.${x.note ? ' ' + Demo.esc(x.note) : ''}</div></div>`;
+  }).join('');
+});
+</script>
+</body></html>

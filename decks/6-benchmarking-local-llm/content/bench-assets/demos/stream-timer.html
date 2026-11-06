@@ -1,0 +1,58 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Time to first token</title>
+<link rel="stylesheet" href="demo.css">
+<style>
+  .lane { margin-bottom: 6px; padding: 6px 10px; }
+  .lane h3 { display: flex; justify-content: space-between; align-items: baseline; }
+  .out { font-family: var(--mono); font-size: .8rem; height: 44px; overflow: hidden; background: #0f2536; color: #e6edf3; border-radius: 6px; padding: 6px 8px; white-space: pre-wrap; display: flex; flex-direction: column-reverse; }
+  .think { color: #8aa4bb; }
+  .t { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--orange); }
+  .ctl { display: flex; gap: 14px; flex-wrap: wrap; font-size: .82rem; color: var(--muted); margin-top: 4px; }
+</style></head>
+<body>
+<div class="bar"><button id="go" class="warn">▶ Send the same log line to both</button><button id="stop">Stop</button>
+  <label><input type="checkbox" id="think"> model "thinks" first (+<span id="tt"></span> tokens, measured)</label></div>
+<div id="lanes"></div>
+<script src="demo-kit.js"></script>
+<script src="../data/our-run.js"></script>
+<script src="../data/arena.js"></script>
+<script>
+// Local lanes: measured on the trainer laptop (sources/bench/run.py, our-run.js). Cloud lane: output speed of
+// Claude Opus 5.5 from Artificial Analysis (accessed 2026-10-08); its time to first token was not collected, 1 s is assumed.
+const R = Object.fromEntries(window.OURRUN.summary.map(x => [x.label, x]));
+const LANES = [
+  { name: 'Claude Opus 5.5 (cloud)', note: 'speed: Artificial Analysis · first token: assumed 1 s', ttft: 1, tps: 95 },
+  { name: 'qwen3:8b on this laptop', note: 'measured ' + window.OURRUN.date, ttft: R['qwen3:8b'].ttft_s, tps: R['qwen3:8b'].tok_s },
+  { name: 'llama3.2:3b on this laptop', note: 'measured ' + window.OURRUN.date, ttft: R['llama3.2:3b'].ttft_s, tps: R['llama3.2:3b'].tok_s },
+];
+const THINK_TOKENS = Math.round(R['qwen3:8b thinking'].tokens_per_answer);
+const THINK_TEXT = "Okay, let's see. The log line says a write to a file share timed out after 30 seconds. Is that storage or network? The share is reached over the network, a timeout usually means the path is not reachable in time, but it could also be a slow disk behind it. ";
+const ANSWER = window.ARENA.rounds[0].answers['qwen3:8b'];
+const toks = s => s.match(/\S+\s*/g);
+const thinkToks = () => { const t = toks(THINK_TEXT), out = []; while (out.length < THINK_TOKENS) out.push(...t); return out.slice(0, THINK_TOKENS); };
+const S = { t0: 0, running: false, think: false };
+let timer = null;
+const render = s => {
+  const now = s.running ? (Date.now() - s.t0) / 1000 : s.elapsed || 0;
+  const think = s.think ? thinkToks() : [], ans = toks(ANSWER), all = [...think, ...ans];
+  document.getElementById('think').checked = s.think; document.getElementById('tt').textContent = THINK_TOKENS;
+  document.getElementById('lanes').innerHTML = LANES.map(L => {
+    const n = Math.max(0, Math.min(all.length, Math.floor((now - L.ttft) * L.tps)));
+    const done = n >= all.length, total = L.ttft + all.length / L.tps;
+    const shown = all.slice(0, n), th = shown.slice(0, think.length).join(''), an = shown.slice(think.length).join('');
+    return `<div class="card lane"><h3><span>${L.name} <span class="muted">(${L.note})</span></span>
+      <span>${now === 0 ? '' : now < L.ttft ? '<span class="pill warn">waiting for first token…</span>' : done ? '<span class="pill good">done</span>' : ''} <span class="t">${Math.min(now, total).toFixed(1)} s</span></span></h3>
+      <div class="out"><div>${th ? `<span class="think">${Demo.esc(th)}</span>` : ''}${Demo.esc(an)}</div></div>
+      <div class="ctl"><span>time to first token <b>${L.ttft} s</b></span><span>speed <b>${L.tps} tokens/s</b></span><span>${all.length} tokens → total <b>${total.toFixed(1)} s</b></span></div></div>`;
+  }).join('');
+};
+const set = Demo.sync('stream', S, s => {
+  render(s); clearInterval(timer);
+  if (s.running) timer = setInterval(() => { render(s); const longest = Math.max(...LANES.map(L => L.ttft + ((s.think ? THINK_TOKENS : 0) + toks(ANSWER).length) / L.tps)); if ((Date.now() - s.t0) / 1000 > longest + .2) clearInterval(timer); }, 100);
+});
+document.getElementById('go').onclick = () => set({ t0: Date.now(), running: true, elapsed: 0 });
+document.getElementById('stop').onclick = () => set({ running: false, elapsed: (Date.now() - S.t0) / 1000 });
+document.getElementById('think').onchange = e => set({ think: e.target.checked, running: false, elapsed: 0 });
+Demo.label();
+</script>
+</body></html>

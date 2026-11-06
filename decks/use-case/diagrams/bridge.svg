@@ -1,0 +1,122 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="830" viewBox="0 0 1200 830">
+  <style>
+    text { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; fill: #1f2937; }
+    .h1 { font-size: 26px; font-weight: 700; }
+    .sub { font-size: 15px; fill: #6b7280; }
+    .hd { font-size: 12.5px; font-weight: 700; fill: #6b7280; letter-spacing: .6px; }
+    .b { font-size: 14.5px; font-weight: 700; }
+    .s { font-size: 13.5px; fill: #374151; }
+    .r { font-size: 15px; font-weight: 700; }
+    .note { font-size: 12.5px; fill: #6b7280; }
+    .line { stroke: #9ca3af; stroke-width: 1.6; fill: none; marker-end: url(#a); }
+  </style>
+  <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#9ca3af"/></marker></defs>
+  <rect width="1200" height="830" fill="#ffffff"/>
+  <text x="30" y="44" class="h1">The bridge: from their work to what we teach</text>
+  <text x="30" y="70" class="sub">Each row: a need from the activity CSV → what the assistant must do → the round that builds it → where it sits in the agenda</text>
+  <text x="30" y="118" class="hd">THE NEED (CSV)</text>
+  <text x="362" y="118" class="hd">WHAT THE ASSISTANT MUST DO</text>
+  <text x="744" y="118" class="hd">ROUND</text>
+  <text x="936" y="118" class="hd">SESSION</text>
+  <rect x="30" y="132" width="300" height="58" rx="8" fill="#ffffff" stroke="#d1d5db"/>
+  <text x="44" y="156" class="b">Everyone: "what happens when</text><text x="44" y="176" class="s">I press Enter in Copilot?"</text>
+  <path d="M330,161 L358,161" class="line"/>
+  <rect x="360" y="132" width="360" height="58" rx="8" fill="#f3f4f6" stroke="#9ca3af"/>
+  <text x="374" y="156" class="s">Read and shape the request itself:</text><text x="374" y="176" class="s">memory, system prompt, context</text>
+  <path d="M720,161 L740,161" class="line"/>
+  <rect x="742" y="132" width="170" height="58" rx="8" fill="#ffffff" stroke="#9ca3af" stroke-width="2"/>
+  <text x="827" y="167" class="r" text-anchor="middle">R0–R4</text>
+  <path d="M912,161 L932,161" class="line"/>
+  <rect x="934" y="132" width="236" height="58" rx="8" fill="#f9fafb" stroke="#e5e7eb"/>
+  <text x="950" y="156" class="b">Fundamentals</text><text x="950" y="176" class="s">slots 1–3</text>
+  <rect x="30" y="202" width="300" height="58" rx="8" fill="#ffffff" stroke="#d1d5db"/>
+  <text x="44" y="226" class="b">Row 14 · reports on request</text><text x="44" y="246" class="s">2,016 h/yr</text>
+  <path d="M330,231 L358,231" class="line"/>
+  <rect x="360" y="202" width="360" height="58" rx="8" fill="#ccfbf1" stroke="#0f766e"/>
+  <text x="374" y="226" class="s">Answer count, access and reconciliation</text><text x="374" y="246" class="s">questions by calling tools</text>
+  <path d="M720,231 L740,231" class="line"/>
+  <rect x="742" y="202" width="170" height="58" rx="8" fill="#ffffff" stroke="#0f766e" stroke-width="2"/>
+  <text x="827" y="237" class="r" text-anchor="middle">R5 · R6</text>
+  <path d="M912,231 L932,231" class="line"/>
+  <rect x="934" y="202" width="236" height="58" rx="8" fill="#f9fafb" stroke="#e5e7eb"/>
+  <text x="950" y="226" class="b">Fundamentals</text><text x="950" y="246" class="s">slot 5</text>
+  <rect x="30" y="272" width="300" height="58" rx="8" fill="#ffffff" stroke="#d1d5db"/>
+  <text x="44" y="296" class="b">Row 13 · issues</text><text x="44" y="316" class="s">1,200 h/yr</text>
+  <path d="M330,301 L358,301" class="line"/>
+  <rect x="360" y="272" width="360" height="58" rx="8" fill="#ccfbf1" stroke="#0f766e"/>
+  <text x="374" y="296" class="s">Pull facts out of a messy ticket,</text><text x="374" y="316" class="s">draft the reply in the team's style</text>
+  <path d="M720,301 L740,301" class="line"/>
+  <rect x="742" y="272" width="170" height="58" rx="8" fill="#ffffff" stroke="#0f766e" stroke-width="2"/>
+  <text x="827" y="307" class="r" text-anchor="middle">R7 · R8</text>
+  <path d="M912,301 L932,301" class="line"/>
+  <rect x="934" y="272" width="236" height="58" rx="8" fill="#f9fafb" stroke="#e5e7eb"/>
+  <text x="950" y="296" class="b">Fundamentals</text><text x="950" y="316" class="s">slot 6</text>
+  <rect x="30" y="342" width="300" height="58" rx="8" fill="#ffffff" stroke="#d1d5db"/>
+  <text x="44" y="366" class="b">Row 11 · export reruns</text><text x="44" y="386" class="s">1,040 h/yr</text>
+  <path d="M330,371 L358,371" class="line"/>
+  <rect x="360" y="342" width="360" height="58" rx="8" fill="#fef3c7" stroke="#d97706"/>
+  <text x="374" y="366" class="s">Propose a rerun; a person approves</text><text x="374" y="386" class="s">(in the loop → policy → another person)</text>
+  <path d="M720,371 L740,371" class="line"/>
+  <rect x="742" y="342" width="170" height="58" rx="8" fill="#ffffff" stroke="#d97706" stroke-width="2"/>
+  <text x="827" y="377" class="r" text-anchor="middle">R6 · R13</text>
+  <path d="M912,371 L932,371" class="line"/>
+  <rect x="934" y="342" width="236" height="58" rx="8" fill="#f9fafb" stroke="#e5e7eb"/>
+  <text x="950" y="366" class="b">Fund. 5 · Arch. 4</text><text x="950" y="386" class="s">T2 Deep Dive</text>
+  <rect x="30" y="412" width="300" height="58" rx="8" fill="#ffffff" stroke="#d1d5db"/>
+  <text x="44" y="436" class="b">Rows 4, 5 · migration</text><text x="44" y="456" class="s">450 h/yr, no central view</text>
+  <path d="M330,441 L358,441" class="line"/>
+  <rect x="360" y="412" width="360" height="58" rx="8" fill="#ccfbf1" stroke="#0f766e"/>
+  <text x="374" y="436" class="s">Status and counts across sources</text><text x="374" y="456" class="s">in one answer</text>
+  <path d="M720,441 L740,441" class="line"/>
+  <rect x="742" y="412" width="170" height="58" rx="8" fill="#ffffff" stroke="#0f766e" stroke-width="2"/>
+  <text x="827" y="447" class="r" text-anchor="middle">R10 · R11</text>
+  <path d="M912,441 L932,441" class="line"/>
+  <rect x="934" y="412" width="236" height="58" rx="8" fill="#f9fafb" stroke="#e5e7eb"/>
+  <text x="950" y="436" class="b">Architecture</text><text x="950" y="456" class="s">slot 2</text>
+  <rect x="30" y="482" width="300" height="58" rx="8" fill="#ffffff" stroke="#d1d5db"/>
+  <text x="44" y="506" class="b">Three channels: ServiceNow,</text><text x="44" y="526" class="s">email, Teams</text>
+  <path d="M330,511 L358,511" class="line"/>
+  <rect x="360" y="482" width="360" height="58" rx="8" fill="#ccfbf1" stroke="#0f766e"/>
+  <text x="374" y="506" class="s">Same tools from chat, n8n and</text><text x="374" y="526" class="s">GitHub Copilot</text>
+  <path d="M720,511 L740,511" class="line"/>
+  <rect x="742" y="482" width="170" height="58" rx="8" fill="#ffffff" stroke="#0f766e" stroke-width="2"/>
+  <text x="827" y="517" class="r" text-anchor="middle">R12 MCP</text>
+  <path d="M912,511 L932,511" class="line"/>
+  <rect x="934" y="482" width="236" height="58" rx="8" fill="#f9fafb" stroke="#e5e7eb"/>
+  <text x="950" y="506" class="b">Arch. 3</text><text x="950" y="526" class="s">T2 Deep Dive</text>
+  <rect x="30" y="552" width="300" height="58" rx="8" fill="#ffffff" stroke="#d1d5db"/>
+  <text x="44" y="576" class="b">Rows 6, 7, 13, 19 · knowledge</text><text x="44" y="596" class="s">in heads and a private Excel</text>
+  <path d="M330,581 L358,581" class="line"/>
+  <rect x="360" y="552" width="360" height="58" rx="8" fill="#ccfbf1" stroke="#0f766e"/>
+  <text x="374" y="576" class="s">Known issues and SOPs inside</text><text x="374" y="596" class="s">the answer, with the source</text>
+  <path d="M720,581 L740,581" class="line"/>
+  <rect x="742" y="552" width="170" height="58" rx="8" fill="#ffffff" stroke="#0f766e" stroke-width="2"/>
+  <text x="827" y="587" class="r" text-anchor="middle">R4 → RAG</text>
+  <path d="M912,581 L932,581" class="line"/>
+  <rect x="934" y="552" width="236" height="58" rx="8" fill="#f9fafb" stroke="#e5e7eb"/>
+  <text x="950" y="576" class="b">Fund. 3</text><text x="950" y="596" class="s">T2 RAG</text>
+  <rect x="30" y="622" width="300" height="58" rx="8" fill="#ffffff" stroke="#d1d5db"/>
+  <text x="44" y="646" class="b">Department vs engineer;</text><text x="44" y="666" class="s">tickets carry instructions</text>
+  <path d="M330,651 L358,651" class="line"/>
+  <rect x="360" y="622" width="360" height="58" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="374" y="646" class="s">Who may ask what, in code;</text><text x="374" y="666" class="s">never obey text inside a ticket</text>
+  <path d="M720,651 L740,651" class="line"/>
+  <rect x="742" y="622" width="170" height="58" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="2"/>
+  <text x="827" y="657" class="r" text-anchor="middle">R13 · R14 · R15</text>
+  <path d="M912,651 L932,651" class="line"/>
+  <rect x="934" y="622" width="236" height="58" rx="8" fill="#f9fafb" stroke="#e5e7eb"/>
+  <text x="950" y="646" class="b">Architecture</text><text x="950" y="666" class="s">slots 4–5</text>
+  <rect x="30" y="692" width="300" height="58" rx="8" fill="#ffffff" stroke="#d1d5db"/>
+  <text x="44" y="716" class="b">Sensitivity "Yes" (row 14</text><text x="44" y="736" class="s">user names) and "Not sure"</text>
+  <path d="M330,721 L358,721" class="line"/>
+  <rect x="360" y="692" width="360" height="58" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="374" y="716" class="s">Right model for the data;</text><text x="374" y="736" class="s">names redacted before sending</text>
+  <path d="M720,721 L740,721" class="line"/>
+  <rect x="742" y="692" width="170" height="58" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="2"/>
+  <text x="827" y="727" class="r" text-anchor="middle">R9 → routing</text>
+  <path d="M912,721 L932,721" class="line"/>
+  <rect x="934" y="692" width="236" height="58" rx="8" fill="#f9fafb" stroke="#e5e7eb"/>
+  <text x="950" y="716" class="b">Fund. 6</text><text x="950" y="736" class="s">T2 Local LLMs</text>
+  <text x="30" y="784" class="note">Hours are Sure (activity CSV) and overlap across rows, so they show where the pain is, not a saving. Rounds and slots are from agenda/archive-assistant.md and detailed-agenda.md.</text>
+  <text x="30" y="804" class="note">Colours as in the staircase: green AI engineering · blue software engineering · amber a person approves · grey neutral examples.</text>
+</svg>

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Architecture evolution</title>
+<style>
+  :root {
+    --bg: #fbfaf7; --ink: #1f2328; --muted: #5c6470; --line: #d9d5cc;
+    --old: #b9b4a8; --old-bg: #eeece6;
+    --ai: #5aa855; --ai-bg: #dff0dc;
+    --sw: #4f83d9; --sw-bg: #dbe6fa;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: var(--bg); color: var(--ink);
+    font-family: -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif; }
+  .page { position: relative; width: 1920px; height: 1080px; padding: 44px 80px 40px; }
+  h1 { margin: 0 0 8px; font-size: 56px; font-weight: 700; letter-spacing: -0.5px; }
+  .sub { margin: 0; font-size: 28px; color: var(--muted); }
+  svg.d { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; }
+  svg.d text { font-family: -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif; fill: var(--ink); }
+  .t  { font-size: 26px; font-weight: 700; }
+  .s  { font-size: 20px; fill: var(--muted) !important; }
+  .h  { font-size: 30px; font-weight: 700; }
+  .tag { font-size: 18px; font-weight: 700; fill: #fff !important; }
+  .old  { fill: var(--old-bg); stroke: var(--old); stroke-width: 2.5; }
+  .ai   { fill: var(--ai-bg); stroke: var(--ai); stroke-width: 3.5; }
+  .sw   { fill: var(--sw-bg); stroke: var(--sw); stroke-width: 3.5; }
+  .dot  { stroke-dasharray: 9 7; fill: #fff; stroke-width: 3; }
+  .panel { fill: none; stroke: var(--line); stroke-width: 2; }
+  .a { stroke: var(--ink); stroke-width: 2.5; fill: none; marker-end: url(#arr); }
+  .ad { stroke: var(--muted); stroke-width: 2.5; fill: none; stroke-dasharray: 8 6; marker-end: url(#arrm); }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>What the Architecture session adds</h1>
+  <p class="sub">The model call and the loop stay the same. Everything new sits around them.</p>
+
+  <svg class="d" viewBox="0 0 1920 1080" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="#1f2328"/>
+      </marker>
+      <marker id="arrm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="#5c6470"/>
+      </marker>
+    </defs>
+
+    <!-- legend -->
+    <g transform="translate(1290,70)">
+      <rect class="ai" x="0" y="0" width="34" height="26" rx="6"/><text x="44" y="21" class="s">AI engineering</text>
+      <rect class="sw" x="250" y="0" width="34" height="26" rx="6"/><text x="294" y="21" class="s">software engineering</text>
+      <rect class="old" x="0" y="40" width="34" height="26" rx="6"/><text x="44" y="61" class="s">from Fundamentals</text>
+      <rect class="sw dot" x="250" y="40" width="34" height="26" rx="6"/><text x="294" y="61" class="s">drawn only, built in Track 2</text>
+    </g>
+
+    <!-- ============ LEFT: end of Fundamentals ============ -->
+    <rect class="panel" x="60" y="170" width="500" height="770" rx="18"/>
+    <text x="90" y="218" class="h">End of Fundamentals</text>
+    <text x="90" y="248" class="s">R0–R9 · one agent</text>
+
+    <rect class="old" x="180" y="285" width="200" height="64" rx="12"/>
+    <text x="280" y="326" class="t" text-anchor="middle">User</text>
+    <path class="a" d="M280,349 L280,385"/>
+
+    <rect class="old" x="150" y="388" width="260" height="64" rx="12"/>
+    <text x="280" y="429" class="t" text-anchor="middle">Chat script</text>
+    <path class="a" d="M280,452 L280,488"/>
+
+    <rect class="old" x="90" y="491" width="300" height="250" rx="14"/>
+    <text x="240" y="531" class="t" text-anchor="middle">One agent</text>
+    <text x="240" y="560" class="s" text-anchor="middle">system prompt + loop</text>
+    <path d="M190,607 a50,28 0 1,1 100,0 a50,28 0 1,1 -100,0" fill="none" stroke="#8a8f99" stroke-width="2.5"/>
+    <path d="M284,614 l6,-10 l6,10" fill="none" stroke="#8a8f99" stroke-width="2.5"/>
+    <text x="240" y="614" class="s" text-anchor="middle">loop</text>
+    <rect x="115" y="645" width="250" height="72" rx="10" fill="#fff" stroke="#b9b4a8" stroke-width="2"/>
+    <text x="240" y="676" class="s" text-anchor="middle" style="fill:#1f2328">~6 tools,</text>
+    <text x="240" y="702" class="s" text-anchor="middle" style="fill:#1f2328">coded inside the script</text>
+
+    <rect class="old" x="420" y="560" width="120" height="110" rx="12"/>
+    <text x="480" y="608" class="t" text-anchor="middle">Model</text>
+    <text x="480" y="636" class="s" text-anchor="middle">Nexus/local</text>
+    <path class="a" d="M390,615 L418,615"/>
+
+    <path class="a" d="M240,741 L240,800"/>
+    <rect class="old" x="100" y="803" width="280" height="64" rx="12"/>
+    <text x="240" y="844" class="t" text-anchor="middle">Mock archive data</text>
+
+    <!-- big arrow between panels -->
+    <path d="M572,555 L612,555" stroke="#1f2328" stroke-width="8" marker-end="url(#arr)"/>
+
+    <!-- ============ RIGHT: end of Architecture ============ -->
+    <rect class="panel" x="630" y="170" width="1230" height="770" rx="18"/>
+    <text x="660" y="218" class="h">End of Architecture</text>
+    <text x="660" y="248" class="s">R10–R15 · several agents</text>
+
+    <!-- login (drawn) -->
+    <rect class="sw dot" x="1060" y="200" width="250" height="56" rx="12"/>
+    <text x="1185" y="236" class="t" text-anchor="middle" style="font-size:22px">Login · Entra ID</text>
+    <path class="ad" d="M1060,228 L960,228 L960,286"/>
+
+    <!-- row: user → API → coordinator → gateway → model -->
+    <rect class="old" x="660" y="290" width="150" height="80" rx="12"/>
+    <text x="735" y="338" class="t" text-anchor="middle">User</text>
+    <path class="a" d="M810,330 L868,330"/>
+
+    <rect class="old" x="870" y="290" width="180" height="80" rx="12"/>
+    <text x="960" y="327" class="t" text-anchor="middle">Chat / API</text>
+    <text x="960" y="355" class="s" text-anchor="middle">Teams, web</text>
+    <path class="a" d="M1050,330 L1108,330"/>
+
+    <rect class="ai" x="1110" y="280" width="250" height="100" rx="14"/>
+    <text x="1235" y="324" class="t" text-anchor="middle">Coordinator</text>
+    <text x="1235" y="352" class="s" text-anchor="middle">plans, calls agents</text>
+    <rect x="1316" y="266" width="58" height="28" rx="14" fill="#5aa855"/><text x="1345" y="287" class="tag" text-anchor="middle">R11</text>
+    <path class="a" d="M1360,330 L1418,330"/>
+
+    <rect class="ai dot" x="1420" y="290" width="190" height="80" rx="12"/>
+    <text x="1515" y="327" class="t" text-anchor="middle" style="font-size:23px">Model gateway</text>
+    <text x="1515" y="355" class="s" text-anchor="middle">route by data class</text>
+    <path class="a" d="M1610,330 L1658,330"/>
+
+    <rect class="old" x="1660" y="290" width="170" height="80" rx="12"/>
+    <text x="1745" y="327" class="t" text-anchor="middle">Model</text>
+    <text x="1745" y="355" class="s" text-anchor="middle">Nexus · local</text>
+
+    <!-- session store -->
+    <path class="a" d="M1290,380 L1290,420 L1478,420 L1478,436"/>
+    <rect class="sw" x="1420" y="438" width="250" height="80" rx="12"/>
+    <text x="1545" y="475" class="t" text-anchor="middle">Session store</text>
+    <text x="1545" y="503" class="s" text-anchor="middle">SQLite · survives restart</text>
+    <rect x="1626" y="424" width="58" height="28" rx="14" fill="#4f83d9"/><text x="1655" y="445" class="tag" text-anchor="middle">R14</text>
+
+    <!-- sub-agents -->
+    <path class="a" d="M1180,380 L1180,410 L1010,410 L1010,556"/>
+    <path class="a" d="M1235,380 L1235,556"/>
+    <path class="a" d="M1235,536 L1460,536 L1460,556"/>
+
+    <rect class="ai" x="900" y="558" width="220" height="80" rx="12"/>
+    <text x="1010" y="595" class="t" text-anchor="middle">Reports agent</text>
+    <text x="1010" y="622" class="s" text-anchor="middle">counts, access</text>
+    <rect class="ai" x="1130" y="558" width="210" height="80" rx="12"/>
+    <text x="1235" y="595" class="t" text-anchor="middle">Issues agent</text>
+    <text x="1235" y="622" class="s" text-anchor="middle">tickets, known issues</text>
+    <rect class="ai" x="1350" y="558" width="220" height="80" rx="12"/>
+    <text x="1460" y="595" class="t" text-anchor="middle">Migration agent</text>
+    <text x="1460" y="622" class="s" text-anchor="middle">status, reruns</text>
+    <rect x="1526" y="544" width="58" height="28" rx="14" fill="#5aa855"/><text x="1555" y="565" class="tag" text-anchor="middle">R10</text>
+
+    <!-- MCP -->
+    <path class="a" d="M1010,638 L1010,716"/>
+    <path class="a" d="M1235,638 L1235,716"/>
+    <path class="a" d="M1460,638 L1460,716"/>
+    <rect class="ai" x="900" y="718" width="670" height="80" rx="12"/>
+    <text x="1235" y="755" class="t" text-anchor="middle">MCP server “LoDA archive”</text>
+    <text x="1235" y="783" class="s" text-anchor="middle">tools live here, agents discover them at start-up</text>
+    <rect x="1526" y="704" width="58" height="28" rx="14" fill="#5aa855"/><text x="1555" y="725" class="tag" text-anchor="middle">R12</text>
+
+    <path class="a" d="M1235,798 L1235,836"/>
+    <rect class="old" x="1085" y="838" width="300" height="64" rx="12"/>
+    <text x="1235" y="879" class="t" text-anchor="middle">Mock archive data</text>
+
+    <!-- guardrails R13 -->
+    <rect class="sw" x="655" y="420" width="220" height="380" rx="14"/>
+    <text x="765" y="462" class="t" text-anchor="middle">Guardrails</text>
+    <text x="765" y="490" class="t" text-anchor="middle">in code</text>
+    <text x="675" y="532" class="s">persona →</text>
+    <text x="675" y="558" class="s">allowed tools +</text>
+    <text x="675" y="584" class="s">data scope</text>
+    <text x="675" y="630" class="s">policy per tool:</text>
+    <text x="675" y="658" class="s">read · auto</text>
+    <text x="675" y="684" class="s">draft · auto</text>
+    <text x="675" y="710" class="s">rerun · approve</text>
+    <text x="675" y="736" class="s">delete · never</text>
+    <rect x="811" y="406" width="58" height="28" rx="14" fill="#4f83d9"/><text x="840" y="427" class="tag" text-anchor="middle">R13</text>
+    <path d="M885,570 L895,570 M885,750 L895,750 M885,570 L885,750" stroke="#4f83d9" stroke-width="3" fill="none"/>
+
+    <!-- R15 untrusted -->
+    <rect class="ai" x="1600" y="700" width="240" height="210" rx="14"/>
+    <text x="1720" y="742" class="t" text-anchor="middle">Untrusted input</text>
+    <text x="1620" y="780" class="s">a poisoned ticket</text>
+    <text x="1620" y="806" class="s">is data, not orders;</text>
+    <text x="1620" y="832" class="s">approval is the</text>
+    <text x="1620" y="858" class="s">backstop</text>
+    <rect x="1774" y="686" width="58" height="28" rx="14" fill="#5aa855"/><text x="1803" y="707" class="tag" text-anchor="middle">R15</text>
+    <path class="ad" d="M1600,870 L1387,870"/>
+
+    <!-- bottom strip: drawn in slot 6 -->
+    <text x="90" y="1000" class="t" style="font-size:24px">Drawn in slot 6, built in Track 2:</text>
+    <rect class="sw dot" x="520" y="968" width="220" height="50" rx="25"/><text x="630" y="1000" text-anchor="middle" style="font-size:22px">PII redaction</text>
+    <rect class="ai dot" x="760" y="968" width="200" height="50" rx="25"/><text x="860" y="1000" text-anchor="middle" style="font-size:22px">Evaluation</text>
+    <rect class="ai dot" x="980" y="968" width="230" height="50" rx="25"/><text x="1095" y="1000" text-anchor="middle" style="font-size:22px">Traces + cost</text>
+    <rect class="sw dot" x="1230" y="968" width="220" height="50" rx="25"/><text x="1340" y="1000" text-anchor="middle" style="font-size:22px">Network edge</text>
+    <rect class="sw dot" x="1470" y="968" width="150" height="50" rx="25"/><text x="1545" y="1000" text-anchor="middle" style="font-size:22px">Login</text>
+    <rect class="ai dot" x="1640" y="968" width="220" height="50" rx="25"/><text x="1750" y="1000" text-anchor="middle" style="font-size:22px">Model gateway</text>
+  </svg>
+</div>
+</body>
+</html>
