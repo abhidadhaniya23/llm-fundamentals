@@ -1,0 +1,1429 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Pass or Share</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a workshop schematic that grows step by step. Three parts: basics → one worked example → questions that each end in a discovery. Map card beside (desktop) or above (phone) the reading column; a cumulative "model so far" ledger. */
+:root{
+  --paper:#F3F5F4; --card:#FFFFFF; --ink:#172027; --muted:#56636D; --line:#CBD2D6; --soft:#E6EBEC;
+  --accent:#2A57C4; --accent-bg:#E4EBFA; --env:#0B7A69; --env-bg:#DDF1EC; --pay:#7637AE; --pay-bg:#EFE4F8; --warn:#A94F12; --warn-bg:#F8E7DA; --good:#2F7D32; --good-bg:#E3F1E3;
+  --f-display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", sans-serif;
+  --f-body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#101519; --card:#182027; --ink:#E6EBEE; --muted:#9BA8B1; --line:#2F3A42; --soft:#202A31;
+  --accent:#86A6F2; --accent-bg:#1E2A45; --env:#4FC4AF; --env-bg:#123A34; --pay:#C29BE8; --pay-bg:#2E2140; --warn:#E8A06A; --warn-bg:#3A2616; --good:#7CC67F; --good-bg:#17311A; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#101519; --card:#182027; --ink:#E6EBEE; --muted:#9BA8B1; --line:#2F3A42; --soft:#202A31;
+  --accent:#86A6F2; --accent-bg:#1E2A45; --env:#4FC4AF; --env-bg:#123A34; --pay:#C29BE8; --pay-bg:#2E2140; --warn:#E8A06A; --warn-bg:#3A2616; --good:#7CC67F; --good-bg:#17311A; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.6;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+header h1{font-family:var(--f-display);font-weight:700;font-size:clamp(28px,6vw,44px);line-height:1.05;margin:0;letter-spacing:-.01em;text-wrap:balance}
+header p{margin:6px 0 0;color:var(--muted);max-width:62ch}
+.parts{display:grid;grid-template-columns:8fr 1.6fr 11fr;gap:8px}
+.part{display:flex;flex-direction:column;gap:5px;min-width:0}
+.part .pl{font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.part.active .pl{color:var(--accent);font-weight:600}
+.segs{display:flex;gap:3px}
+.segs button{flex:1;min-width:6px;height:8px;border:0;border-radius:2px;background:var(--line);padding:0;cursor:pointer}
+.segs button.done{background:var(--accent);opacity:.45}
+.segs button.cur{background:var(--accent)}
+.segs button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.grid{display:grid;grid-template-columns:1fr;gap:18px;align-items:start}
+@media (min-width:900px){.grid{grid-template-columns:400px minmax(0,1fr)}.mapcard{position:sticky;top:16px}}
+.mapcard{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 10px 6px}
+.mapcard .cap{font-size:12px;color:var(--muted);display:flex;justify-content:space-between;gap:8px;padding:0 4px 6px;font-family:var(--f-mono)}
+svg#map{width:100%;height:auto;display:block}
+.col{min-width:0;display:flex;flex-direction:column;gap:16px}
+.kicker{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.col h2{font-family:var(--f-display);font-weight:700;font-size:clamp(22px,4.6vw,30px);line-height:1.15;margin:2px 0 0;text-wrap:balance}
+.body p{margin:0 0 10px;max-width:66ch}
+.body p:last-child{margin-bottom:0}
+code{font-family:var(--f-mono);font-size:.88em;background:var(--soft);padding:1px 5px;border-radius:4px}
+.nav{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.nav .pos{font-family:var(--f-mono);font-size:13px;color:var(--muted)}
+button.btn{font:inherit;font-size:15px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;padding:8px 14px;cursor:pointer;min-height:40px}
+button.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--card)}
+button.btn:disabled{opacity:.45;cursor:default}
+button.btn:focus-visible,.chip:focus-visible,.guess:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;min-width:0}
+.card h3{font-family:var(--f-display);font-size:17px;margin:0 0 4px}
+.hint{font-size:13px;color:var(--muted);margin:0 0 10px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
+.chip{font:inherit;font-size:13.5px;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:999px;padding:5px 11px;cursor:pointer}
+.chip.on{background:var(--accent);border-color:var(--accent);color:var(--card)}
+.panel{background:var(--paper);border-radius:8px;padding:12px;min-width:0}
+.panel p{margin:0 0 8px}.panel p:last-child{margin:0}
+pre.code{font-family:var(--f-mono);font-size:12.5px;line-height:1.55;background:var(--soft);border-radius:8px;padding:10px 12px;margin:8px 0 0;overflow-x:auto;white-space:pre;color:var(--ink)}
+.env{color:var(--env);font-weight:600}.pay{color:var(--pay);font-weight:600}
+.del{color:var(--warn);text-decoration:line-through}.add{color:var(--good);font-weight:600}
+.cc{text-decoration:underline dotted;text-underline-offset:3px}
+.tag{display:inline-block;font-family:var(--f-mono);font-size:11.5px;padding:2px 8px;border-radius:4px;letter-spacing:.02em}
+.t-env{background:var(--env-bg);color:var(--env)}.t-pay{background:var(--pay-bg);color:var(--pay)}.t-acc{background:var(--accent-bg);color:var(--accent)}.t-warn{background:var(--warn-bg);color:var(--warn)}.t-good{background:var(--good-bg);color:var(--good)}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin:0 0 8px}
+.two{display:grid;grid-template-columns:1fr;gap:10px}
+@media (min-width:640px){.two{grid-template-columns:1fr 1fr}}
+.two>div{min-width:0}
+.bar{height:10px;border-radius:5px;background:var(--soft);overflow:hidden}
+.bar>i{display:block;height:100%;background:var(--accent);transition:width .4s}
+.bar.h2>i{background:var(--env)}.bar.w>i{background:var(--warn)}
+.list{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.entry{display:grid;grid-template-columns:52px 1fr;gap:8px;font-size:14px;padding:7px 9px;border-radius:6px;background:var(--paper);border-left:3px solid var(--line)}
+.entry.latest{border-left-color:var(--accent);background:var(--accent-bg)}
+.entry .tm{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.fieldkey{cursor:pointer;border-radius:3px;padding:0 2px}
+.fieldkey:hover,.fieldkey.on{background:var(--accent-bg)}
+.fieldkey:focus-visible{outline:2px solid var(--accent)}
+table.tbl{width:100%;border-collapse:collapse;font-size:13.5px}
+table.tbl th,table.tbl td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+table.tbl th{font-family:var(--f-mono);font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+.tablewrap{overflow-x:auto}
+.question{font-family:var(--f-display);font-size:clamp(19px,3.8vw,23px);font-weight:700;line-height:1.25;margin:0;text-wrap:balance}
+.guesses{display:flex;flex-direction:column;gap:6px;margin:10px 0 0}
+.guess{font:inherit;text-align:left;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:8px;padding:9px 12px;cursor:pointer}
+.guess.right{border-color:var(--good);background:var(--good-bg)}
+.guess.wrong{border-color:var(--warn);background:var(--warn-bg)}
+.fb{margin:8px 0 0;font-size:14.5px}
+.learn{border:2px solid var(--accent);background:var(--accent-bg);border-radius:10px;padding:12px 14px}
+.learn .lk{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);font-weight:600}
+.learn p{margin:4px 0 0;font-weight:700}
+.ledger{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.ledger h3{font-family:var(--f-display);font-size:16px;margin:0 0 8px}
+.ledger h4{font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:10px 0 4px;font-weight:600}
+.ledger ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:5px}
+.ledger li{color:var(--muted);font-size:14.5px}
+.ledger li.now{color:var(--ink);font-weight:700}
+.ledger .empty{font-size:13.5px;color:var(--muted);margin:0}
+input[type=text]{font:inherit;width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink)}
+input[type=text]:focus{outline:2px solid var(--accent);outline-offset:1px}
+.err{color:var(--warn);font-size:13px;margin:6px 0 0}
+.verdict{font-family:var(--f-mono);font-size:12px;font-weight:600;padding:3px 9px;border-radius:4px}
+.mini{width:100%;height:auto;display:block}
+.mini rect{fill:var(--card);stroke:var(--line)}.mini text{fill:var(--ink);font-family:var(--f-body);font-size:11px}
+.mini .st{fill:var(--accent-bg);stroke:var(--accent);stroke-dasharray:4 3}
+.mini path{fill:none;stroke:var(--muted);stroke-width:1.3}
+/* map */
+#map .node rect{fill:var(--card);stroke:var(--line);stroke-width:1.2;transition:stroke .3s,fill .3s}
+#map .node text{fill:var(--ink);font-family:var(--f-body);font-size:12px;font-weight:700}
+#map .node text.sub{font-weight:400;font-size:9.5px;fill:var(--muted)}
+#map .node.hi rect{stroke:var(--accent);stroke-width:2.2;fill:var(--accent-bg)}
+#map .node.bad rect{stroke:var(--warn);stroke-width:2.2;fill:var(--warn-bg)}
+#map .edge{fill:none;stroke:var(--muted);stroke-width:1.3;transition:stroke .3s}
+#map .edge.hi,#map g.hi .edge{stroke:var(--accent);stroke-width:2.6}
+#map .slab{fill:var(--accent-bg);stroke:var(--accent);stroke-dasharray:5 4;stroke-width:1.3;opacity:.7}
+#map .lbl{font-family:var(--f-mono);font-size:8.5px;fill:var(--muted)}
+#map .ptag rect{fill:var(--pay-bg)}
+#map .ptag text{font-family:var(--f-mono);font-size:8.2px;fill:var(--pay);font-weight:600}
+#map g{transition:opacity .35s}
+#map .off{opacity:0;pointer-events:none}
+#map .dim{opacity:.28}
+#map .new{animation:pop .7s ease-out}
+@keyframes pop{0%{opacity:0;transform:translateY(-4px)}100%{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){#map .new{animation:none}#map g,.bar>i{transition:none}}
+.mk-n{fill:var(--muted)}.mk-h{fill:var(--accent)}
+/* tabs + domain view */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);overflow-x:auto}
+.tabs button{font:inherit;font-size:15px;font-weight:700;background:none;border:0;border-bottom:3px solid transparent;color:var(--muted);padding:8px 12px 9px;cursor:pointer;white-space:nowrap}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.dlayout{display:grid;grid-template-columns:1fr;gap:16px;align-items:start;margin-top:4px}
+@media (min-width:900px){.dlayout{grid-template-columns:230px minmax(0,1fr)}.dnav{position:sticky;top:16px;flex-direction:column}}
+.dnav{display:flex;flex-wrap:wrap;gap:4px}
+.dnav a{font-size:13.5px;color:var(--muted);text-decoration:none;padding:5px 9px;border-radius:6px;border:1px solid var(--line);background:var(--card)}
+@media (min-width:900px){.dnav a{border:0;background:none;padding:5px 8px}}
+.dnav a.on{color:var(--accent);background:var(--accent-bg);font-weight:700}
+.dcol{min-width:0;display:flex;flex-direction:column;gap:16px}
+.dsec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;min-width:0;scroll-margin-top:16px}
+.dsec h2{font-family:var(--f-display);font-size:clamp(20px,4vw,25px);margin:2px 0 6px;line-height:1.2;text-wrap:balance}
+.dsec p{max-width:68ch;margin:0 0 10px}
+.dsec .lead{font-size:16.5px}
+.say{display:grid;grid-template-columns:1fr;gap:8px;margin:10px 0}
+@media (min-width:640px){.say{grid-template-columns:1fr 1fr}}
+.say>div{background:var(--paper);border-radius:8px;padding:10px 12px;min-width:0}
+.say .sk{font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600;display:block;margin-bottom:2px}
+.why{border-left:3px solid var(--pay);padding:6px 0 6px 12px;margin:10px 0 0;font-size:14.5px}
+.why b{color:var(--pay)}
+.vin{display:flex;flex-wrap:wrap;gap:3px;margin:8px 0}
+.vin button{font-family:var(--f-mono);font-size:17px;font-weight:600;width:28px;height:38px;border:1px solid var(--line);border-radius:5px;background:var(--paper);color:var(--ink);cursor:pointer;padding:0}
+.vin button.g1{border-bottom:4px solid var(--accent)}.vin button.g2{border-bottom:4px solid var(--env)}.vin button.g3{border-bottom:4px solid var(--pay)}.vin button.g4{border-bottom:4px solid var(--warn)}
+.vin button.on{background:var(--accent-bg)}
+.chal{border:1px solid var(--line);border-radius:8px;background:var(--paper)}
+.chal summary{cursor:pointer;padding:10px 12px;font-weight:700;list-style:none;display:flex;gap:8px;align-items:baseline}
+.chal summary::-webkit-details-marker{display:none}
+.chal summary::before{content:"+";font-family:var(--f-mono);color:var(--accent);width:12px;flex:none}
+.chal[open] summary::before{content:"−"}
+.chal .cb{padding:0 12px 12px 32px;font-size:14.5px}
+.chal .cb p{margin:0 0 6px}
+.gloss{display:flex;flex-direction:column;gap:2px;margin-top:10px}
+.gloss div{display:grid;grid-template-columns:minmax(110px,170px) 1fr;gap:10px;padding:6px 0;border-bottom:1px solid var(--line);font-size:14.5px}
+.gloss dt,.gloss b{font-weight:700}
+.small{font-size:12.5px;color:var(--muted)}
+
+/* shared-state map */
+#shmap{width:100%;height:auto;display:block}
+#shmap .node rect{fill:var(--card);stroke:var(--line);stroke-width:1.2;transition:stroke .3s,fill .3s}
+#shmap .node text{fill:var(--ink);font-family:var(--f-body);font-size:12px;font-weight:700}
+#shmap .node text.sub{font-weight:400;font-size:9.5px;fill:var(--muted)}
+#shmap .node.hi rect{stroke:var(--accent);stroke-width:2.2;fill:var(--accent-bg)}
+#shmap .node.bad rect{stroke:var(--warn);stroke-width:2.2;fill:var(--warn-bg)}
+#shmap .boardnode rect.frame{stroke-dasharray:5 4;stroke:var(--accent)}
+#shmap .edge{fill:none;stroke:var(--muted);stroke-width:1.3;transition:stroke .3s}
+#shmap .edge.hi{stroke:var(--accent);stroke-width:2.6}
+#shmap g.hi .edge{stroke:var(--accent);stroke-width:2.6}
+#shmap .lbl{font-family:var(--f-mono);font-size:8.5px;fill:var(--muted)}
+#shmap .brow text{font-family:var(--f-mono);font-size:8px;font-weight:600}
+#shmap .r-case rect{fill:var(--soft)}#shmap .r-case text{fill:var(--muted)}
+#shmap .r-obs rect{fill:var(--accent-bg)}#shmap .r-obs text{fill:var(--accent)}
+#shmap .r-hyp rect{fill:var(--pay-bg)}#shmap .r-hyp text{fill:var(--pay)}
+#shmap .r-test rect{fill:var(--env-bg)}#shmap .r-test text{fill:var(--env)}
+#shmap .r-dec rect{fill:var(--warn-bg)}#shmap .r-dec text{fill:var(--warn)}
+#shmap .brow.latest rect{stroke:var(--ink);stroke-width:1}
+#shmap g{transition:opacity .35s}
+#shmap .off{opacity:0;pointer-events:none}
+#shmap .dim{opacity:.28}
+#shmap .new{animation:pop .7s ease-out}
+@media (prefers-reduced-motion:reduce){#shmap .new{animation:none}#shmap g{transition:none}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="kicker">Two walkthroughs · one domain</div>
+    <h1>Pass or Share</h1>
+    <p>How agents exchange data, and how to design it when they pass messages and when they share state. Each walkthrough goes vocabulary first, then one car case end to end, then questions that each end in a discovery. The domain tab explains the car world both examples live in.</p>
+  </header>
+  <div class="tabs" role="tablist" aria-label="Views">
+    <button role="tab" id="tab-walk" aria-selected="true" aria-controls="view-walk">Passing data</button>
+    <button role="tab" id="tab-share" aria-selected="false" aria-controls="view-share">Shared state</button>
+    <button role="tab" id="tab-domain" aria-selected="false" aria-controls="view-domain">The domain: cars, faults, warranty</button>
+    <button role="tab" id="tab-das" aria-selected="false" aria-controls="view-das">DAS code review</button>
+  </div>
+  <div id="view-walk" role="tabpanel" aria-labelledby="tab-walk" style="display:flex;flex-direction:column;gap:16px">
+  <nav class="parts" id="parts" aria-label="Progress"></nav>
+  <div class="grid">
+    <div class="mapcard" aria-label="System map">
+      <div class="cap"><span id="mapcap">Warranty claim system</span><span id="mapstep"></span></div>
+      <svg id="map" viewBox="0 0 360 446" role="img" aria-label="A warranty claim system that grows step by step">
+        <defs>
+          <marker id="an" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="mk-n" d="M0 0L10 5L0 10z"/></marker>
+          <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="mk-h" d="M0 0L10 5L0 10z"/></marker>
+        </defs>
+        <g id="layer-slab"></g><g id="layer-edges"></g><g id="layer-nodes"></g><g id="layer-labels"></g>
+      </svg>
+    </div>
+    <main class="col">
+      <div>
+        <div class="kicker" id="kicker"></div>
+        <h2 id="title"></h2>
+      </div>
+      <div class="body" id="body"></div>
+      <section class="card" id="inset" aria-live="polite"></section>
+      <div id="learnwrap"></div>
+      <div class="nav">
+        <button class="btn" id="prev">← Back</button>
+        <span class="pos" id="pos"></span>
+        <button class="btn primary" id="next">Next →</button>
+      </div>
+      <aside class="ledger" aria-label="Your model so far">
+        <h3>Your model so far</h3>
+        <div id="ledger"></div>
+      </aside>
+    </main>
+  </div>
+  </div>
+  <div id="view-share" role="tabpanel" aria-labelledby="tab-share" hidden style="display:flex;flex-direction:column;gap:16px">
+  <nav class="parts" id="shparts" aria-label="Shared state progress"></nav>
+  <div class="grid">
+    <div class="mapcard" aria-label="Technical case map">
+      <div class="cap"><span id="shmapcap">Technical case</span><span id="shmapstep"></span></div>
+      <svg id="shmap" viewBox="0 0 360 356" role="img" aria-label="Specialist agents around a shared case board, with a controller above and a technician and downstream systems below">
+        <defs>
+          <marker id="san" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="mk-n" d="M0 0L10 5L0 10z"/></marker>
+          <marker id="sah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="mk-h" d="M0 0L10 5L0 10z"/></marker>
+        </defs>
+        <g id="sh-edges"></g><g id="sh-nodes"></g><g id="sh-rows"></g><g id="sh-labels"></g>
+      </svg>
+    </div>
+    <main class="col">
+      <div>
+        <div class="kicker" id="shkicker"></div>
+        <h2 id="shtitle"></h2>
+      </div>
+      <div class="body" id="shbody"></div>
+      <section class="card" id="shinset" aria-live="polite"></section>
+      <div id="shlearnwrap"></div>
+      <div class="nav">
+        <button class="btn" id="shprev">← Back</button>
+        <span class="pos" id="shpos"></span>
+        <button class="btn primary" id="shnext">Next →</button>
+      </div>
+      <aside class="ledger" aria-label="Your model of shared state so far">
+        <h3>Your model so far</h3>
+        <div id="shledger"></div>
+      </aside>
+    </main>
+  </div>
+  </div>
+  <div id="view-domain" role="tabpanel" aria-labelledby="tab-domain" hidden>
+    <div class="dlayout">
+      <nav class="dnav" id="dnav" aria-label="Domain sections"></nav>
+      <div class="dcol" id="dcol"></div>
+    </div>
+  </div>
+  <div id="view-das" role="tabpanel" aria-labelledby="tab-das" hidden>
+    <div class="dcol" style="margin-top:4px">
+      <section class="dsec" style="background:var(--accent-bg);border-color:var(--accent)">
+        <div class="kicker">Review · 2026-11-06 · multi-agent-architecture-patterns/das</div>
+        <h2>Does the DAS multi-agent code follow these contracts?</h2>
+        <p class="lead"><b>Mostly yes.</b> It follows the <i>pass, don't share</i> rules well: code owns the record, briefs are small, there is one strict contract per handoff, and other teams get a baton.</p>
+        <p style="margin:0">It does <b>not</b> follow the page's result contract. There is no shared envelope (<code>status</code> / <code>confidence</code> / <code>evidence_ids</code> / <code>caveats</code> + <code>payload</code>), and nothing checks that the IDs an agent returns are real. That second gap is the one that matters.</p>
+      </section>
+
+      <section class="dsec">
+        <div class="kicker">What matches</div>
+        <h2>Where it follows the page</h2>
+        <div class="tablewrap"><table class="tbl"><thead><tr><th>Page rule</th><th>DAS code</th><th></th></tr></thead><tbody>
+<tr><td><b>Pass only what each agent needs</b> (Q1)</td><td>Briefs in <code>call_search_agent</code> / <code>call_debugger_agent</code> carry only a goal, the IDs, the expected output and the scope. Nothing about other agents' findings.</td><td><span class="verdict t-good">Holds</span></td></tr>
+<tr><td><b>The orchestrator owns the record; only code writes it</b> (Q2)</td><td><code>SessionMemory</code> is written only by tool code, under a lock. The Coordinator sees a <code>snapshot()</code> with the full agent results removed.</td><td><span class="verdict t-good">Holds</span></td></tr>
+<tr><td><b>Strictness follows the reader</b> (Q4)</td><td>A, B, C and D are read by code, so they get strict schemas (<code>additionalProperties: false</code>, enums). The Coordinator writes the user's reply, so it is free text.</td><td><span class="verdict t-good">Holds</span></td></tr>
+<tr><td><b>Check at the boundary</b> (walkthrough hop 4)</td><td>Every final answer is checked against its schema, with one repair attempt. <code>access_handoff_allowed</code> checks the baton against B's actual result.</td><td><span class="verdict t-acc">Partly</span></td></tr>
+<tr><td><b>One contract per handoff, no mega-schema</b> (Q6)</td><td>Each agent has its own small schema: <code>SEARCH_OUT</code>, <code>DEBUG_OUT</code>, <code>ACCESS_OUT</code>, <code>REUPLOAD_OUT</code>.</td><td><span class="verdict t-good">Holds</span></td></tr>
+<tr><td><b>Each consumer gets its own slice</b> (hops 5–6)</td><td>C receives a <code>Baton</code> with just the IDs, the user scope and the request. It never sees B's explanation or A's result.</td><td><span class="verdict t-good">Holds</span></td></tr>
+<tr><td><b>Messages can carry instructions</b> (twist 3)</td><td>Every prompt says tool results are data only, and <code>Gateway.call</code> sanitises results, including agent results.</td><td><span class="verdict t-good">Holds</span></td></tr>
+<tr><td><b>Pass, don't share, at every team edge</b> (Shared state tab)</td><td>The handoff to Compliance (C) and the platform team (E) is a passed baton, not shared state.</td><td><span class="verdict t-good">Holds</span></td></tr>
+        </tbody></table></div>
+      </section>
+
+      <section class="dsec">
+        <div class="kicker">What diverges</div>
+        <h2>Where it departs from the page</h2>
+        <p class="small">Tap a gap to see what the page says and what the code does.</p>
+        <div class="list" style="gap:8px">
+<details class="chal"><summary>1. There is no shared result envelope</summary><div class="cb"><p><span class="tag t-acc">Page</span> Every result has the same envelope (<code>status</code>, <code>confidence</code>, <code>evidence_ids</code>, <code>caveats</code>) around a job-specific <code>payload</code>, and echoes the brief's <code>task_id</code>.</p><p><span class="tag t-warn">Code</span> Each output is a flat, one-off shape. None has <code>confidence</code>, an agent-level status or a <code>task_id</code>. <code>DEBUG_OUT.status</code> is the file's ingestion status, not whether the agent finished. When an agent fails, it raises <code>AgentError</code> and the user gets a generic fallback reply, not a <code>status: "partial"</code> the Coordinator could act on. <span class="small">(das/team.py:31-41, das/runtime.py:68-70)</span></p></div></details>
+<details class="chal"><summary>2. There are no claim checks (<code>evidence_ids</code>)</summary><div class="cb"><p><span class="tag t-acc">Page</span> A small message holds the conclusion plus IDs pointing to the proof (Q5).</p><p><span class="tag t-warn">Code</span> B's evidence is a free-text <code>explanation</code> of up to 1500 characters, with no pointer to the validation-log entry it relied on. <code>batch_id</code> and <code>reason_code</code> are partial claim checks, but nothing lets an auditor follow the evidence back to the record.</p></div></details>
+<details class="chal"><summary>3. Hallucinated IDs can pass the output check <span class="verdict t-warn">Most important</span></summary><div class="cb"><p><span class="tag t-acc">Page</span> Twist 5: evidence can be hallucinated, so validation checks that every ID is real.</p><p><span class="tag t-warn">Code</span> <code>call_debugger_agent</code> and <code>call_search_agent</code> are gateway tools, so <code>Gateway.call</code> adds every ID in the LLM agent's JSON to <code>known_ids</code>. If B invents a <code>BATCH-…</code>, the Coordinator can repeat it and <code>check_output</code> will accept it. Nothing compares B's <code>batch_id</code> / <code>doc_id</code> / <code>reason_code</code> with the store. Also, <code>ID_PATTERN</code> doesn't match reason codes, so the output check never looks at them. <span class="small">(das/gateway.py:129-130, das/guardrails.py:28)</span></p></div></details>
+<details class="chal"><summary>4. Output schemas are looser than the input schemas</summary><div class="cb"><p><span class="tag t-acc">Page</span> Strict where code reads the result.</p><p><span class="tag t-warn">Code</span> <code>SEARCH_OUT.doc_id</code> and <code>workspace</code> are plain strings, not <code>DOC_ID</code> / <code>WORKSPACE</code>. <code>DEBUG_OUT.batch_id</code> and <code>reason_code</code> aren't held to the <code>BATCH_ID</code> / <code>REASON_CODE</code> patterns, and <code>status</code> has no enum. That's a problem because code makes routing decisions from these fields.</p></div></details>
+<details class="chal"><summary>5. There is no caveats field</summary><div class="cb"><p><span class="tag t-acc">Page</span> Q4: hedges get lost over summarising hops, so a required field must carry the doubt ("coil not ruled out").</p><p><span class="tag t-warn">Code</span> Doubts can only go in <code>note</code> or <code>explanation</code>, which are optional or mixed with other prose. Nothing makes an agent state its uncertainty.</p></div></details>
+<details class="chal"><summary>6. Briefs name the return shape only loosely</summary><div class="cb"><p><span class="tag t-acc">Page</span> The brief carries a <code>task_id</code> and names a versioned contract (<code>"return": "DiagnosisOut v1"</code>).</p><p><span class="tag t-warn">Code</span> <code>"output": "{doc_id, workspace, …}"</code> is prose, and there is no <code>task_id</code>.</p></div></details>
+<details class="chal"><summary>7. There is no real front door</summary><div class="cb"><p><span class="tag t-acc">Page</span> Q9: an intake step turns open text into a small, fixed list of supported intents.</p><p><span class="tag t-warn">Code</span> The input guardrails make only an on-topic / off-topic call. The Coordinator LLM routes open text however it likes, and the tool preconditions are the only limit.</p></div></details>
+<details class="chal"><summary>8. A token fragment goes into an LLM prompt <span class="verdict t-acc">Low</span></summary><div class="cb"><p><span class="tag t-acc">Page</span> Identity comes from SSO and stays out of the LLM.</p><p><span class="tag t-warn">Code</span> <code>Baton.user</code> is <code>ctx.user.scope()</code>, which includes <code>token[:12] + "…"</code>. That baton becomes C's brief and is also written to the trace. It's a fake placeholder here, but the pattern should go: keep the token out of the brief. <span class="small">(das/store.py:67-68, das/team.py:223)</span></p></div></details>
+        </div>
+      </section>
+
+      <section class="dsec">
+        <div class="kicker">Next steps</div>
+        <h2>Suggested fixes, by priority</h2>
+        <div class="list">
+<div class="entry latest"><span class="tm">1</span><span><b>Check agent results before trusting their IDs.</b> In <code>call_debugger_agent</code> / <code>call_search_agent</code>, compare <code>batch_id</code> (exists and owned by this user), <code>reason_code</code> (in the catalogue) and <code>doc_id</code> (matches the brief) with the store. Don't let agent-produced results add to <code>known_ids</code>; only real system tools and the user's message should.</span></div>
+<div class="entry"><span class="tm">2</span><span>Add a shared envelope (<code>task_id</code>, <code>status</code>, <code>confidence</code>, <code>evidence_ids</code>, <code>caveats</code>) around each agent's current output, which becomes the <code>payload</code>.</span></div>
+<div class="entry"><span class="tm">3</span><span>Tighten the output schemas to the same patterns and enums the input schemas use.</span></div>
+<div class="entry"><span class="tm">4</span><span>Remove the token from <code>Baton.user</code>.</span></div>
+<div class="entry"><span class="tm">5</span><span>Optional: add an intent classifier so the Coordinator only sees supported intents.</span></div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<script>
+const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
+const NS="http://www.w3.org/2000/svg";
+
+/* ---------- steps ---------- */
+const S=[
+/* Part 1: basics */
+{key:"a1",part:0,t:"Agent",cap:"One agent",def:"Agent: an LLM in a loop that calls tools and decides its own next step.",hi:["diag"],
+ b:`<p>An <b>agent</b> is an LLM working in a loop. It reads a task, calls tools, looks at what came back, and decides its own next step until it's done.</p><p>A plain function, or a fixed step in a pipeline, is not an agent: code decides what it does. Our first agent is <b>Diagnostics</b>, which works out what failed on a car.</p>`,inset:"agent"},
+{key:"a2",part:0,t:"Orchestrator",cap:"Agent and orchestrator",def:"Orchestrator: decides who does what and combines results. Code or an LLM.",hi:["orch"],
+ b:`<p>When there's more than one worker, something must decide who does what and combine what comes back. That's the <b>orchestrator</b>.</p><p>It can be plain code that runs a fixed sequence, or an LLM supervisor that plans as it goes. Either way, it sits between the agents.</p>`,inset:"orch"},
+{key:"a3",part:0,t:"Handoff",cap:"One handoff",def:"Handoff: work moving between two parties. A brief goes down, a result comes back.",hi:["e-od","orch","diag"],
+ b:`<p>A <b>handoff</b> is the moment work moves from one party to another. Two messages cross the arrow: a <b>brief</b> going down (what to do) and a <b>result</b> coming back (what was found).</p><p>Almost every design question in this walk-through is about those two messages.</p>`,inset:"handoff"},
+{key:"a4",part:0,t:"Pass or share",cap:"One handoff",def:"Pass: the sender chooses what the receiver sees. Share: both read one store.",hi:[],
+ b:`<p>There are two basic ways data moves between agents.</p><p><b>Pass</b>: the sender chooses what goes in the message, and the receiver sees only that. <b>Share</b>: both read and write one common store, so the receiver can see everything in it.</p><p>Real systems mix them. Which to use where is the first big decision.</p>`,inset:"passshare"},
+{key:"a5",part:0,t:"The record",cap:"The orchestrator's record",def:"Record (or state): what must survive the whole process. The question is who may read and write it.",hi:["orch"],
+ b:`<p>Some things must survive the whole process: the original request, every finding, the status while a human decides. That's the <b>record</b>. LangGraph calls it <b>state</b>.</p><p>The important question isn't whether you have one. It's <b>who may read and write it</b>.</p>`,inset:"record"},
+{key:"a6",part:0,t:"Contract",cap:"One handoff",def:"Contract: the agreed shape of a message. A fixed envelope plus a payload that varies.",hi:["e-od"],
+ b:`<p>A <b>contract</b> is the agreed shape of a message: which fields exist, what each means, which values are allowed. Like an API's request and response DTOs.</p><p>It has two parts. The <b>envelope</b> is the same for every agent: did it finish, how sure is it, what's the evidence, what are the doubts. The <b>payload</b> is the actual answer, and varies by job.</p>`,inset:"contract"},
+{key:"a7",part:0,t:"Evidence and claim checks",cap:"Agent with its evidence",def:"Claim check: the message carries IDs that point to raw evidence stored elsewhere.",hi:["store","e-ds","diag"],
+ b:`<p>Agents read a lot of raw data: fault codes, sensor readings, service history. They don't pass it all on. The raw records stay in an <b>evidence store</b>, and the message carries <b>IDs</b> pointing to them.</p><p>That pattern has a name from service integration: a <b>claim check</b>. Hand over a ticket; whoever needs the bulky thing redeems it.</p>`,inset:"claimcheck"},
+{key:"a8",part:0,t:"Consumers",cap:"The full warranty system",def:"Consumer: whoever reads a result. Code, an LLM or a human, and each needs different things.",hi:["est","road","human","aud"],
+ b:`<p>A <b>consumer</b> is whoever reads a result. Here the whole system appears: coverage and fraud checks join diagnostics; an <b>estimator</b> (plain code) prices the repair; <b>roadside</b> (an LLM) decides if the car can be driven; a <b>human</b> approves expensive claims; an <b>auditor</b> checks the trail.</p><p>Each consumer needs different things from the same result. That fact drives most of the contract design later.</p>`,inset:"consumers"},
+/* Part 2: example */
+{key:"b1",part:1,t:"Follow one claim",cap:"One claim, hop by hop",def:"",hi:[],
+ b:`<p>A dealer submits a warranty claim: an SUV at 38,000 km, engine light on, rough idle at cold start, injector replacement requested.</p><p>Step through it. Each hop lights up on the map, uses a basic from Part 1, and names its pattern. Notice what you're curious about: the questions that follow come from here.</p>`,inset:"walk"},
+/* Part 3: questions */
+{key:"q1",part:2,t:"Why not just send diagnostics everything?",cap:"The brief",hi:["orch","diag","e-od"],
+ learn:"Pass what each agent needs. More context costs more and lets one agent's signals bias another.",
+ guess:{q:"If diagnostics receives the full claim file, what goes wrong first?",o:["Nothing: more context is better","It costs more, and the fraud signal biases the diagnosis","It gets faster"],a:1,
+  fb:"More context isn't free. Every token is paid for, and a diagnosis that has seen 'this dealer is suspicious' is no longer independent."},inset:"q1"},
+{key:"q2",part:2,t:"Then why not one shared state for everyone?",cap:"Record ownership",hi:["orch"],
+ learn:"The orchestrator should own the record. Agents get messages; only code reads and writes the record.",
+ guess:{q:"If agents return results to code instead of writing a shared state, do you still need merge rules (reducers)?",o:["Yes","No"],a:1,
+  fb:"Reducers exist because parallel nodes write into one object at once. If code collects three return values, there's nothing to merge."},inset:"q2"},
+{key:"q3",part:2,t:"Is shared state ever right?",cap:"A different topology",dimAll:true,
+ learn:"Share between agents only when they must discover the work from each other: append-only, evidence-linked, scheduled.",
+ guess:{q:"Error spike starting right after a deploy. Roll back?",o:["Yes, that's the runbook","Not before checking who is affected"],a:1,
+  fb:"For a known pattern, the runbook is right. Here the cause is a combination across three teams, and rollback would hide it for two days."},inset:"q3"},
+{key:"q4",part:2,t:"An LLM can read anything. Why a schema?",cap:"The result",hi:["e-od","diag","orch"],
+ learn:"Contracts exist for reliability, not readability. Strictness follows the reader: code strict, drafting LLM light.",
+ guess:{q:"After three summarising hops in free text, does 'coil not ruled out' survive?",o:["Yes","Probably not"],a:1,
+  fb:"Each LLM interprets as it summarises. Hedges are the first thing to go."},inset:"q4"},
+{key:"q5",part:2,t:"The result is tiny. How can it mean anything?",cap:"Agent with its evidence",hi:["diag","store","e-ds"],
+ learn:"A small message is the conclusion, plus claim checks pointing to the proof.",
+ guess:{q:"Where did the misfire counts per cylinder go?",o:["Lost","Inside the message","In the evidence store, one ID away"],a:2,
+  fb:"The agent used them to reason, then pointed to them. Nothing was thrown away."},inset:"q5"},
+{key:"q6",part:2,t:"Will one contract fit every consumer and vehicle?",cap:"Consumers",hi:["est","road","e-oe","e-or"],
+ learn:"One contract per handoff: a shared envelope plus typed variants. Avoid the 40-optional-field mega-schema.",
+ guess:{q:"Can an EV battery fault use the same DiagnosisOut?",o:["Yes, as it is","The envelope yes, the payload no","No, it needs a different agent"],a:1,
+  fb:"Confidence, evidence and caveats apply to any fault. Cylinder means nothing for a battery."},inset:"q6"},
+{key:"q7",part:2,t:"Can a payload be fixed when every question differs?",cap:"Payload design",hi:["diag"],
+ learn:"Queries differ in content, not kind. Turn what varies into a value, not a new field. Can't fix it? The job's too broad.",
+ guess:{q:"Fleet gets three different questions. How many payload shapes does it need?",o:["Three","One"],a:1,
+  fb:"Firmware, carrier and model year are all 'which group fails more?'. The question's variable becomes a value."},inset:"q7"},
+{key:"q8",part:2,t:"What breaks it? Ten real queries",cap:"Under load",hi:[],
+ learn:"You can't predict queries, but you can predict the axes they vary on: scope, cardinality, time, domain, certainty, answer kind.",
+ guess:{q:"Of ten real queries, how many break DiagnosisOut v1 outright?",o:["None","About half","One or two"],a:2,
+  fb:"Most hold or need a small, planned change. The breaks teach the most."},inset:"q8"},
+{key:"q9",part:2,t:"Why does a backend team know its use cases?",cap:"The front door",hi:["req","intake","e-ri","e-io"],
+ learn:"Control the front door: intake turns open text into a finite set of supported intents.",
+ guess:{q:"A backend team knows exactly what's needed. Why doesn't an agent team?",o:["Agents are random","The frontend limits what users can ask","Backends are simpler"],a:1,
+  fb:"Forms and buttons make the use cases finite. Free text removes that limit, unless you add it back."},inset:"q9"},
+{key:"q10",part:2,t:"What about agents owned by someone else?",cap:"Across organisations",dimAll:true,
+ learn:"An agent as a service exposes a menu of skills, each with a small contract. The contract is only the overlap.",
+ guess:{q:"Should the bank build an 'afford a holiday' skill for consumer agents?",o:["Yes","No: the consumer agent reasons with spending_summary"],a:1,
+  fb:"The bank exposes facts it owns. Your plans are your agent's knowledge, not the bank's."},inset:"q10"},
+{key:"q11",part:2,t:"Is any of this new?",cap:"The same map, labelled",hi:[],
+ learn:"It's service integration again, plus confidence, caveats and evidence you can verify.",
+ guess:{q:"Is agent contract design a new discipline?",o:["Entirely new","Mostly service integration, with a few twists"],a:1,
+  fb:"Claim checks, envelopes, consumer-driven contracts: all decades old. LLMs add five twists."},inset:"q11"}
+];
+const IDX=Object.fromEntries(S.map((s,i)=>[s.key,i]));
+const PARTS=["Basics","Example","Questions"];
+
+/* ---------- map ---------- */
+const NODES=[
+ {id:"req",x:120,y:4,w:120,h:30,label:"Request",sub:"",at:"q9"},
+ {id:"intake",x:100,y:46,w:160,h:40,label:"Intake",sub:"classifies intent",at:"q9"},
+ {id:"orch",x:100,y:100,w:160,h:50,label:"Orchestrator",sub:[["a2","routes and merges"],["a5","owns the record"]],at:"a2"},
+ {id:"diag",x:10,y:200,w:100,h:44,label:"Diagnostics",sub:"LLM agent",at:"a1"},
+ {id:"cov",x:130,y:200,w:100,h:44,label:"Coverage",sub:"LLM agent",at:"a8"},
+ {id:"fraud",x:250,y:200,w:100,h:44,label:"Fraud check",sub:"LLM agent",at:"a8"},
+ {id:"store",x:10,y:300,w:100,h:44,label:"Evidence store",sub:"raw records",at:"a7"},
+ {id:"est",x:130,y:300,w:100,h:44,label:"Estimator",sub:"plain code",at:"a8"},
+ {id:"road",x:250,y:300,w:100,h:44,label:"Roadside",sub:"LLM agent",at:"a8"},
+ {id:"aud",x:10,y:394,w:100,h:44,label:"Auditor",sub:"human or agent",at:"a8"},
+ {id:"human",x:130,y:394,w:100,h:44,label:"Human",sub:"approves",at:"a8"}];
+const EDGES=[
+ {id:"e-ri",d:"M180 34V44",at:"q9"},
+ {id:"e-io",d:"M180 86V98",at:"q9"},
+ {id:"e-od",d:"M100 125H60V198",at:"a3",both:true},
+ {id:"e-oc",d:"M180 150V198",at:"a8",both:true},
+ {id:"e-of",d:"M260 125H300V198",at:"a8",both:true},
+ {id:"e-oe",d:"M240 150V272H180V298",at:"a8"},
+ {id:"e-or",d:"M240 272H300V298",at:"a8"},
+ {id:"e-ds",d:"M60 244V298",at:"a7",both:true},
+ {id:"e-eh",d:"M180 344V392",at:"a8"},
+ {id:"e-as",d:"M60 392V346",at:"a8"}];
+const LABELS=[
+ {id:"l-br",kind:"lbl",x:64,y:176,text:"brief ↓ result ↑",at:"a3"},
+ {id:"p-env",kind:"ptag",x:264,y:100,text:"Envelope wrapper",at:"q11",until:"q11"},
+ {id:"p-msg",kind:"ptag",x:64,y:193,text:"Command · Document",at:"q11",until:"q11"},
+ {id:"p-cc",kind:"ptag",x:64,y:262,text:"Claim check",at:"q11",until:"q11"},
+ {id:"p-cdc",kind:"ptag",x:88,y:372,text:"Consumer-driven",at:"q11",until:"q11"},
+ {id:"p-tr",kind:"ptag",x:258,y:358,text:"Tolerant reader",at:"q11",until:"q11"}];
+const mk=(t,a={},p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e};
+const LY={slab:$("#layer-slab"),e:$("#layer-edges"),n:$("#layer-nodes"),l:$("#layer-labels")};
+const G={}, RANGE={};
+{const g=mk("g",{id:"slab"},LY.slab);mk("rect",{class:"slab",x:4,y:96,width:352,height:256,rx:10},g);const t=mk("text",{class:"lbl",x:12,y:92},g);t.textContent="ONE SHARED GRAPH STATE";G.slab=g;RANGE.slab=[99,-1];}
+EDGES.forEach(e=>{const g=mk("g",{id:e.id},LY.e);e.path=mk("path",{class:"edge",d:e.d,"marker-end":"url(#an)"},g);if(e.both)e.path.setAttribute("marker-start","url(#an)");G[e.id]=g;RANGE[e.id]=[IDX[e.at],99];});
+NODES.forEach(n=>{const g=mk("g",{id:n.id,class:"node"},LY.n);mk("rect",{x:n.x,y:n.y,width:n.w,height:n.h,rx:7},g);
+ const hasSub=n.sub&&(typeof n.sub!=="string"||n.sub.length);
+ const t=mk("text",{x:n.x+n.w/2,y:n.y+(hasSub?n.h/2-2:n.h/2+4),"text-anchor":"middle"},g);t.textContent=n.label;
+ if(hasSub)n.subEl=mk("text",{class:"sub",x:n.x+n.w/2,y:n.y+n.h/2+11,"text-anchor":"middle"},g);
+ G[n.id]=g;RANGE[n.id]=[IDX[n.at],99];});
+LABELS.forEach(l=>{const g=mk("g",{id:l.id,class:l.kind},LY.l);
+ if(l.kind==="ptag"){mk("rect",{x:l.x,y:l.y-9,width:l.text.length*5.2+10,height:13,rx:3},g);const t=mk("text",{x:l.x+5,y:l.y},g);t.textContent=l.text;}
+ else{const t=mk("text",{class:"lbl",x:l.x,y:l.y},g);t.textContent=l.text;}
+ G[l.id]=g;RANGE[l.id]=[IDX[l.at],l.until?IDX[l.until]:99];});
+
+let cur=0, prevCur=-1;
+function paintMap(hi=[],o={}){
+ Object.keys(G).forEach(id=>{const [f,u]=RANGE[id];let on=cur>=f&&cur<=u;if(id==="slab")on=!!o.slab;const g=G[id];
+  g.classList.toggle("off",!on);
+  if(on&&cur===f&&prevCur<f){g.classList.remove("new");requestAnimationFrame(()=>g.classList.add("new"));}else if(cur!==f)g.classList.remove("new");
+  g.classList.toggle("hi",hi.includes(id));
+  g.classList.toggle("bad",(o.bad||[]).includes(id));
+  g.classList.toggle("dim",!!((o.dimAll&&!hi.includes(id))||(o.focus&&hi.length&&!hi.includes(id))));});
+ EDGES.forEach(e=>{const m=hi.includes(e.id)?"url(#ah)":"url(#an)";e.path.setAttribute("marker-end",m);if(e.both)e.path.setAttribute("marker-start",m);});
+ NODES.forEach(n=>{if(!n.subEl)return;let s=n.sub;if(typeof s!=="string"){const opts=s.filter(x=>IDX[x[0]]<=cur);s=(opts.length?opts:s).slice(-1)[0][1];}n.subEl.textContent=s;});
+}
+
+/* ---------- helpers ---------- */
+function bindChips(sel,fn,def){const bs=$$(sel+" .chip");bs.forEach(b=>b.onclick=()=>{bs.forEach(x=>x.classList.remove("on"));b.classList.add("on");fn(+b.dataset.i)});if(def!==undefined&&bs[def])bs[def].click();}
+const chipRow=(id,arr,f=x=>x)=>`<div class="chips" id="${id}">${arr.map((x,i)=>`<button class="chip" data-i="${i}">${f(x)}</button>`).join("")}</div>`;
+const later=fn=>setTimeout(fn,0);
+
+/* ---------- insets: basics ---------- */
+const I={};
+I.agent=()=>`<h3>Agent or not?</h3><div class="two"><div class="panel"><span class="tag t-acc">Agent</span><p style="margin-top:6px">Diagnostics: given a car, it decides which tools to call (read fault codes? sensor data? service history?) and when it knows enough.</p></div><div class="panel"><span class="tag t-pay">Not an agent</span><p style="margin-top:6px">Estimator: looks up a part price and adds labour. Same steps every time; code decides.</p></div></div>`;
+I.orch=()=>`<h3>Two kinds of orchestrator</h3><div class="two"><div class="panel"><span class="tag t-acc">Code</span><pre class="code">diag = diagnostics(claim)
+cost = estimate(diag)</pre><p class="hint" style="margin:6px 0 0">Fixed order. Predictable, testable.</p></div><div class="panel"><span class="tag t-pay">LLM supervisor</span><pre class="code">"Symptoms unclear.
+ Ask diagnostics first,
+ then decide on fraud."</pre><p class="hint" style="margin:6px 0 0">Plans as it goes. Flexible, harder to test.</p></div></div>`;
+I.handoff=()=>`<h3>The two messages on one arrow</h3><div class="two"><div><span class="tag t-acc">Brief ↓</span><pre class="code">objective: find the failed part
+context:   VIN, symptoms
+limits:    read-only, 8 tool calls</pre></div><div><span class="tag t-env">Result ↑</span><pre class="code">part: injector, cylinder 1
+confidence: 0.82
+doubt: coil not ruled out</pre></div></div>`;
+I.passshare=()=>`<h3>Pass vs share</h3><div class="two"><div class="panel"><b>Pass</b><svg class="mini" viewBox="0 0 220 90" aria-label="Agent A sends a message to agent B"><rect x="6" y="28" width="62" height="34" rx="6"/><text x="37" y="49" text-anchor="middle">A</text><rect x="152" y="28" width="62" height="34" rx="6"/><text x="183" y="49" text-anchor="middle">B</text><path d="M70 45H150" marker-end="url(#an)"/><text x="110" y="38" text-anchor="middle" style="font-size:9.5px;fill:var(--muted)">message</text></svg><p class="hint" style="margin:4px 0 0">B sees only what A chose. Isolation, but details can get lost.</p></div><div class="panel"><b>Share</b><svg class="mini" viewBox="0 0 220 90" aria-label="Agents A and B both read and write one store"><rect x="6" y="6" width="62" height="30" rx="6"/><text x="37" y="25" text-anchor="middle">A</text><rect x="152" y="6" width="62" height="30" rx="6"/><text x="183" y="25" text-anchor="middle">B</text><rect class="st" x="50" y="58" width="120" height="26" rx="6"/><text x="110" y="75" text-anchor="middle">store</text><path d="M37 37V70H48"/><path d="M183 37V70H172"/></svg><p class="hint" style="margin:4px 0 0">Nothing hidden, but overwrites and growing context.</p></div></div>`;
+I.record=()=>{later(()=>bindChips("#rec",i=>{$("#recout").innerHTML=[`<span class="tag t-good">Usually right</span><p style="margin-top:6px">Only the orchestrator reads and writes it. Agents get messages. A work order.</p>`,`<span class="tag t-acc">Sometimes right</span><p style="margin-top:6px">Every agent can add entries, nobody overwrites. A blackboard, for investigations.</p>`,`<span class="tag t-warn">Avoid</span><p style="margin-top:6px">Every agent reads and overwrites anything. Silent overwrites, growing context, no clear owner.</p>`][i]},0));
+ return `<h3>Who may touch the record?</h3>${chipRow("rec",["Orchestrator only","Everyone, append-only","Everyone, overwrite"])}<div class="panel" id="recout"></div>`};
+I.contract=()=>`<h3>Envelope and payload</h3><div class="legend"><span><span class="env">■</span> envelope: same for every agent</span><span><span class="pay">■</span> payload: this job's answer</span></div><pre class="code">{
+  <span class="env">"status": "done",</span>
+  <span class="env">"confidence": 0.82,</span>
+  <span class="env">"evidence_ids": ["dtc-7781", "sens-4410"],</span>
+  <span class="env">"caveats": "coil not ruled out",</span>
+  <span class="pay">"payload": {"part_code": "INJ-01", "cylinder": 1}</span>
+}</pre><p class="hint" style="margin:8px 0 0">The orchestrator handles every agent the same way through the envelope: did it finish, can I trust it, can I check it.</p>`;
+I.claimcheck=()=>`<h3>Ticket and the thing it points to</h3><div class="two"><div><span class="tag t-acc">In the message</span><pre class="code">"evidence_ids": [
+  <span class="cc">"dtc-7781"</span>,
+  <span class="cc">"sens-4410"</span>
+]</pre></div><div><span class="tag t-env">In the store</span><pre class="code">dtc-7781  P0201 injector
+          circuit, cylinder 1
+sens-4410 misfires: cyl1 142,
+          cyl2 3, cyl3 4</pre></div></div>`;
+I.consumers=()=>`<h3>Same result, four readers</h3><div class="tablewrap"><table class="tbl"><thead><tr><th>Consumer</th><th>Is</th><th>Needs</th></tr></thead><tbody>
+<tr><td>Estimator</td><td>Code</td><td>Exact part code and cylinder</td></tr>
+<tr><td>Roadside</td><td>LLM</td><td>Safe to drive? How sure?</td></tr>
+<tr><td>Human approver</td><td>Person</td><td>Evidence, doubts, cost</td></tr>
+<tr><td>Auditor</td><td>Person or agent</td><td>A trail back to raw records</td></tr></tbody></table></div>`;
+
+/* ---------- inset: walkthrough ---------- */
+const WALK=[
+ {hi:["orch","diag","e-od"],uses:"Handoff · Pass",tag:"Command message",t:"Orchestrator → Diagnostics: the brief",c:`{
+  <span class="env">"task_id": "CLM-30418/diag",</span>
+  <span class="pay">"objective": "Find the failed part",</span>
+  <span class="pay">"context": {"vin": "WDD…", "symptoms": "rough idle"},</span>
+  <span class="pay">"constraints": ["read-only", "max 8 tool calls"],</span>
+  <span class="env">"return": "DiagnosisOut v1"</span>
+}`,n:"Only what diagnostics needs. No price list, no dealer history."},
+ {hi:["diag","store","e-ds"],uses:"Agent · Evidence",tag:"Bounded context",t:"Diagnostics reads raw evidence",c:`{"id": "dtc-7781", "code": "P0201", "meaning": "Injector circuit, cyl 1"}
+{"id": "sens-4410", "misfires": {"cyl1": 142, "cyl2": 3}}
+{"id": "tsb-0912", "title": "Injector connector, batch 2023-Q2"}`,n:"Big, raw domain data. It stays inside diagnostics' world."},
+ {hi:["diag","orch","e-od"],uses:"Contract · Claim check",tag:"Document message + envelope",t:"Diagnostics → Orchestrator: the result",c:`{
+  <span class="env">"task_id": "CLM-30418/diag",</span>
+  <span class="env">"status": "done",</span>
+  <span class="env">"confidence": 0.82,</span>
+  <span class="env">"evidence_ids": [<span class="cc">"dtc-7781", "sens-4410", "tsb-0912"</span>],</span>
+  <span class="env">"caveats": "coil not ruled out",</span>
+  <span class="pay">"payload": {"system": "engine", "part_code": "INJ-01", "cylinder": 1}</span>
+}`,n:"The conclusion, not the data. The IDs are claim checks back to hop 2."},
+ {hi:["orch"],uses:"Record · Contract",tag:"Contract test at the boundary",t:"Orchestrator validates, then updates its record",c:`✓ matches DiagnosisOut v1
+✓ every evidence_id exists in the store
+✓ every evidence_id belongs to this VIN
+✓ cylinder present for a per-cylinder part
+✓ confidence ≥ 0.8 has 2+ evidence types`,n:"A failure goes back to diagnostics with the error. Nothing unchecked reaches the record."},
+ {hi:["orch","est","e-oe"],uses:"Consumer (code)",tag:"Consumer-driven contract",t:"Orchestrator → Estimator",c:`{ <span class="pay">"part_code": "INJ-01"</span>, <span class="pay">"cylinder": 1</span>, <span class="env">"confidence": 0.82</span> }`,n:"The estimator asked for these three fields to price a repair. It never sees the caveat prose."},
+ {hi:["orch","road","e-or"],uses:"Consumer (LLM)",tag:"Tolerant reader",t:"Orchestrator → Roadside",c:`{ <span class="pay">"safe_to_drive": false</span>, <span class="env">"confidence": 0.82</span> }`,n:"A different consumer, a different slice. New fields elsewhere won't break it."},
+ {hi:["aud","store","e-as"],uses:"Consumer (auditor) · Claim check",tag:"Claim check redeemed",t:"Auditor follows the evidence IDs",c:`<span class="cc">dtc-7781</span>  → fault P0201, injector circuit, cyl 1
+<span class="cc">sens-4410</span> → misfires: cyl1 142, others under 5
+<span class="cc">tsb-0912</span>  → known injector connector issue`,n:"The message stayed small; the proof was one lookup away."}];
+let ws=0;
+I.walk=()=>{ws=0;later(drawWalk);return `<div class="legend"><span><span class="env">■</span> envelope</span><span><span class="pay">■</span> payload</span><span class="cc">claim check</span></div><div id="wout"></div><div class="nav" style="margin-top:10px"><button class="btn" id="wprev">← Hop back</button><span class="pos" id="wpos"></span><button class="btn" id="wnext">Next hop →</button></div>`};
+function drawWalk(){const s=WALK[ws];$("#wout").innerHTML=`<span class="tag t-acc">${s.tag}</span> <span class="tag t-pay">uses: ${s.uses}</span><p style="margin:8px 0 0;font-weight:700">${ws+1}. ${s.t}</p><pre class="code">${s.c}</pre><p class="hint" style="margin:8px 0 0">${s.n}</p>${ws===WALK.length-1?`<p style="margin:10px 0 0">Questions forming? Probably some of these: why not send everything, why a schema, how can something so small mean anything, will this fit every car. Next part takes them one at a time.</p>`:""}`;
+ $("#wpos").textContent=(ws+1)+" / "+WALK.length;paintMap(s.hi,{focus:true});
+ $("#wprev").disabled=ws===0;$("#wnext").disabled=ws===WALK.length-1;
+ $("#wprev").onclick=()=>{ws=Math.max(0,ws-1);drawWalk()};$("#wnext").onclick=()=>{ws=Math.min(WALK.length-1,ws+1);drawWalk()};}
+
+/* ---------- insets: questions ---------- */
+I.q1=()=>{later(()=>bindChips("#q1c",i=>{const all=i===0;$("#q1o").innerHTML=`<p><b>Diagnostics receives:</b></p><pre class="code">${all?`vin, mileage, symptoms
+full claim history (14 claims)
+<span style="color:var(--warn)">dealer claim pattern: 3x injector average</span>
+<span style="color:var(--warn)">fraud risk score</span>
+price list, labour rates
+customer emails (6)`:`vin
+symptoms: "rough idle at cold start"
+constraints: read-only, 8 tool calls`}</pre>
+<div style="display:grid;grid-template-columns:auto 1fr auto;gap:6px 10px;align-items:center;font-size:13px;margin-top:10px"><span>Context size</span><div class="bar w"><i style="width:${all?95:6}%"></i></div><span style="font-family:var(--f-mono)">${all?"~18k":"~0.6k"}</span><span>Bias risk</span><div class="bar w"><i style="width:${all?80:5}%"></i></div><span style="font-family:var(--f-mono)">${all?"high":"low"}</span><span>Can it leak?</span><div class="bar w"><i style="width:${all?70:5}%"></i></div><span style="font-family:var(--f-mono)">${all?"yes":"no"}</span></div><p class="hint" style="margin:8px 0 0">Sizes are illustrative.</p>`},0));
+ return `<h3>Discover: toggle what diagnostics gets</h3>${chipRow("q1c",["Send everything","Send a brief"])}<div class="panel" id="q1o"></div>`};
+I.q2=()=>{later(()=>bindChips("#q2c",i=>{paintMap(i===0?["slab"]:["orch"],{slab:i===0});$("#q2o").innerHTML=i===0?`<pre class="code">class ClaimState(TypedDict):
+    claim: Claim
+    findings: Annotated[list, operator.add]  # reducer
+    risk_flags: Annotated[set, set.union]    # reducer
+# 3 nodes write findings in the same step;
+# reducers resolve the concurrent writes</pre><p style="margin-top:8px">Every agent can technically read every key (the dashed area on the map). You narrow it with LangGraph's <code>Send</code> and subgraphs.</p>`:`<pre class="code">record = ClaimRecord(claim=intake(text))
+diag, cov, fraud = await asyncio.gather(
+    diagnostics(vin, symptoms),
+    coverage(vin, mileage),
+    fraud_check(dealer_id, vin))
+record.findings = [diag, cov, fraud]
+record.estimate = estimate(record)</pre><p style="margin-top:8px"><b>The reducers are gone.</b> Three return values, merged by your code. You add persistence, resume and retries yourself: roughly 150 to 200 lines.</p>`},0));
+ return `<h3>Discover: same step, two designs</h3>${chipRow("q2c",["Shared state (LangGraph)","Record owned by orchestrator"])}<div id="q2o"></div>`};
+const BOARD=[
+ {t:"09:22",who:"Logs",type:"Observation",x:"TLS handshake failures spiked at 09:12, one region.",h1:0,h2:0},
+ {t:"09:23",who:"Deploys",type:"Hypothesis H1",x:"Auth deployed at 09:05 and rotated its certificate. Bad cert?",h1:.65,h2:0,flag:"A runbook stops here and rolls back."},
+ {t:"09:25",who:"Correlation",type:"Observation",x:"Only firmware 4.2 cars on carrier Y fail. A bad cert would break everyone.",h1:.3,h2:0},
+ {t:"09:27",who:"Fleet",type:"Observation",x:"Firmware 4.2 reached 60% of the region yesterday; larger TLS 1.3 handshake.",h1:.25,h2:0},
+ {t:"09:28",who:"Network",type:"Observation",x:"Carrier Y added a middlebox with a smaller packet limit.",h1:.2,h2:0},
+ {t:"09:31",who:"Critic",type:"Hypothesis H2",x:"Longer chain + bigger handshake + smaller limit: fragments dropped. Each harmless alone.",h1:.1,h2:.7},
+ {t:"09:33",who:"Test",type:"Test",x:"Route 1% to the old chain; a human approves. Success recovers.",h1:.05,h2:.95},
+ {t:"09:40",who:"On-call",type:"Action",x:"Old cert expires in two days: rollback only buys time. Three teams get follow-ups.",h1:.05,h2:.95}];
+let bs=0;
+I.q3=()=>{bs=0;later(drawBoard);return `<h3>Discover: step through the investigation board</h3><p class="hint">Remote unlock fails for 8% of connected cars in one region. Agents append typed entries; each entry wakes the agents subscribed to it.</p>
+<div style="display:grid;grid-template-columns:auto 1fr auto;gap:6px 10px;align-items:center;font-size:13px"><span>H1 bad cert</span><div class="bar"><i id="bh1" style="width:0"></i></div><span id="bh1v" style="font-family:var(--f-mono)">–</span><span>H2 combination</span><div class="bar h2"><i id="bh2" style="width:0"></i></div><span id="bh2v" style="font-family:var(--f-mono)">–</span></div>
+<div class="list" id="board"></div><p id="bflag" class="hint" style="margin:8px 0 0"></p>
+<div class="nav" style="margin-top:10px"><button class="btn" id="bprev">← Back</button><span class="pos" id="bpos"></span><button class="btn" id="bnext">Next entry →</button></div><p class="hint" style="margin:10px 0 0">The <b>Shared state</b> tab designs a board like this end to end, on a car that keeps stalling.</p>`};
+function drawBoard(){const s=BOARD[bs];
+ $("#board").innerHTML=BOARD.slice(0,bs+1).map((e,i)=>`<div class="entry${i===bs?" latest":""}"><span class="tm">${e.t}</span><span><span class="tag ${e.type.startsWith("Hyp")?"t-pay":e.type==="Action"?"t-warn":e.type==="Test"?"t-env":"t-acc"}">${e.type}</span> <b>${e.who}.</b> ${e.x}</span></div>`).join("");
+ $("#bh1").style.width=s.h1*100+"%";$("#bh2").style.width=s.h2*100+"%";$("#bh1v").textContent=s.h1?s.h1.toFixed(2):"–";$("#bh2v").textContent=s.h2?s.h2.toFixed(2):"–";
+ $("#bflag").textContent=s.flag||(bs===BOARD.length-1?"Correlation's finding decided whether Fleet and Network mattered at all. No fixed workflow could have drawn that edge in advance.":"");
+ $("#bpos").textContent=(bs+1)+" / "+BOARD.length;$("#bprev").disabled=bs===0;$("#bnext").disabled=bs===BOARD.length-1;
+ $("#bprev").onclick=()=>{bs=Math.max(0,bs-1);drawBoard()};$("#bnext").onclick=()=>{bs=Math.min(BOARD.length-1,bs+1);drawBoard()};}
+const HOPS=["Probably the injector on cylinder 1, though the coil can't be ruled out; it was replaced 6 months ago.","Likely an injector fault on cylinder 1.","Injector fault, cylinder 1.","Confirmed injector failure."];
+let hop=0;
+const PAIRS=[
+ {k:"→ code",who:"Diagnostics → estimator (code)",rule:"Strict: every field typed. Free text only in caveats."},
+ {k:"→ LLM that decides",who:"Triage → refund agent",rule:"Key facts as fields (amount, verified); a free-text summary for the rest."},
+ {k:"→ LLM that drafts",who:"Research → blog writer",rule:"Light: one or two required fields, like sources. The rest is free."}];
+I.q4=()=>{hop=0;later(()=>{drawHop();bindChips("#q4p",i=>{$("#q4po").innerHTML=`<p><b>${PAIRS[i].who}</b></p><p>${PAIRS[i].rule}</p>`},0)});
+ return `<h3>Discover: pass the result through summarising hops</h3><div class="two"><div><span class="tag t-warn">Free text</span><pre class="code" id="hf" style="white-space:pre-wrap"></pre></div><div><span class="tag t-acc">Contract</span><pre class="code">{"part_code": "INJ-01",
+ "cylinder": 1,
+ "confidence": 0.82,
+ <span class="env">"caveats": "coil not ruled out"</span>}</pre></div></div>
+<div class="nav" style="margin-top:10px"><button class="btn" id="hreset">Reset</button><span class="pos" id="hpos"></span><button class="btn" id="hnext">Pass to next agent →</button></div><p class="fb" id="hfb"></p>
+<h3 style="margin-top:14px">How strict? Depends on the reader</h3>${chipRow("q4p",PAIRS,p=>p.k)}<div class="panel" id="q4po"></div>`};
+function drawHop(){$("#hf").textContent=`"${HOPS[hop]}"`;$("#hpos").textContent="hop "+hop+" / 3";$("#hnext").disabled=hop===3;
+ $("#hfb").innerHTML=hop===0?"":hop<3?`The hedge is ${hop===1?"weakening":"gone"}. The contract still carries it in a field.`:`<b>The doubt became certainty.</b> A field can be required; a sentence can't.`;
+ $("#hnext").onclick=()=>{hop=Math.min(3,hop+1);drawHop()};$("#hreset").onclick=()=>{hop=0;drawHop()};}
+const FIELDS={
+ claim_id:{m:"Which claim this diagnosis belongs to.",r:"Must match the claim in the record."},
+ vin:{m:"The car the evidence came from.",r:"Must match the claim's VIN."},
+ part_code:{m:"Most likely failed part, from a fixed catalog the estimator prices from.",r:"INJ-01 injector (1.5 h labour), COIL-02 coil (0.5 h), SENS-03 crank sensor (1.0 h)."},
+ cylinder:{m:"Which cylinder, 1 to 6.",r:"Required for injector and coil; empty for the sensor."},
+ confidence:{m:"How strongly the evidence supports part_code.",r:"0.8+: estimate automatically. 0.5 to 0.79: estimate, then human review. Below 0.5: back to the dealer."},
+ evidence_ids:{m:"Claim checks into the evidence store.",r:"Every ID must exist and belong to this VIN.",ev:true},
+ alternatives:{m:"Parts not ruled out.",r:"Must not contain part_code itself."},
+ caveats:{m:"Doubts numbers can't express.",r:"Required. The only free text in the contract."}};
+const EVID=`dtc-7781  fault P0201: injector circuit, cyl 1
+ff-2231   freeze frame: 12°C, 780 rpm, cyl 1 trim +18%
+sens-4410 misfires: cyl1 142, cyl2 3, cyl3 4, cyl4 2
+tsb-0912  bulletin: injector connector, batch 2023-Q2
+svc-1187  service: plugs and coils replaced 2026-05-02`;
+I.q5=()=>{const k=f=>`<span class="fieldkey" tabindex="0" data-f="${f}">"${f}"</span>`;
+ later(()=>{$$(".fieldkey").forEach(e=>{const go=()=>{$$(".fieldkey").forEach(x=>x.classList.remove("on"));e.classList.add("on");const f=FIELDS[e.dataset.f];$("#fout").innerHTML=`<p><b>${e.dataset.f}</b>: ${f.m}</p><p><span class="tag t-acc">Rule</span> ${f.r}</p>${f.ev?`<pre class="code">${EVID}</pre>`:""}`};e.onclick=go;e.onkeydown=ev=>{if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();go()}}});$('.fieldkey[data-f="evidence_ids"]').click()});
+ return `<h3>Discover: tap each field</h3><pre class="code">{
+  ${k("claim_id")}: "CLM-30418",
+  ${k("vin")}: "WDD…",
+  ${k("part_code")}: "INJ-01",
+  ${k("cylinder")}: 1,
+  ${k("confidence")}: 0.82,
+  ${k("evidence_ids")}: ["dtc-7781", "ff-2231",
+                   "sens-4410", "tsb-0912"],
+  ${k("alternatives")}: ["COIL-02"],
+  ${k("caveats")}: "Coils replaced 6 months ago;
+              coil on cyl 1 not tested."
+}</pre><div class="panel" id="fout" style="margin-top:10px"></div>`};
+const VAR={engine:`<span class="pay">"detail": {"system": "engine", "part_code": "INJ-01",
+           "cylinder": 1}</span>`,battery:`<span class="pay">"detail": {"system": "battery", "module_id": 7,
+           "cell_voltage_spread_mv": 180,
+           "thermal_event": false}</span>`,brakes:`<span class="pay">"detail": {"system": "brakes", "axle": "front",
+           "side": "left", "pad_wear_mm": 1.8}</span>`};
+I.q6=()=>{later(()=>bindChips("#q6c",i=>{const s=["engine","battery","brakes"][i];$("#q6o").innerHTML=`<pre class="code">{
+  <span class="env">"claim_id": "CLM-30418",</span>
+  <span class="env">"confidence": 0.82,</span>
+  <span class="env">"evidence_ids": ["…"],</span>
+  <span class="env">"caveats": "…",</span>
+  <span class="env">"safe_to_drive": ${s==="battery"?"true":"false"},</span>
+  ${VAR[s]}
+}</pre><div class="two" style="margin-top:10px"><div class="panel"><b>Estimator reads</b><br><code>detail</code> → price for this system</div><div class="panel"><b>Roadside reads</b><br><code>safe_to_drive</code>, <code>confidence</code></div></div>`},0));
+ return `<h3>Discover: switch the vehicle system</h3><div class="legend"><span><span class="env">■</span> never changes</span><span><span class="pay">■</span> shape picked by <code>system</code></span></div>${chipRow("q6c",["Engine","EV battery","Brakes"])}<div id="q6o"></div>`};
+const DIMS=[["firmware","4.2",41200,0.19],["carrier","Carrier Y",18500,0.31],["model_year","2023",26700,0.07]];
+const LEV=["Fixed per agent: Fleet always returns FleetFinding. The common case for a narrow agent.","Chosen from a set: the coordinator picks FleetFinding or FleetCount. Every option exists in code.","Written at runtime: the coordinator invents the shape. Format checked, meaning not. Fine only when the coordinator LLM is the reader."];
+I.q7=()=>{later(()=>{bindChips("#q7c",i=>{const d=DIMS[i];$("#q7o").innerHTML=`{"cohorts": [{
+  "dimension": <span class="pay">"${d[0]}"</span>,
+  "value": <span class="pay">"${d[1]}"</span>,
+  "cars": <span class="pay">${d[2].toLocaleString("en-US")}</span>,
+  "failure_rate": <span class="pay">${d[3]}</span>
+}]}`},0);bindChips("#q7l",i=>{$("#q7lo").textContent=LEV[i]},0)});
+ return `<h3>Discover: ask the Fleet agent three questions</h3><p class="hint">Watch the keys. Only the purple values change.</p>${chipRow("q7c",["Correlate with firmware?","With carrier?","With model year?"])}<pre class="code" id="q7o"></pre>
+<h3 style="margin-top:14px">Three levels of payload</h3>${chipRow("q7l",["1 · Fixed","2 · Chosen","3 · Invented"])}<div class="panel" id="q7lo"></div>`};
+const Q=[
+ {q:"Which part failed?",who:"warranty",v:"Holds",c:"t-good",axis:"Baseline",hi:["orch","diag","est","e-od","e-oe"],diff:`  "part_code": "INJ-01",
+  "cylinder": 1
+  <span class="hint">no change</span>`},
+ {q:"Why is my car shaking?",who:"customer chat",v:"Holds",c:"t-good",axis:"Answer kind: explain",hi:["orch","diag","e-od"],diff:`<span class="hint">no change: a chat agent turns
+the same result into plain words</span>`},
+ {q:"Does this match an open recall?",who:"recall team",v:"Holds",c:"t-good",axis:"Answer kind: decide",hi:["orch","diag","e-od"],diff:`<span class="hint">no change: recall code matches
+part_code + vin itself</span>`},
+ {q:"Why was my claim rejected?",who:"dealer",v:"Holds",c:"t-good",axis:"Answer kind: explain",hi:["aud","store","e-as"],diff:`<span class="hint">no change: alternatives, caveats
+and evidence_ids explain it</span>`},
+ {q:"Safe to drive 40 km?",who:"roadside",v:"Small add",c:"t-acc",axis:"Answer kind: decide",hi:["orch","road","e-or"],diff:`  "confidence": 0.82,
+<span class="add">+ "safe_to_drive": false,</span>
+  "caveats": "…"`},
+ {q:"Light came on twice last week, nothing now",who:"intermittent",v:"Small add",c:"t-acc",axis:"Certainty and time",hi:["diag"],diff:`<span class="del">- "status": "done",</span>
+<span class="add">+ "status": "partial",</span>
+<span class="add">+ "next_tests": ["cold-start scan"],</span>
+  "confidence": 0.35`},
+ {q:"Range dropped 30%",who:"EV owner",v:"New variant",c:"t-acc",axis:"Domain",hi:["diag"],diff:`  detail: EngineDetail
+<span class="add">        | BatteryDetail</span>
+<span class="add">  # module_id, cell_voltage_spread_mv,</span>
+<span class="add">  # thermal_event</span>`},
+ {q:"Screen reboots since the update",who:"software",v:"Unknown path",c:"t-acc",axis:"Domain and certainty",hi:["human"],diff:`<span class="add">+ detail: … | UnknownDetail</span>
+<span class="add">  # {"system": "unknown", "description": "…"}</span>
+<span class="add">  # always low confidence → human</span>
+  # recurs? promote to SoftwareDetail`},
+ {q:"Injector and brake pads are both bad",who:"two faults",v:"Breaks",c:"t-warn",axis:"Cardinality",bad:["diag"],diff:`<span class="del">- "part_code": "INJ-01",</span>
+<span class="del">- "cylinder": 1,</span>
+<span class="add">+ "findings": [</span>
+<span class="add">+   {"system": "engine", "part_code": "INJ-01", "cylinder": 1},</span>
+<span class="add">+   {"system": "brakes", "axle": "front", "pad_wear_mm": 1.8}</span>
+<span class="add">+ ],</span>`},
+ {q:"Which fleet cars need injectors in 3 months?",who:"fleet manager",v:"Wrong agent",c:"t-warn",axis:"Scope and time",bad:["diag"],hi:["store"],diff:`<span class="hint">DiagnosisOut unchanged. A new agent:</span>
+<span class="add">FleetForecast {</span>
+<span class="add">  "vins": [...], "horizon_days": 90,</span>
+<span class="add">  "predicted": [{vin, part, probability}]</span>
+<span class="add">}</span>  <span class="hint"># same evidence store</span>`}];
+I.q8=()=>{later(()=>bindChips("#q8c",i=>{const q=Q[i];$("#q8o").innerHTML=`<p><span class="verdict ${q.c}">${q.v}</span> <span class="hint">asked by ${q.who} · axis: ${q.axis}</span></p><p style="margin-top:6px"><b>v1 → v2</b></p><pre class="code">${q.diff}</pre>`;paintMap(q.hi||[],{bad:q.bad,focus:true})},8));
+ return `<h3>Discover: tap each query, see the fix</h3>${chipRow("q8c",Q,q=>q.q)}<div class="panel" id="q8o"></div>
+<h3 style="margin-top:14px">The axes the ten tested</h3><div class="tablewrap"><table class="tbl"><thead><tr><th>Axis</th><th>Values</th><th>Design choice up front</th></tr></thead><tbody>
+<tr><td>Cardinality</td><td>one / several</td><td><code>findings</code> as a list</td></tr>
+<tr><td>Scope</td><td>one car / many</td><td>one car; fleets go elsewhere</td></tr>
+<tr><td>Time</td><td>now / past / future</td><td>now and past; status partial</td></tr>
+<tr><td>Domain</td><td>engine / battery / …</td><td>typed variants + unknown</td></tr>
+<tr><td>Certainty</td><td>sure / partial / unknown</td><td>status + confidence bands</td></tr>
+<tr><td>Answer kind</td><td>diagnose / decide / explain</td><td>consumers slice the result</td></tr></tbody></table></div>
+<p class="hint" style="margin:10px 0 0">Then: mine real queries from today's process, cluster by the kind of answer, design for the top clusters, send the rest to <code>unknown</code>, promote what recurs.</p>`};
+const EX=["My car shakes at cold start","Is it safe to drive to the dealer?","Is there a recall on my VIN?","Write me a poem about my car","Battery range dropped a lot","Book me a table for dinner"];
+function classify(t){const s=t.toLowerCase();
+ if(/safe|drive to|tow/.test(s))return["safe_to_drive","Roadside pipeline: DriveSafetyOut"];
+ if(/recall|campaign/.test(s))return["recall_check","Recall pipeline: part and VIN match"];
+ if(/shak|idle|noise|light|range|battery|brake|misfire|vibrat|engine|smoke|warning|squeal/.test(s))return["diagnose","Diagnostics pipeline: DiagnosisOut"];
+ return["unsupported","A polite reply or a human. The agents never improvise."];}
+I.q9=()=>{later(()=>{const run=t=>{const [i,r]=classify(t);$("#iout").innerHTML=`<pre class="code">{
+  "intent": <span style="color:${i==="unsupported"?"var(--warn)":"var(--pay)"};font-weight:600">"${i}"</span>,
+  "vin": "WDD…",
+  "symptoms": ${i==="unsupported"?"null":JSON.stringify(t)}
+}</pre><p style="margin-top:8px"><b>Route:</b> ${r}</p>`;paintMap(i==="unsupported"?["req","intake","human","e-ri","e-io"]:i==="safe_to_drive"?["req","intake","orch","road","e-ri","e-io","e-or"]:["req","intake","orch","diag","e-ri","e-io","e-od"],{focus:true});};
+ $$("#ex .chip").forEach(b=>b.onclick=()=>{$$("#ex .chip").forEach(x=>x.classList.remove("on"));b.classList.add("on");$("#itext").value=b.textContent;$("#ierr").hidden=true;run(b.textContent)});
+ $("#iform").onsubmit=e=>{e.preventDefault();const v=$("#itext").value.trim();if(!v){$("#ierr").hidden=false;return}$$("#ex .chip").forEach(x=>x.classList.remove("on"));run(v)};
+ $("#itext").oninput=()=>{$("#ierr").hidden=true};$("#ex .chip").click();});
+ return `<h3>Discover: try the front door</h3><p class="hint">Intake now sits on top of the map. Pick an example or type your own; a keyword stand-in plays the classifier.</p><div class="chips" id="ex">${EX.map(e=>`<button class="chip">${e}</button>`).join("")}</div>
+<form id="iform" style="display:flex;gap:8px;align-items:flex-start"><div style="flex:1;min-width:0"><input type="text" id="itext" aria-label="A request" placeholder="My brakes squeal when stopping"><p class="err" id="ierr" hidden>Type a request first.</p></div><button class="btn primary" type="submit">Classify</button></form><div id="iout" style="margin-top:10px"></div>`};
+const SK=[["get_balance",`in:  {"account": "…"}
+out: {"available": 48210.55, "currency": "INR"}`],["pay_bill",`in:  {"biller_id": "ELEC-KA-01", "amount": 2340.00,
+      "from_account": "…"}
+out: {"txn_id": "…",
+      "status": "paid" | "scheduled" | "rejected"}`],["spending_summary",`in:  {"months": 3}
+out: {"income": […], "spend_by_category": […]}`],["raise_dispute",`in:  {"txn_id": "…", "reason": "not_received"}
+out: {"case_id": "…", "status": "opened"}`]];
+I.q10=()=>{later(()=>bindChips("#q10c",i=>{$("#q10o").textContent=SK[i][1]},1));
+ return `<h3>Discover: the bank's Agent Card</h3><p class="hint">A menu of skills, each with its own small contract.</p>${chipRow("q10c",SK,s=>s[0])}<pre class="code" id="q10o"></pre>
+<h3 style="margin-top:14px">"Pay my electricity bill, and can I afford a holiday?"</h3><div class="list">
+<div class="entry"><span class="tm">1</span><span>Your agent reads the card and sends <code>pay_bill</code>.</span></div>
+<div class="entry"><span class="tm">2</span><span>Bank replies <span class="tag t-warn">input-required</span>: confirm with the OTP. Your agent asks you.</span></div>
+<div class="entry"><span class="tm">3</span><span>OTP sent; result <code>"status": "paid"</code>.</span></div>
+<div class="entry latest"><span class="tm">4</span><span>No holiday skill. Your agent calls <code>spending_summary</code> and reasons with what <i>it</i> knows about your plans.</span></div></div>`};
+I.q11=()=>`<h3>Discover: the patterns on the map</h3><p class="hint">The purple tags on the map are the service-integration patterns you've been using.</p><div class="tablewrap"><table class="tbl"><thead><tr><th>Service pattern</th><th>In your agents</th></tr></thead><tbody>
+<tr><td>Shared Database vs Messaging</td><td>Board vs briefs and results</td></tr>
+<tr><td>Command / Document message</td><td>Brief / result</td></tr>
+<tr><td>Claim Check</td><td><code>evidence_ids</code></td></tr>
+<tr><td>Envelope Wrapper</td><td>Fixed envelope + payload</td></tr>
+<tr><td>Canonical Data Model</td><td>The mega-schema to avoid</td></tr>
+<tr><td>Consumer-Driven Contracts</td><td>Estimator and roadside slices</td></tr>
+<tr><td>Tolerant Reader</td><td>Roadside ignoring new fields</td></tr>
+<tr><td>Bounded context, Published Language</td><td>Each agent's world; Agent Card skills</td></tr></tbody></table></div>
+<h3 style="margin-top:14px">Five twists services never had</h3><div class="list">
+<div class="entry"><span class="tm">1</span><span><b>The sender interprets.</b> Hence <code>confidence</code> and <code>caveats</code>.</span></div>
+<div class="entry"><span class="tm">2</span><span><b>The receiver may be an LLM.</b> Loose structure is fine where only an LLM reads.</span></div>
+<div class="entry"><span class="tm">3</span><span><b>Messages can carry instructions.</b> Fields keep data apart from commands.</span></div>
+<div class="entry"><span class="tm">4</span><span><b>Contracts can be invented at runtime</b> by a coordinator.</span></div>
+<div class="entry"><span class="tm">5</span><span><b>Evidence can be hallucinated.</b> Validation checks every ID is real.</span></div></div>`;
+
+/* ---------- discovery + ledger ---------- */
+const revealed=new Set();
+function renderQuestion(s){const g=s.guess;
+ return `<div class="card"><div class="kicker" style="margin-bottom:4px">Predict first</div><p class="question">${g.q}</p><div class="guesses" id="guesses">${g.o.map((o,i)=>`<button class="guess" data-i="${i}">${o}</button>`).join("")}</div><p class="fb" id="gfb" hidden></p></div>`;}
+function bindGuess(s){$$("#guesses .guess").forEach(b=>b.onclick=()=>{const i=+b.dataset.i;$$("#guesses .guess").forEach(x=>{x.classList.remove("right","wrong");if(+x.dataset.i===s.guess.a)x.classList.add("right")});if(i!==s.guess.a)b.classList.add("wrong");const fb=$("#gfb");fb.hidden=false;fb.innerHTML=(i===s.guess.a?"<b>Right.</b> ":"<b>Not quite.</b> ")+s.guess.fb+" Now check it below.";});}
+function renderLearn(s){const w=$("#learnwrap");if(!s.learn){w.innerHTML="";return}
+ if(revealed.has(s.key)){w.innerHTML=`<div class="learn"><div class="lk">Discovery</div><p>${s.learn}</p></div>`;return}
+ w.innerHTML=`<button class="btn" id="reveal" style="width:100%">Reveal what we learned</button>`;
+ $("#reveal").onclick=()=>{revealed.add(s.key);renderLearn(s);renderLedger(s.key)};}
+function renderLedger(nowKey){const basics=S.filter((s,i)=>s.part===0&&i<=cur);const disc=S.filter(s=>s.part===2&&revealed.has(s.key));
+ $("#ledger").innerHTML=`<h4>Vocabulary</h4>${basics.length?`<ol>${basics.map(s=>`<li class="${s.key===nowKey?"now":""}">${s.def}</li>`).join("")}</ol>`:""}<h4>Discoveries</h4>${disc.length?`<ol>${disc.map(s=>`<li class="${s.key===nowKey?"now":""}">${s.learn}</li>`).join("")}</ol>`:`<p class="empty">${cur<IDX.q1?"These appear as you answer the questions in Part 3.":"Reveal a discovery to add it here."}</p>`}`;}
+
+/* ---------- render ---------- */
+function render(n,fromHash){cur=Math.max(0,Math.min(S.length-1,n));const s=S[cur];
+ const partSteps=S.filter(x=>x.part===s.part);const within=partSteps.indexOf(s)+1;
+ $("#kicker").textContent=`Part ${s.part+1} · ${PARTS[s.part]}${s.part===1?"":` · ${within} of ${partSteps.length}`}`;
+ $("#title").textContent=s.part===2?"Q"+within+". "+s.t:s.t;
+ $("#body").innerHTML=(s.part===2?renderQuestion(s):"")+ (s.b||"");
+ $("#inset").innerHTML=I[s.inset]();
+ $("#mapcap").textContent=s.cap;$("#mapstep").textContent=(cur+1)+"/"+S.length;$("#pos").textContent=(cur+1)+" / "+S.length;
+ paintMap(s.hi||[],{dimAll:s.dimAll});prevCur=cur;
+ if(s.part===2)bindGuess(s);
+ renderLearn(s);renderLedger(s.key);
+ $$("#parts .segs button").forEach(b=>{const i=+b.dataset.i;b.className=i<cur?"done":i===cur?"cur":"";b.setAttribute("aria-current",i===cur?"step":"false")});
+ $$("#parts .part").forEach((p,i)=>p.classList.toggle("active",i===s.part));
+ $("#prev").disabled=cur===0;$("#next").textContent=cur===S.length-1?"Start over":cur===IDX.a8?"To the example →":cur===IDX.b1?"To the questions →":"Next →";
+ if(!fromHash&&!$("#view-walk").hidden){try{history.replaceState(null,"","#"+s.key)}catch(e){}}}
+$("#parts").innerHTML=PARTS.map((p,pi)=>`<div class="part"><span class="pl">${pi+1} · ${p}</span><div class="segs">${S.map((s,i)=>s.part===pi?`<button data-i="${i}" aria-label="${s.t}" title="${s.t}"></button>`:"").join("")}</div></div>`).join("");
+$$("#parts .segs button").forEach(b=>b.onclick=()=>{render(+b.dataset.i);toTop()});
+function toTop(){if(window.innerWidth<900)$("#view-walk .mapcard").scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"start"})}
+$("#prev").onclick=()=>{render(cur-1);toTop()};
+$("#next").onclick=()=>{render(cur===S.length-1?0:cur+1);toTop()};
+document.addEventListener("keydown",e=>{if(e.target.matches("input")||$("#view-walk").hidden)return;if(e.key==="ArrowRight")render(cur+1);if(e.key==="ArrowLeft")render(cur-1)});
+const isDomainHash=()=>{const k=location.hash.slice(1);return k==="domain"||k.startsWith("d-")};
+const hashIdx=()=>{const k=location.hash.slice(1);return k in IDX?IDX[k]:0};
+window.addEventListener("hashchange",()=>{if(isDomainHash()){showView("domain",true);return}if(location.hash==="#das"){showView("das",true);return}if(window.isShareHash&&window.isShareHash())return;showView("walk",true);const n=hashIdx();if(n!==cur)render(n,true)});
+render(hashIdx(),true);
+</script>
+<script>
+/* ================= DOMAIN TAB ================= */
+const DSEC=[
+{id:"d-cast",nav:"Who's who",h:"Who's who in car service",
+ html:`<p class="lead">A car fault touches more people than the driver and the workshop. Knowing who pays and who decides explains most warranty rules.</p>
+<svg class="mini" viewBox="0 0 640 300" role="img" aria-label="Customer, dealer, manufacturer, supplier, regulator and roadside provider and how they connect" style="max-width:640px">
+<g><rect x="20" y="120" width="120" height="56" rx="8"/><text x="80" y="144" text-anchor="middle" style="font-weight:700">Customer</text><text x="80" y="162" text-anchor="middle" style="fill:var(--muted);font-size:10px">owns or leases the car</text></g>
+<g><rect x="220" y="120" width="170" height="56" rx="8"/><text x="305" y="144" text-anchor="middle" style="font-weight:700">Dealer / workshop</text><text x="305" y="162" text-anchor="middle" style="fill:var(--muted);font-size:10px">advisor, technician</text></g>
+<g><rect x="470" y="120" width="150" height="56" rx="8"/><text x="545" y="144" text-anchor="middle" style="font-weight:700">Manufacturer</text><text x="545" y="162" text-anchor="middle" style="fill:var(--muted);font-size:10px">OEM, warranty dept</text></g>
+<g><rect x="470" y="226" width="150" height="50" rx="8"/><text x="545" y="249" text-anchor="middle" style="font-weight:700">Supplier</text><text x="545" y="265" text-anchor="middle" style="fill:var(--muted);font-size:10px">made the part</text></g>
+<g><rect x="470" y="20" width="150" height="50" rx="8"/><text x="545" y="43" text-anchor="middle" style="font-weight:700">Regulator</text><text x="545" y="59" text-anchor="middle" style="fill:var(--muted);font-size:10px">safety, emissions</text></g>
+<g><rect x="20" y="20" width="120" height="50" rx="8"/><text x="80" y="43" text-anchor="middle" style="font-weight:700">Roadside</text><text x="80" y="59" text-anchor="middle" style="fill:var(--muted);font-size:10px">tow or fix on site</text></g>
+<g><rect x="20" y="226" width="120" height="50" rx="8"/><text x="80" y="249" text-anchor="middle" style="font-weight:700">Fleet manager</text><text x="80" y="265" text-anchor="middle" style="fill:var(--muted);font-size:10px">many cars, one owner</text></g>
+<path d="M140 148H218"/><text x="179" y="140" text-anchor="middle" style="fill:var(--muted);font-size:9.5px">complaint</text>
+<path d="M390 148H468"/><text x="429" y="140" text-anchor="middle" style="fill:var(--muted);font-size:9.5px">claim</text>
+<path d="M545 176V224"/><text x="551" y="204" style="fill:var(--muted);font-size:9.5px">recovery</text>
+<path d="M545 70V118"/><text x="551" y="98" style="fill:var(--muted);font-size:9.5px">recalls</text>
+<path d="M80 70V118"/><path d="M80 176V224"/>
+</svg>
+<div class="tablewrap" style="margin-top:8px"><table class="tbl"><thead><tr><th>Role</th><th>What they do</th><th>What they care about</th></tr></thead><tbody>
+<tr><td><b>Customer</b></td><td>Notices the problem, brings the car in</td><td>Safety, cost, time without the car</td></tr>
+<tr><td><b>Service advisor</b></td><td>Writes the complaint on a repair order</td><td>Getting the customer's words right</td></tr>
+<tr><td><b>Technician</b></td><td>Diagnoses and repairs</td><td>Finding the cause, getting paid for the time</td></tr>
+<tr><td><b>Dealer</b></td><td>Independent business that sells and services the brand</td><td>Approved claims, paid quickly</td></tr>
+<tr><td><b>Manufacturer (OEM)</b></td><td>Pays valid warranty claims; issues bulletins and recalls</td><td>Paying only for real defects; spotting quality trends</td></tr>
+<tr><td><b>National sales company</b></td><td>The OEM's organisation in one country; often runs warranty there</td><td>Local rules, local dealer network</td></tr>
+<tr><td><b>Supplier</b></td><td>Made the failed part (injector, battery cell)</td><td>Whether the OEM can charge the cost back to them</td></tr>
+<tr><td><b>Regulator</b></td><td>Enforces safety and emissions rules</td><td>Recalls done, defects reported</td></tr>
+<tr><td><b>Roadside provider</b></td><td>Responds to breakdowns</td><td>Fix on site, or tow?</td></tr>
+<tr><td><b>Fleet manager</b></td><td>Runs many cars for a company</td><td>Uptime, total cost, planning ahead</td></tr></tbody></table></div>
+<p class="why"><b>Why it matters for the design:</b> the dealer is paid by the claim, and the OEM pays it. Their incentives differ, which is exactly why a fraud check exists and why it must not decide alone.</p>`},
+{id:"d-car",nav:"The car as a system",h:"The car as a network of computers",
+ html:`<p class="lead">A modern car is dozens of small computers, called <b>ECUs</b> (electronic control units), each running one area and talking over in-car networks.</p>
+<div class="say"><div><span class="sk">In simple words</span>Each part of the car has its own small computer. They chat over shared wires, and a central "gateway" passes messages between groups.</div><div><span class="sk">In domain words</span>ECUs on CAN (and LIN, FlexRay, automotive Ethernet) buses; a central gateway segments powertrain, chassis, body and infotainment domains. Premium cars carry 70 to 100+ ECUs.</div></div>
+<svg class="mini" viewBox="0 0 640 260" role="img" aria-label="A gateway connects powertrain, chassis, body, infotainment and telematics ECUs; the diagnostic port connects to the gateway" style="max-width:640px">
+<rect x="250" y="105" width="140" height="50" rx="8" style="stroke:var(--accent);stroke-width:2"/><text x="320" y="128" text-anchor="middle" style="font-weight:700">Gateway</text><text x="320" y="144" text-anchor="middle" style="fill:var(--muted);font-size:10px">routes between buses</text>
+<rect x="20" y="20" width="170" height="56" rx="8"/><text x="105" y="42" text-anchor="middle" style="font-weight:700">Powertrain</text><text x="105" y="60" text-anchor="middle" style="fill:var(--muted);font-size:10px">engine ECU, transmission</text>
+<rect x="20" y="184" width="170" height="56" rx="8"/><text x="105" y="206" text-anchor="middle" style="font-weight:700">Chassis</text><text x="105" y="224" text-anchor="middle" style="fill:var(--muted);font-size:10px">ABS/ESP, steering, brakes</text>
+<rect x="450" y="20" width="170" height="56" rx="8"/><text x="535" y="42" text-anchor="middle" style="font-weight:700">Body</text><text x="535" y="60" text-anchor="middle" style="fill:var(--muted);font-size:10px">locks, lights, climate</text>
+<rect x="450" y="184" width="170" height="56" rx="8"/><text x="535" y="206" text-anchor="middle" style="font-weight:700">Telematics unit</text><text x="535" y="224" text-anchor="middle" style="fill:var(--muted);font-size:10px">cellular modem, remote</text>
+<rect x="250" y="10" width="140" height="44" rx="8"/><text x="320" y="36" text-anchor="middle" style="font-weight:700">Infotainment</text>
+<rect x="250" y="206" width="140" height="44" rx="8"/><text x="320" y="226" text-anchor="middle" style="font-weight:700">OBD port</text><text x="320" y="241" text-anchor="middle" style="fill:var(--muted);font-size:10px">where scanners plug in</text>
+<path d="M190 48H220V120H248"/><path d="M190 212H220V140H248"/><path d="M450 48H420V120H392"/><path d="M450 212H420V140H392"/><path d="M320 54V103"/><path d="M320 157V204"/>
+</svg>
+<p>The main systems, which also map to how faults and warranties are grouped:</p>
+<div class="tablewrap"><table class="tbl"><thead><tr><th>System</th><th>Includes</th><th>Typical faults</th></tr></thead><tbody>
+<tr><td><b>Powertrain</b></td><td>Engine, fuel injection, ignition, transmission, exhaust</td><td>Misfires, injector faults, transmission slips</td></tr>
+<tr><td><b>Chassis</b></td><td>Brakes, suspension, steering, ABS/ESP</td><td>Wheel speed sensor, worn pads, noises</td></tr>
+<tr><td><b>Body and comfort</b></td><td>Doors, locks, windows, lighting, climate</td><td>Locks, water leaks, rattles</td></tr>
+<tr><td><b>Electrical and network</b></td><td>12 V battery, wiring, gateway, buses</td><td>Lost communication between ECUs, flat battery</td></tr>
+<tr><td><b>High voltage (EV, hybrid)</b></td><td>Traction battery, motor, inverter, charger</td><td>Cell imbalance, charging faults, range loss</td></tr>
+<tr><td><b>Infotainment and telematics</b></td><td>Screen, navigation, connectivity, remote services</td><td>Reboots after updates, remote commands failing</td></tr></tbody></table></div>
+<p class="why"><b>Why it matters:</b> this list is where the contract's <code>system</code> variants come from. Engine, battery and brakes were not invented by us; they follow how the car itself is divided.</p>`},
+{id:"d-faults",nav:"How a car reports faults",h:"How a car reports a fault",
+ html:`<p class="lead">ECUs constantly check their sensors. When a reading is out of range for long enough, the ECU stores a <b>fault code</b> and may light a warning lamp.</p>
+<div class="say"><div><span class="sk">In simple words</span>The car keeps a diary of what went wrong, with a code for each problem and a snapshot of the conditions when it happened.</div><div><span class="sk">In domain words</span>Diagnostic trouble codes (DTCs) per OBD-II / ISO 15031, with freeze-frame data; the malfunction indicator lamp (MIL, "check engine") for emissions-relevant faults; read via the OBD port or OEM diagnostic tools.</div></div>
+<div class="tablewrap"><table class="tbl"><thead><tr><th>Term</th><th>What it means</th><th>Watch out</th></tr></thead><tbody>
+<tr><td><b>DTC</b></td><td>A 5-character fault code, e.g. P0201</td><td>A code names the symptom the ECU saw, not the broken part</td></tr>
+<tr><td><b>Pending code</b></td><td>Seen once; not yet confirmed</td><td>May clear itself; weak evidence</td></tr>
+<tr><td><b>Confirmed code</b></td><td>Seen across drive cycles; lamp may be on</td><td>Strong evidence of a symptom</td></tr>
+<tr><td><b>Freeze frame</b></td><td>Sensor snapshot when the code was set</td><td>Shows conditions: cold engine, rpm, load</td></tr>
+<tr><td><b>Live data</b></td><td>Sensor values right now</td><td>Intermittent faults may not show</td></tr>
+<tr><td><b>Misfire counter</b></td><td>Misfires counted per cylinder</td><td>Concentrated on one cylinder points to one component</td></tr>
+<tr><td><b>Fuel trim</b></td><td>How much the engine corrects fuel; + means adding fuel</td><td>+18% on one cylinder suggests it isn't getting enough</td></tr>
+<tr><td><b>Warning lamps</b></td><td>Red: stop safely. Amber: check soon</td><td>Drives the roadside "safe to drive" answer</td></tr></tbody></table></div>
+<h3 style="font-family:var(--f-display);font-size:17px;margin:16px 0 4px">Decode a fault code</h3><p class="small">Try P0201, P0301, P0300, P0420, U0100, C0035 or your own.</p>
+<form id="dtcform" style="display:flex;gap:8px;align-items:flex-start;max-width:420px"><div style="flex:1;min-width:0"><input type="text" id="dtcin" maxlength="5" aria-label="Fault code" placeholder="P0201" style="font-family:var(--f-mono);text-transform:uppercase"><p class="err" id="dtcerr" hidden></p></div><button class="btn primary" type="submit">Decode</button></form>
+<div class="panel" id="dtcout" style="margin-top:10px"></div>
+<p class="why"><b>Why it matters:</b> "P0201" says the injector <i>circuit</i> on cylinder 1 looked wrong. The injector, its connector or its wiring could be at fault. That's why a diagnosis needs several kinds of evidence before high confidence.</p>`},
+{id:"d-vin",nav:"Reading a VIN",h:"Reading a VIN",
+ html:`<p class="lead">Every car has a 17-character <b>vehicle identification number</b>. It is the key every system uses: warranty, recalls, parts, telematics.</p>
+<p class="small">Tap the characters. This VIN is made up for illustration. Letters I, O and Q never appear, to avoid confusion with 1 and 0.</p>
+<div class="vin" id="vin"></div><div class="panel" id="vinout"></div>
+<p class="why"><b>Why it matters:</b> the VIN tells you the model, engine and plant, so it decides which parts, labour times and bulletins apply. A contract that carries the VIN lets every check run against the right car.</p>`},
+{id:"d-diag",nav:"How technicians diagnose",h:"How a technician diagnoses",
+ html:`<p class="lead">Workshops follow a disciplined loop, summed up as the <b>three Cs</b>: complaint, cause, correction. Each is written on the repair order.</p>
+<div class="chips" id="dgc"></div><div class="panel" id="dgo"></div>
+<p class="why"><b>Why it matters:</b> "coil not ruled out" in our contract is exactly what a technician would resolve with a <b>swap test</b>. A good diagnosis agent should say which test would settle its doubt, not only that a doubt exists.</p>`},
+{id:"d-escalation",nav:"When the dealer can't fix it",h:"When the dealer can't fix it",
+ html:`<p class="lead">Most repairs end at the dealer. A few don't: the fault comes and goes, the fix didn't hold, or the car is back for the third time. Those become <b>technical cases</b> with the manufacturer, and that is where many specialists must work together without knowing in advance who.</p>
+<div class="say"><div><span class="sk">In simple words</span>The workshop calls the car maker for help. Experts in electrics, software and quality look at the same case, each adding what they find, until someone spots the cause.</div><div><span class="sk">In domain words</span>Repeat repair or "no fault found" escalates to OEM technical support (a technical assistance case or hotline ticket); possibly a field engineer visit; product and quality engineering review field data; the supplier may be involved; outcomes include a TSB, a software field fix, or a recall.</div></div>
+<svg class="mini" viewBox="0 0 640 210" role="img" aria-label="Escalation ladder from dealer technician to OEM technical support, field engineer, engineering and quality, and supplier, all adding to one case" style="max-width:640px">
+<rect x="230" y="70" width="180" height="70" rx="10" style="stroke:var(--accent);stroke-width:2;stroke-dasharray:5 4;fill:var(--accent-bg)"/><text x="320" y="100" text-anchor="middle" style="font-weight:700">Technical case</text><text x="320" y="118" text-anchor="middle" style="fill:var(--muted);font-size:10px">everyone adds to it</text>
+<rect x="20" y="20" width="170" height="50" rx="8"/><text x="105" y="42" text-anchor="middle" style="font-weight:700">Dealer technician</text><text x="105" y="58" text-anchor="middle" style="fill:var(--muted);font-size:10px">has the car</text>
+<rect x="20" y="140" width="170" height="50" rx="8"/><text x="105" y="162" text-anchor="middle" style="font-weight:700">OEM technical support</text><text x="105" y="178" text-anchor="middle" style="fill:var(--muted);font-size:10px">known issues, guided tests</text>
+<rect x="450" y="20" width="170" height="50" rx="8"/><text x="535" y="42" text-anchor="middle" style="font-weight:700">Field engineer</text><text x="535" y="58" text-anchor="middle" style="fill:var(--muted);font-size:10px">visits, special tools</text>
+<rect x="450" y="140" width="170" height="50" rx="8"/><text x="535" y="162" text-anchor="middle" style="font-weight:700">Engineering, quality</text><text x="535" y="178" text-anchor="middle" style="fill:var(--muted);font-size:10px">release notes, fleet data</text>
+<rect x="245" y="160" width="150" height="40" rx="8"/><text x="320" y="184" text-anchor="middle" style="font-weight:700">Supplier</text>
+<path d="M190 45H210V90H228"/><path d="M190 165H210V120H228"/><path d="M450 45H430V90H412"/><path d="M450 165H430V120H412"/><path d="M320 158V142"/>
+</svg>
+<div class="tablewrap" style="margin-top:8px"><table class="tbl"><thead><tr><th>Who</th><th>What they add to the case</th></tr></thead><tbody>
+<tr><td><b>Dealer technician</b></td><td>The car itself, physical tests, the customer's exact words</td></tr>
+<tr><td><b>OEM technical support</b></td><td>Known-issue database, guided test plans, similar cases from other dealers</td></tr>
+<tr><td><b>Field engineer</b></td><td>On-site visit, specialist measurement tools, authority to try non-standard fixes</td></tr>
+<tr><td><b>Engineering and quality</b></td><td>Design knowledge, software release notes, failure rates across the fleet</td></tr>
+<tr><td><b>Supplier</b></td><td>How their part works inside; their own test benches. Another company, so they see only what's sent to them</td></tr></tbody></table></div>
+<h3 style="font-family:var(--f-display);font-size:17px;margin:14px 0 4px">Three facts the shared-state example uses</h3>
+<div class="tablewrap"><table class="tbl"><thead><tr><th>Fact</th><th>In simple words</th><th>Why it causes trouble</th></tr></thead><tbody>
+<tr><td><b>Battery registration</b></td><td>On many modern cars, a new 12 V battery must be registered with a diagnostic tool so the car knows it's new and what type it is.</td><td>Skip it and the charging strategy stays tuned to the old battery. The battery runs at low charge; start-stop and electrics misbehave.</td></tr>
+<tr><td><b>Start-stop</b></td><td>The engine switches off when the car stops and restarts when you go. Some systems restart while still rolling slowly.</td><td>A restart draws a large current. On a weak or low-charged battery, voltage can dip low enough to reset an ECU.</td></tr>
+<tr><td><b>Software-dependent faults</b></td><td>An over-the-air update can change how a system behaves after sale.</td><td>The symptom may appear only with one software version <i>and</i> one hardware condition. Neither alone shows it.</td></tr></tbody></table></div>
+<p class="small" style="margin-top:8px">The case TC-7712, the "ECM 3.5" release and the fleet numbers in the Shared state tab are invented. The mechanics (registration, start-stop restart current, version-plus-condition faults) are real.</p>
+<p class="why"><b>Why it matters for the design:</b> in a warranty claim, the order of work is known. In a technical case, who needs to hear a finding depends on the finding: a service-history note about a software update is what makes the software expert relevant. That is the situation shared state exists for. And the supplier is the boundary: another company gets a passed message, never the case itself.</p>`},
+{id:"d-warranty",nav:"Warranty basics",h:"Warranty, recall, goodwill: not the same thing",
+ html:`<p class="lead">A <b>warranty</b> is the manufacturer's promise to fix manufacturing defects for a set time or distance. A <b>recall</b> fixes a safety or compliance defect for everyone, warranty or not. <b>Goodwill</b> is the manufacturer choosing to pay when it doesn't have to.</p>
+<div class="tablewrap"><table class="tbl"><thead><tr><th>Cover</th><th>Covers</th><th>Typical limit</th><th>Notes</th></tr></thead><tbody>
+<tr><td><b>New vehicle warranty</b></td><td>Most defects in materials or workmanship</td><td>2 to 4 years, often with a km cap</td><td>Called comprehensive or "bumper to bumper"</td></tr>
+<tr><td><b>Powertrain</b></td><td>Engine, transmission, drive parts</td><td>Often longer than the base warranty</td><td>Varies widely by brand and market</td></tr>
+<tr><td><b>High-voltage battery</b></td><td>EV traction battery failure or excessive capacity loss</td><td>Commonly around 8 years / 160,000 km</td><td>Often promises a minimum capacity, e.g. 70%</td></tr>
+<tr><td><b>Emissions</b></td><td>Emissions-related parts</td><td>Set by regulation in some markets</td><td>Catalytic converter, sensors</td></tr>
+<tr><td><b>Corrosion</b></td><td>Rust through the body</td><td>Long, often 10+ years</td><td>Surface rust usually excluded</td></tr>
+<tr><td><b>Extended warranty</b></td><td>Like the base warranty, after it ends</td><td>Bought separately</td><td>May be run by a third party with its own rules</td></tr>
+<tr><td><b>Goodwill</b></td><td>Case by case, outside cover</td><td>At the OEM's discretion</td><td>Considers age, mileage, service history, loyalty</td></tr>
+<tr><td><b>Recall</b></td><td>A specific safety or compliance defect</td><td>No age or km limit</td><td>Free; overrides warranty status</td></tr></tbody></table></div>
+<p class="small">Figures are typical ranges; each manufacturer and country sets its own.</p>
+<h3 style="font-family:var(--f-display);font-size:17px;margin:14px 0 4px">Usually not covered</h3>
+<ul style="margin:0;padding-left:20px"><li><b>Wear items:</b> brake pads and discs, wiper blades, clutch, tyres (often covered by the tyre maker instead)</li><li><b>Maintenance:</b> oil, filters, spark plugs as scheduled service</li><li><b>Damage:</b> accidents, misuse, flood, wrong fuel</li><li><b>Neglect:</b> missed services can void related cover</li><li><b>Unapproved modifications</b> that caused the fault</li></ul>
+<p style="margin-top:10px"><b>When does cover start?</b> At the <b>in-service date</b>: first registration or delivery to the first customer, not the build date. A car that sat in stock for months still has its full cover.</p>
+<p class="why"><b>Why it matters:</b> query 9 ("injector and brake pads") isn't just two faults. The pads are a wear item and almost certainly not covered. The coverage agent needs a per-finding verdict, not one per claim.</p>`},
+{id:"d-claim",nav:"Life of a warranty claim",h:"The life of a warranty claim",
+ html:`<p class="lead">Between "the light came on" and "the dealer got paid" there are about ten steps, several of which happen after the car has gone home.</p>
+<div id="clout"></div><div class="nav" style="margin-top:10px"><button class="btn" id="clprev">← Back</button><span class="pos" id="clpos"></span><button class="btn" id="clnext">Next step →</button></div>`},
+{id:"d-connected",nav:"Connected cars and software",h:"Connected cars and software",
+ html:`<p class="lead">Most new cars are permanently online through a <b>telematics unit</b> with its own SIM. That enables remote services, remote diagnostics and software updates over the air.</p>
+<div class="say"><div><span class="sk">In simple words</span>The car has a phone inside it. The app talks to the manufacturer's servers, which talk to the car. The car can also download new software, like a phone does.</div><div><span class="sk">In domain words</span>TCU with cellular modem; OEM backend; remote services (lock/unlock, pre-conditioning, location); remote diagnostics and vehicle health reports; OTA updates of ECU firmware; TLS with certificates between car and backend.</div></div>
+<ul style="margin:0;padding-left:20px"><li><b>Remote services</b> depend on the whole chain: app, backend, mobile carrier, telematics unit, the target ECU. Any link can fail.</li><li><b>Vehicle data</b> (fault codes, health reports, location) can reach the OEM without a workshop visit. It is personal data, so consent and purpose limits apply.</li><li><b>OTA updates</b> change behaviour after sale. The software version is part of the car's state, like mileage.</li><li><b>Roll-outs are staged</b>: a new firmware reaches a share of the fleet at a time, which is how a "firmware 4.2 cohort" exists.</li></ul>
+<p class="why"><b>Why it matters:</b> the incident board's root cause was a firmware version meeting a carrier change. If evidence records don't include the software version, no agent can find that pattern.</p>`},
+{id:"d-ev",nav:"Electric vehicles",h:"Electric vehicles: a different fault world",
+ html:`<p class="lead">An EV has no injectors, spark plugs or misfires. Its key component is the <b>high-voltage battery</b>, managed by a <b>battery management system</b> (BMS).</p>
+<div class="say"><div><span class="sk">In simple words</span>The big battery is many small cells grouped into modules. A computer watches each cell's voltage and temperature and keeps them balanced.</div><div><span class="sk">In domain words</span>Pack → modules → cells; BMS monitors cell voltages, temperatures, state of charge (SoC) and state of health (SoH); cell voltage spread signals imbalance; thermal events are safety-critical.</div></div>
+<div class="tablewrap"><table class="tbl"><thead><tr><th>Term</th><th>Meaning</th></tr></thead><tbody>
+<tr><td><b>SoC</b></td><td>State of charge: how full, like a fuel gauge</td></tr>
+<tr><td><b>SoH</b></td><td>State of health: capacity left compared with new</td></tr>
+<tr><td><b>Cell voltage spread</b></td><td>Gap between the highest and lowest cell; large spread suggests a weak module</td></tr>
+<tr><td><b>Thermal event</b></td><td>Overheating in the pack; always safety-critical</td></tr>
+<tr><td><b>Regenerative braking</b></td><td>The motor slows the car and recharges the battery, so friction brakes wear slowly but can corrode from little use</td></tr></tbody></table></div>
+<p class="why"><b>Why it matters:</b> "range dropped 30%" in winter is often normal: cold reduces usable capacity and heating uses energy. A battery variant without temperature and SoH can't tell normal from faulty.</p>`},
+{id:"d-glossary",nav:"Glossary",h:"Glossary",
+ html:`<input type="text" id="gfilter" aria-label="Filter the glossary" placeholder="Filter: e.g. recall, trim, VIN"><div class="gloss" id="gloss"></div>`},
+{id:"d-challenge",nav:"Challenge the design",h:"Questions a domain expert would ask",
+ html:`<p class="lead">With the domain in mind, the warranty design from the walkthrough has gaps. These are the kind of challenges a warranty manager or senior technician would raise. Each one changes a contract or a flow.</p><div id="chals" style="display:flex;flex-direction:column;gap:8px;margin-top:10px"></div>
+<p class="small" style="margin-top:12px">Ask your own domain experts these too. The best contract changes usually come from them, not from the engineers.</p>`}
+];
+
+const DTC_SYS={P:"Powertrain (engine, transmission, emissions)",B:"Body (doors, airbags, climate, lighting)",C:"Chassis (brakes, ABS, steering, suspension)",U:"Network (communication between ECUs)"};
+const DTC_TYPE={"0":"Generic: defined by the standard, same on every brand","1":"Manufacturer-specific: meaning depends on the brand","2":"Generic (P2xxx) or manufacturer-specific, by system","3":"Mostly manufacturer-specific"};
+const P_SUB={"1":"Fuel and air metering","2":"Fuel and air metering: injector circuits","3":"Ignition system or misfire","4":"Auxiliary emission controls","5":"Vehicle speed, idle control, auxiliary inputs","6":"Computer and output circuits","7":"Transmission","8":"Transmission","9":"Transmission"};
+const KNOWN={P0300:"Random or multiple cylinder misfire detected",P0420:"Catalyst efficiency below threshold, bank 1",P0171:"System too lean, bank 1",P0562:"System voltage low",U0100:"Lost communication with engine control module",C0035:"Left front wheel speed sensor circuit (meaning varies by brand)"};
+function decodeDTC(c){c=c.toUpperCase().trim();if(!/^[PBCU][0-3][0-9A-F]{3}$/.test(c))return null;
+ let spec=KNOWN[c]||"";const m=/^P030([1-8])$/.exec(c);if(m)spec=`Misfire detected on cylinder ${m[1]}`;const j=/^P020([1-8])$/.exec(c);if(j)spec=`Injector circuit malfunction, cylinder ${j[1]}`;
+ return {c,sys:DTC_SYS[c[0]],type:DTC_TYPE[c[1]],sub:c[0]==="P"?P_SUB[c[2]]||"Other":"Defined per system",spec};}
+const VIN="WXY205042RF012345";
+const VG=[{r:[0,0],g:"g1",t:"Country or region of manufacture",x:"W = Germany. 1, 4, 5 = USA; J = Japan; K = Korea; M = India; S = UK; Z = Italy."},
+ {r:[1,2],g:"g1",t:"Manufacturer (with position 1, the WMI)",x:"Positions 1 to 3 form the World Manufacturer Identifier, assigned to one maker."},
+ {r:[3,7],g:"g2",t:"Vehicle descriptor",x:"Model line, body style, engine, restraint system. Each manufacturer defines its own coding."},
+ {r:[8,8],g:"g2",t:"Check digit",x:"Calculated from the other 16 characters to catch typos. Required in North America; used by many others."},
+ {r:[9,9],g:"g3",t:"Model year",x:"A letter or digit cycling every 30 years. R = 2024, S = 2025, T = 2026."},
+ {r:[10,10],g:"g3",t:"Assembly plant",x:"Which factory built the car. Useful when a defect is tied to one plant."},
+ {r:[11,16],g:"g4",t:"Serial number",x:"The production sequence. Recalls are often scoped to a serial range."}];
+const DIAG=[
+ ["1 · Complaint","The service advisor writes the customer's words: \"engine light on, rough idle when cold\". Exact words matter; \"when cold\" is a clue."],
+ ["2 · Verify","The technician reproduces the problem. Can't reproduce it? It may be intermittent, and the result may be \"no fault found\"."],
+ ["3 · Scan and research","Read fault codes, freeze frame and live data. Check service history and technical service bulletins (TSBs) for known issues on this model."],
+ ["4 · Pinpoint tests","OEM diagnostic software guides tests: measure resistance, check connectors, compare cylinders."],
+ ["5 · Swap test","Move the suspect injector (or coil) to another cylinder. If the misfire follows the part, the part is bad. If it stays, look elsewhere."],
+ ["6 · Cause","Write down the root cause: \"injector cylinder 1 failed internally\", not just \"P0201 present\"."],
+ ["7 · Correction","Repair using the OEM's labour operation code, which carries a standard time (\"flat rate\"), then confirm the fix with a test drive and a fresh scan."]];
+const CLAIM=[
+ {t:"Customer reports a problem",x:"By visiting, phoning, or through the app. Connected cars may report faults before the customer notices.",sys:"Request / intake"},
+ {t:"Repair order opened",x:"The advisor records the complaint, VIN and mileage. The mileage is what warranty limits are checked against.",sys:"Claim record created"},
+ {t:"Diagnosis",x:"The technician finds the cause (see the previous section). Time spent diagnosing can itself be claimable.",sys:"Diagnostics agent"},
+ {t:"Coverage check",x:"Is it within time and km from the in-service date? Is the part covered? Any open recall or bulletin?",sys:"Coverage agent"},
+ {t:"Prior approval (if expensive)",x:"Above a threshold, the dealer must get the OEM's approval before repairing. Some OEMs send a field engineer.",sys:"Human approval"},
+ {t:"Repair",x:"Done with standard labour operations and genuine parts. The old part is tagged and kept.",sys:"Estimator (labour ops)"},
+ {t:"Claim submitted",x:"Dealer sends parts, labour op codes, times, causal part, fault codes and the three Cs to the OEM.",sys:"Contract to the OEM"},
+ {t:"Adjudication",x:"Automatic rules plus human review: paid, rejected, or returned for more information. Patterns per dealer are watched.",sys:"Fraud check + human"},
+ {t:"Payment",x:"The OEM credits the dealer. The customer usually pays nothing for covered work.",sys:"Decision"},
+ {t:"Parts return and analysis",x:"The OEM may request the old part. If analysis finds no defect, the claim can be charged back later.",sys:"Record stays open"},
+ {t:"Supplier recovery",x:"If the supplier's part was defective, the OEM recovers cost from the supplier.",sys:"Downstream consumer"},
+ {t:"Quality feedback",x:"Claims across the fleet reveal patterns that lead to bulletins, design changes or recalls.",sys:"Fleet analytics agent"}];
+const GLOSS=[["Battery registration","Telling the car a new 12 V battery was fitted, so charging adapts"],["Field engineer","OEM specialist who visits the dealer for hard cases"],["Field fix","Fix applied to cars already sold: software update, part, procedure"],["Repeat repair","Same complaint after a repair; a trigger for escalation"],["Start-stop","Engine switches off at stops and restarts automatically"],["Technical case","Dealer-to-OEM support case for a fault the dealer can't resolve"],["ABS / ESP","Anti-lock braking / electronic stability control"],["Adjudication","The OEM's decision on whether to pay a claim"],["BMS","Battery management system in an EV"],["CAN bus","The main in-car network ECUs talk on"],["Causal part","The part that caused the failure; what the claim is about"],["Chargeback","Taking back a payment after a later audit finds the claim invalid"],["Check digit","9th VIN character that catches typos"],["DTC","Diagnostic trouble code, e.g. P0201"],["ECU","Electronic control unit: one of the car's small computers"],["Flat rate","Standard labour time per repair operation, paid regardless of actual time"],["Freeze frame","Sensor snapshot saved when a fault code is set"],["Fuel trim","Engine's correction to fuel amount; + means adding fuel"],["Gateway","ECU that routes messages between in-car networks"],["Goodwill","Payment by the OEM outside warranty, at its discretion"],["In-service date","When warranty starts: first registration or delivery"],["Intermittent fault","Comes and goes; often not present at the workshop"],["Labour operation","Coded repair task with a standard time"],["MIL","Malfunction indicator lamp, the check-engine light"],["Misfire","A cylinder failing to burn fuel properly"],["No fault found","Workshop couldn't reproduce or find the problem"],["OBD-II","Standard diagnostic interface and code set"],["OEM","Original equipment manufacturer: the car maker"],["OTA","Over-the-air software update"],["Pending code","Fault seen once, not yet confirmed"],["Powertrain","Engine, transmission and what drives the wheels"],["Prior approval","OEM sign-off needed before an expensive repair"],["Recall","Mandatory or voluntary fix for a safety/compliance defect"],["Repair order","The workshop's job record for one visit"],["SoC / SoH","Battery state of charge / state of health"],["Swap test","Moving a part to another position to see if the fault follows"],["Telematics unit","The car's built-in modem for remote services"],["Three Cs","Complaint, cause, correction"],["TSB","Technical service bulletin: OEM guidance for a known issue"],["VIN","17-character vehicle identification number"],["Wear item","Part expected to wear out, usually not under warranty"]];
+const CHAL=[
+ {q:"Shared state: who owns the case once engineering joins?",w:"Escalated cases cross departments, and each wants to edit the summary.",d:"Only the controller writes the case summary; departments append entries. Ownership of the board never moves; ownership of each entry type is fixed."},
+ {q:"Shared state: does a technician's test outrank an agent's hypothesis?",w:"In the workshop, a physical test beats data analysis.",d:"Rank evidence by kind, not recency: <code>test_result</code> from a technician carries the most weight; inferred hypotheses the least."},
+ {q:"Shared state: does the supplier see the case board?",w:"The supplier is another company; a board shares everything inside it.",d:"No. The supplier gets a passed brief with the evidence it is allowed to see. Cross-company edges are always messages."},
+ {q:"Shared state: is 'no fault found' a valid way to close a case?",w:"Intermittent faults often can't be reproduced on the day.",d:"Add a stop outcome <code>unresolved_monitoring</code>: close with a watch subscription on the VIN, so the next fault code reopens the case with its history."},
+ {q:"A fault code is a symptom. Why can one code produce confidence 0.82?",w:"P0201 says the circuit looked wrong. Injector, connector and wiring are all possible.",d:"Require two evidence types for high confidence (already in the rules), and make each evidence record carry its kind: code, freeze frame, test result."},
+ {q:"Was the code pending or confirmed?",w:"A pending code seen once is weak; a confirmed one across drive cycles is strong.",d:"Add <code>status: pending | confirmed | permanent</code> to fault-code evidence, and lower confidence for pending-only evidence."},
+ {q:"Which test would rule out the coil?",w:"A technician would do a swap test, not just note the doubt.",d:"Add <code>recommended_tests</code> to the envelope when alternatives remain: \"swap cyl 1 coil with cyl 2\"."},
+ {q:"Labour time per part? That's not how it's paid.",w:"OEMs pay by labour operation code with a standard time, which depends on model and engine.",d:"The estimator looks up labour ops by VIN-derived model and engine, not a part-to-hours table. Contract carries the op code."},
+ {q:"Did anyone check recalls first?",w:"An open recall covers the repair regardless of warranty and has priority.",d:"Recall check runs before coverage; its result feeds the coverage agent's brief."},
+ {q:"Warranty from which date?",w:"Cover runs from the in-service date, not build or sale date.",d:"Coverage brief needs <code>in_service_date</code> and current mileage; both come from the record, not the agent."},
+ {q:"Brake pads in the same claim?",w:"Wear items are usually excluded, so one claim can be partly covered.",d:"Coverage returns a verdict per finding, not per claim. Another reason <code>findings</code> must be a list."},
+ {q:"Is the claim really closed when it's paid?",w:"Parts analysis can lead to a chargeback weeks later; supplier recovery happens after.",d:"The record has states after payment: <code>paid</code>, <code>part_requested</code>, <code>analysed</code>, <code>charged_back</code>."},
+ {q:"Where is the software version?",w:"OTA updates change behaviour; faults often cluster by firmware.",d:"Evidence records include ECU software versions at the time of the fault."},
+ {q:"Range drop in winter, fault or physics?",w:"Cold weather cuts usable range; a fault needs SoH and cell data.",d:"Battery variant includes <code>ambient_temp_c</code> and <code>soh_pct</code>; low confidence without them."},
+ {q:"Can a dealer pattern hurt an honest claim?",w:"High claim rates may mean a dealer sees many of the affected engine batch, not fraud.",d:"Fraud score never rejects; it routes to a human, compared against the bulletin's affected population."},
+ {q:"Who may see the vehicle data?",w:"Telematics and location data are personal data, under consent and purpose limits.",d:"Evidence store enforces access per role; briefs carry evidence IDs, and only permitted agents can redeem them."}];
+
+GLOSS.sort((a,b)=>a[0].localeCompare(b[0]));
+function buildDomain(){
+ $("#dnav").innerHTML=DSEC.map(s=>`<a href="#${s.id}" data-id="${s.id}">${s.nav}</a>`).join("");
+ $("#dcol").innerHTML=`<div class="dsec" style="background:var(--accent-bg);border-color:var(--accent)"><p style="margin:0"><b>Why this tab exists:</b> both walkthroughs use car examples: a warranty claim (passing data) and a technical case that escalates when the dealer can't fix the car (shared state). To question either design, you need the domain. Each section explains it in simple words and in the words the industry uses, then ends with what it means for the design.</p></div>`+DSEC.map(s=>`<section class="dsec" id="${s.id}"><div class="kicker">${s.nav}</div><h2>${s.h}</h2>${s.html}</section>`).join("");
+ $("#dtcform").onsubmit=e=>{e.preventDefault();const v=$("#dtcin").value;const r=decodeDTC(v);if(!v.trim()){showDtcErr("Type a fault code first.");return}if(!r){showDtcErr("A code is one letter (P, B, C or U), then four characters, like P0201.");return}$("#dtcerr").hidden=true;
+  $("#dtcout").innerHTML=`<p style="font-family:var(--f-mono);font-size:22px;font-weight:600;margin:0 0 8px"><span style="color:var(--accent)">${r.c[0]}</span><span style="color:var(--env)">${r.c[1]}</span><span style="color:var(--pay)">${r.c[2]}</span>${r.c.slice(3)}</p><p><span class="tag t-acc">${r.c[0]}</span> ${r.sys}</p><p><span class="tag t-env">${r.c[1]}</span> ${r.type}</p><p><span class="tag t-pay">${r.c[2]}</span> ${r.sub}</p>${r.spec?`<p><b>Meaning:</b> ${r.spec}</p>`:`<p class="small">Exact meaning needs the manufacturer's code list.</p>`}`};
+ $("#dtcin").oninput=()=>{$("#dtcerr").hidden=true};$("#dtcin").value="P0201";$("#dtcform").requestSubmit();
+ $("#vin").innerHTML=[...VIN].map((ch,i)=>{const g=VG.find(x=>i>=x.r[0]&&i<=x.r[1]);return `<button class="${g.g}" data-i="${i}" aria-label="Position ${i+1}: ${ch}">${ch}</button>`}).join("");
+ $$("#vin button").forEach(b=>b.onclick=()=>{const i=+b.dataset.i;const g=VG.find(x=>i>=x.r[0]&&i<=x.r[1]);$$("#vin button").forEach(x=>{const j=+x.dataset.i;x.classList.toggle("on",j>=g.r[0]&&j<=g.r[1])});$("#vinout").innerHTML=`<p><b>Position${g.r[0]===g.r[1]?" "+(g.r[0]+1):"s "+(g.r[0]+1)+" to "+(g.r[1]+1)}: ${VIN.slice(g.r[0],g.r[1]+1)}</b></p><p><b>${g.t}.</b> ${g.x}</p>`});
+ $("#vin button").click();
+ $("#dgc").innerHTML=DIAG.map((d,i)=>`<button class="chip" data-i="${i}">${d[0]}</button>`).join("");
+ bindChips("#dgc",i=>{$("#dgo").textContent=DIAG[i][1]},0);
+ let cs=0;const drawCl=()=>{const s=CLAIM[cs];$("#clout").innerHTML=`<div class="list">${CLAIM.map((c,i)=>i<=cs?`<div class="entry${i===cs?" latest":""}"><span class="tm">${i+1}</span><span><b>${c.t}.</b>${i===cs?` ${c.x}<br><span class="tag t-pay" style="margin-top:4px">in our system: ${c.sys}</span>`:""}</span></div>`:"").join("")}</div>`;$("#clpos").textContent=(cs+1)+" / "+CLAIM.length;$("#clprev").disabled=cs===0;$("#clnext").disabled=cs===CLAIM.length-1;};
+ $("#clprev").onclick=()=>{cs=Math.max(0,cs-1);drawCl()};$("#clnext").onclick=()=>{cs=Math.min(CLAIM.length-1,cs+1);drawCl()};drawCl();
+ const drawGloss=f=>{f=f.toLowerCase();const rows=GLOSS.filter(g=>!f||g[0].toLowerCase().includes(f)||g[1].toLowerCase().includes(f));$("#gloss").innerHTML=rows.length?rows.map(g=>`<div><b>${g[0]}</b><span>${g[1]}</span></div>`).join(""):`<p class="small">No term matches "${f.replace(/[<>&]/g,"")}".</p>`};
+ $("#gfilter").oninput=e=>drawGloss(e.target.value);drawGloss("");
+ $("#chals").innerHTML=CHAL.map(c=>`<details class="chal"><summary>${c.q}</summary><div class="cb"><p><span class="tag t-acc">Domain fact</span> ${c.w}</p><p><span class="tag t-pay">Design change</span> ${c.d}</p></div></details>`).join("");
+ const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){$$("#dnav a").forEach(a=>a.classList.toggle("on",a.dataset.id===e.target.id))}})},{rootMargin:"-30% 0px -60% 0px"});
+ $$(".dsec[id]").forEach(s=>obs.observe(s));
+}
+function showDtcErr(m){const e=$("#dtcerr");e.textContent=m;e.hidden=false;}
+function showView(v,fromHash){["walk","share","domain","das"].forEach(x=>{$("#view-"+x).hidden=x!==v;$("#tab-"+x).setAttribute("aria-selected",x===v)});
+ if(v==="domain"&&fromHash){const k=location.hash.slice(1);if(k.startsWith("d-")){const el=document.getElementById(k);if(el)setTimeout(()=>el.scrollIntoView({block:"start"}),0)}}
+ if(!fromHash){try{history.replaceState(null,"","#"+(v==="domain"?"domain":v==="das"?"das":v==="share"?(window.shareKey?window.shareKey():"share"):S[cur].key))}catch(e){}}}
+$("#tab-walk").onclick=()=>showView("walk");$("#tab-domain").onclick=()=>{showView("domain");window.scrollTo({top:0})};$("#tab-das").onclick=()=>{showView("das");window.scrollTo({top:0})};
+$$(".tabs [role=tab]").forEach((t,i,all)=>t.onkeydown=e=>{if(e.key==="ArrowRight"||e.key==="ArrowLeft"){const n=all[(i+(e.key==="ArrowRight"?1:all.length-1))%all.length];n.focus();n.click()}});
+buildDomain();
+if(isDomainHash())showView("domain",true);
+if(location.hash==="#das")showView("das",true);
+</script>
+<script>
+/* ================= SHARED STATE TAB ================= */
+(()=>{
+const NSX="http://www.w3.org/2000/svg";
+const M=(t,a={},p)=>{const e=document.createElementNS(NSX,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e};
+const L=fn=>setTimeout(fn,0);
+const row=(id,arr,f=x=>x)=>`<div class="chips" id="${id}">${arr.map((x,i)=>`<button class="chip" data-i="${i}">${f(x)}</button>`).join("")}</div>`;
+const chips=(sel,fn,def)=>{const bs=document.querySelectorAll(sel+" .chip");bs.forEach(b=>b.onclick=()=>{bs.forEach(x=>x.classList.remove("on"));b.classList.add("on");fn(+b.dataset.i)});if(def!==undefined&&bs[def])bs[def].click();};
+const bar=(label,v,cls,txt)=>`<span>${label}</span><div class="bar ${cls||""}"><i style="width:${Math.round(v*100)}%"></i></div><span style="font-family:var(--f-mono)">${txt}</span>`;
+const bars=rows=>`<div style="display:grid;grid-template-columns:auto 1fr auto;gap:6px 10px;align-items:center;font-size:13px;margin-top:10px">${rows.join("")}</div>`;
+
+/* ---------- steps ---------- */
+const S=[
+/* Part 1: basics */
+{key:"s-a1",part:0,t:"The case board",cap:"A case nobody can route",def:"Board: one store all specialists on a case read and append to. Used when who needs a finding depends on the finding.",hi:["board"],
+ b:`<p>A dealer can't fix an SUV. It's back for the <b>third visit</b>: the engine sometimes stalls when coming to a stop. The battery was replaced last time. The dealer opens a technical case with the manufacturer.</p><p>This isn't the warranty claim. There, the order was known: diagnose, check coverage, price. Here, nobody knows which specialist matters until someone finds something. So specialists work around one shared <b>case board</b> and react to what others post. In the literature this is the <b>blackboard</b> pattern.</p>`,inset:"a1"},
+{key:"s-a2",part:0,t:"Entries, not fields",cap:"What sits on the board",def:"Entry: one typed, immutable record on the board. Agents append entries; nobody edits one.",hi:["board"],
+ b:`<p>A shared database is usually rows you update. A board that works is a <b>log of entries</b> you only append to: an observation, a hypothesis, a test request, a test result, a ruling, a decision.</p><p>Each entry has the same <b>envelope</b> (who, when, which evidence, which earlier entries it builds on) and a typed <b>body</b>. That's the passing-data contract again, applied to every write.</p>`,inset:"a2"},
+{key:"s-a3",part:0,t:"Write rules",cap:"Who may write what",def:"Write rule: which author may append which entry type. Corrections are new entries that supersede, never edits.",hi:["board","elec","eng","hist","sw","field"],
+ b:`<p>On a shared store, the dangerous question is <b>who may write</b>. Each entry type has an allowed set of authors. Specialists may observe and hypothesise. Only code may decide. Only a human with the car may post a physical test result.</p><p>Mistakes are fixed by appending an entry that <b>supersedes</b> the wrong one. The wrong one stays visible, so the trail never lies.</p>`,inset:"a3"},
+{key:"s-a4",part:0,t:"Views",cap:"What each agent reads",def:"View: what one agent reads. A filtered, summarised projection of the board, not the whole board.",hi:["sw","board"],
+ b:`<p>Shared doesn't mean everyone reads everything. Each agent reads a <b>view</b>: the case summary, entries it is subscribed to, and the open hypotheses it could test.</p><p>Database people call this a view or a read model. It keeps context small, cost down, and stops one agent's guess from steering everyone else.</p>`,inset:"a4"},
+{key:"s-a5",part:0,t:"Controller and triggers",cap:"Who runs next",def:"Controller: code that wakes agents from subscriptions, enforces budgets, and stops the case.",hi:["ctl","critic","e-cb"],
+ b:`<p>With no fixed order, something must decide <b>who runs next</b>. Agents declare <b>subscriptions</b> ("wake me when an entry mentions a software version"). A <b>controller</b>, written as plain code, matches new entries to subscriptions, wakes those agents, and counts the budget.</p><p>A <b>critic</b> agent is woken now and then to ask what's missing. It proposes; the controller still schedules.</p>`,inset:"a5"},
+{key:"s-a6",part:0,t:"Concurrent writes",cap:"Two writes, one moment",def:"Concurrency rule: appends never conflict. The few mutable fields get a version check or a single writer.",hi:["elec","sw","board"],
+ b:`<p>Specialists run in parallel. Two of them will write at the same moment. If the board has a field like <code>lead_hypothesis</code> that both overwrite, one write silently wins: the classic <b>lost update</b>.</p><p>Appends don't have that problem: two entries simply both exist. Anything that summarises them is <b>derived</b> by one writer, or guarded with a version check.</p>`,inset:"a6"},
+{key:"s-a7",part:0,t:"Provenance and trust",cap:"Where an entry came from",def:"Provenance: every entry records its author, its evidence, and how far to trust its source.",hi:["store","board","hist","e-st"],
+ b:`<p>On a board, one bad entry reaches <b>every subscriber</b>, not just one receiver. So every write is validated before it lands: schema, author allowed, evidence IDs real and for this car.</p><p>Text from outside (the dealer's note, a customer email) is stored as <b>data with a trust label</b>. It can be read and quoted, but it can never become an instruction or a decision.</p>`,inset:"a7"},
+{key:"s-a8",part:0,t:"Ending and handing off",cap:"How a case leaves the board",def:"Exit: a case stops on a rule, and its decision leaves the board as a passed message.",hi:["ctl","tech","down","e-bt","e-bd"],
+ b:`<p>A board needs a way to <b>stop</b>: a hypothesis confirmed by a test, no progress for a few rounds, a spent budget, or a step that needs a human with the car.</p><p>When it ends, the decision <b>leaves as a message</b>. Warranty, quality and the dealer get a brief with a contract, exactly as in the passing-data walkthrough. They never read the board. Share inside the case; pass at its edges.</p>`,inset:"a8"},
+/* Part 2: example */
+{key:"s-b1",part:1,t:"Follow one case",cap:"Technical case TC-7712, entry by entry",def:"",hi:[],
+ b:`<p>Case <b>TC-7712</b>: an SUV at 21,400 km, third visit, stalls when slowing to a stop. Battery replaced at visit two. The dealer suspects the fuel pump.</p><p>Step through the board. Each entry appends to the map, says <b>why it woke</b> whoever wrote it, and names the mechanism from Part 1. Watch the hypotheses: the answer is a <b>combination</b> no single specialist would find. The case is invented; the mechanics are real.</p>`,inset:"walk"},
+/* Part 3: questions */
+{key:"s-q1",part:2,t:"Why not just pass messages here too?",cap:"Designed edges vs discovered edges",hi:["hist","sw","field","critic"],
+ learn:"Share when the next step depends on what someone else found. On a board the edges are discovered, not designed.",
+ guess:{q:"Could you have drawn this case as a fixed pipeline in advance?",o:["Yes, with enough care","Only the first step"],a:1,
+  fb:"Opening the case wakes the obvious specialists. Every later edge (History to Software, Software to Field data) existed only because of a finding."},inset:"q1"},
+{key:"s-q2",part:2,t:"Isn't this the shared database we avoid?",cap:"Same disease, same cures",hi:["board"],
+ learn:"A board is safe for the same reasons a database is: schema, write rules, constraints, views. Plus one owner and one case's lifetime.",
+ guess:{q:"What made shared databases between services painful?",o:["Sharing data at all","Many owners changing one schema they all depend on"],a:1,
+  fb:"Independent teams coupled through one schema. A case board has one owning team, one case type, and dies when the case closes."},inset:"q2"},
+{key:"s-q3",part:2,t:"Two agents write at the same moment. Who wins?",cap:"Concurrent writes",hi:["elec","sw","board"],
+ learn:"Make writes appends and derive the rest with one writer. Guard the few mutable fields with a version check.",
+ guess:{q:"Electrical and Software both set lead_hypothesis in the same second. What survives?",o:["Both","Whichever wrote last","Neither"],a:1,
+  fb:"Last write wins and the other is lost without an error. Nobody notices until someone asks where H1 went."},inset:"q3"},
+{key:"s-q4",part:2,t:"Should every agent read the whole board?",cap:"Views",hi:["sw","board"],
+ learn:"Give each agent a view, not the board. Sometimes hide others' hypotheses on the first pass so nobody anchors.",
+ guess:{q:"Software reads Electrical's 'battery is faulty, 0.5' before looking at its own data. Risk?",o:["None, more context helps","It anchors on the battery and looks for confirmation"],a:1,
+  fb:"LLMs anchor like people do. A confident early guess on a shared board pulls everyone's reading toward it."},inset:"q4"},
+{key:"s-q5",part:2,t:"Who decides who runs next?",cap:"Scheduling",hi:["ctl","critic"],
+ learn:"Let code schedule from subscriptions and budgets. Use an LLM only to propose what's missing.",
+ guess:{q:"Agents choose for themselves when to act. What happens first?",o:["They coordinate nicely","Several act on the same entry, or they ping-pong"],a:1,
+  fb:"Self-selection gives duplicated work and loops. Production systems keep scheduling deterministic and inspectable."},inset:"q5"},
+{key:"s-q6",part:2,t:"How does it stop?",cap:"Termination",hi:["ctl","tech"],
+ learn:"Design termination up front: a test confirmed it, no progress, budget spent, or a human is needed.",
+ guess:{q:"With no stop rule, what does a board do when agents disagree?",o:["Converges eventually","Keeps going until someone pays for it"],a:1,
+  fb:"Disagreeing agents ask each other for more data indefinitely. The board grows, and so does the bill."},inset:"q6"},
+{key:"s-q7",part:2,t:"What if one entry is wrong or poisoned?",cap:"Validation at write",hi:["board","store","e-st"],
+ learn:"On a board a bad write reaches everyone. Validate at the write, label trust, and never let text become an instruction.",
+ guess:{q:"Passing vs sharing: where does one bad message do more damage?",o:["Passing","Sharing"],a:1,
+  fb:"A passed message reaches one receiver. A board entry reaches every subscriber, and every later entry that cites it."},inset:"q7"},
+{key:"s-q8",part:2,t:"How do frameworks do shared state?",cap:"Three shapes",hi:[],
+ learn:"Shared state comes in three shapes: a shared transcript, keyed state with merge rules, or an event log with views.",
+ guess:{q:"A group chat where every agent reads every message: what kind of shared state is that?",o:["Not shared state","A board with no schema and no views"],a:1,
+  fb:"It's the simplest board: everything visible, nothing typed. Easy to start, hardest to control."},inset:"q8"},
+{key:"s-q9",part:2,t:"When is shared state the wrong choice?",cap:"Share inside, pass at the edges",hi:["down","e-bd"],
+ learn:"Share inside one case, one team, one lifetime. At every edge (other teams, other companies, after the case) pass.",
+ guess:{q:"After diagnosis, the warranty system needs the repair priced. Board or message?",o:["Board","Message"],a:1,
+  fb:"Known order, known consumer, known contract. That's passing data."},inset:"q9"}
+];
+const IX=Object.fromEntries(S.map((s,i)=>[s.key,i]));
+const PT=["Basics","Example","Questions"];
+
+/* ---------- map ---------- */
+const NODES=[
+ {id:"ro",x:120,y:4,w:120,h:28,label:"Repair order",sub:"",at:"s-a1"},
+ {id:"ctl",x:100,y:44,w:160,h:42,label:"Controller",sub:[["s-a1","code: opens the case"],["s-a5","code: wakes, budgets, stops"]],at:"s-a1"},
+ {id:"elec",x:4,y:112,w:82,h:42,label:"Electrical",sub:"LLM agent",at:"s-a1"},
+ {id:"eng",x:4,y:166,w:82,h:42,label:"Engine",sub:"LLM agent",at:"s-a1"},
+ {id:"hist",x:4,y:220,w:82,h:42,label:"History",sub:"LLM agent",at:"s-a1"},
+ {id:"sw",x:274,y:112,w:82,h:42,label:"Software",sub:"LLM agent",at:"s-a1"},
+ {id:"field",x:274,y:166,w:82,h:42,label:"Field data",sub:"LLM agent",at:"s-a1"},
+ {id:"critic",x:274,y:220,w:82,h:42,label:"Critic",sub:"LLM agent",at:"s-a5"},
+ {id:"store",x:4,y:300,w:100,h:44,label:"Evidence store",sub:"raw records",at:"s-a7"},
+ {id:"tech",x:130,y:300,w:100,h:44,label:"Technician",sub:"human, has the car",at:"s-a8"},
+ {id:"down",x:256,y:300,w:100,h:44,label:"Downstream",sub:"gets messages",at:"s-a8"}];
+const EDGES=[
+ {id:"e-rc",d:"M180 32V42",at:"s-a1"},
+ {id:"e-cb",d:"M180 86V108",at:"s-a1",both:true},
+ {id:"e-el",d:"M86 133H98",at:"s-a1",both:true},
+ {id:"e-en",d:"M86 187H98",at:"s-a1",both:true},
+ {id:"e-hi",d:"M86 241H98",at:"s-a1",both:true},
+ {id:"e-sw",d:"M274 133H262",at:"s-a1",both:true},
+ {id:"e-fd",d:"M274 187H262",at:"s-a1",both:true},
+ {id:"e-cr",d:"M274 241H262",at:"s-a5",both:true},
+ {id:"e-st",d:"M45 262V298",at:"s-a7",both:true},
+ {id:"e-bt",d:"M180 268V298",at:"s-a8",both:true},
+ {id:"e-bd",d:"M240 268V282H306V298",at:"s-a8"}];
+const G={},R={};
+const LE=document.getElementById("sh-edges"),LN=document.getElementById("sh-nodes"),LR=document.getElementById("sh-rows"),LL=document.getElementById("sh-labels");
+EDGES.forEach(e=>{const g=M("g",{id:"sx-"+e.id},LE);e.path=M("path",{class:"edge",d:e.d,"marker-end":"url(#san)"},g);if(e.both)e.path.setAttribute("marker-start","url(#san)");G[e.id]=g;R[e.id]=IX[e.at];});
+{const g=M("g",{id:"sx-board",class:"node boardnode"},LN);M("rect",{class:"frame",x:100,y:110,width:160,height:158,rx:9},g);
+ const t=M("text",{x:180,y:126,"text-anchor":"middle"},g);t.textContent="Case board";
+ const s=M("text",{class:"sub",x:180,y:138,"text-anchor":"middle"},g);s.textContent="append-only log";G.board=g;R.board=IX["s-a1"];}
+NODES.forEach(n=>{const g=M("g",{id:"sx-"+n.id,class:"node"},LN);M("rect",{x:n.x,y:n.y,width:n.w,height:n.h,rx:7},g);
+ const has=n.sub&&(typeof n.sub!=="string"||n.sub.length);
+ const t=M("text",{x:n.x+n.w/2,y:n.y+(has?n.h/2-2:n.h/2+4),"text-anchor":"middle"},g);t.textContent=n.label;
+ if(has)n.subEl=M("text",{class:"sub",x:n.x+n.w/2,y:n.y+n.h/2+11,"text-anchor":"middle"},g);
+ G[n.id]=g;R[n.id]=IX[n.at];});
+{const g=M("g",{id:"sx-lbl"},LL);const t=M("text",{class:"lbl",x:188,y:101},g);t.textContent="views out · entries in";G.lbl=g;R.lbl=IX["s-a4"];}
+
+const TYPECLS={case:"r-case",obs:"r-obs",hyp:"r-hyp",rul:"r-hyp",req:"r-test",res:"r-test",dec:"r-dec",sup:"r-case"};
+function paintRows(list,latest){LR.innerHTML="";const shown=list.slice(-8);
+ shown.forEach((r,i)=>{const g=M("g",{class:"brow "+(TYPECLS[r.k]||"r-case")+(r===latest?" latest":"")},LR);
+  M("rect",{x:108,y:146+i*15,width:144,height:12,rx:2},g);const t=M("text",{x:113,y:155+i*15},g);t.textContent=r.lab;});}
+
+let cur=0,prev=-1;
+function paint(hi=[],o={}){
+ Object.keys(G).forEach(id=>{const on=cur>=R[id];const g=G[id];g.classList.toggle("off",!on);
+  if(on&&cur===R[id]&&prev<R[id]){g.classList.remove("new");requestAnimationFrame(()=>g.classList.add("new"));}else if(cur!==R[id])g.classList.remove("new");
+  g.classList.toggle("hi",hi.includes(id));
+  g.classList.toggle("bad",(o.bad||[]).includes(id));
+  g.classList.toggle("dim",!!((o.dimAll&&!hi.includes(id))||(o.focus&&hi.length&&!hi.includes(id))));});
+ EDGES.forEach(e=>{const m=hi.includes(e.id)?"url(#sah)":"url(#san)";e.path.setAttribute("marker-end",m);if(e.both)e.path.setAttribute("marker-start",m);});
+ NODES.forEach(n=>{if(!n.subEl)return;let s=n.sub;if(typeof s!=="string"){const opts=s.filter(x=>IX[x[0]]<=cur);s=(opts.length?opts:s).slice(-1)[0][1];}n.subEl.textContent=s;});
+}
+
+/* ---------- the example case ---------- */
+const WK=[
+ {k:"case",lab:"E-01 Case opened · Ctl",t:"Mon 09:00",who:"Controller",hi:["ro","ctl","board","e-rc","e-cb"],mech:"Write rule · Provenance",
+  c:`{
+  <span class="env">"entry_id": "E-01", "type": "case_opened", "author": "controller",</span>
+  <span class="pay">"case_id": "TC-7712", "vin": "WDC…", "mileage_km": 21400,</span>
+  <span class="pay">"complaint": "Stalls when slowing to a stop. 3rd visit.",</span>
+  <span class="pay">"dealer_note": {"text": "Battery replaced at visit 2. Suspect fuel pump.",</span>
+  <span class="pay">                "trust": "untrusted_text"}</span>
+}`,woke:"Opening a case wakes every agent subscribed to new cases: Electrical, Engine and History. Software and Field data are subscribed to narrower things and stay asleep.",
+  n:"The dealer's guess is stored as labelled data. The controller records it as hypothesis H2 so it gets tested, but it can't decide anything.",h:[0,.3,0,0]},
+ {k:"obs",lab:"E-02 Obs · Electrical",t:"09:02",who:"Electrical",hi:["elec","e-el","board","store"],mech:"Entry · Claim check",
+  c:`{
+  <span class="env">"entry_id": "E-02", "type": "observation", "author": "electrical",</span>
+  <span class="env">"evidence_ids": [<span class="cc">"dtc-5120", "ff-5121"</span>],</span>
+  <span class="pay">"finding": "At the stall: P0562 system voltage low (9.6 V),</span>
+  <span class="pay">            then U0100 lost communication with the engine ECU."</span>
+}`,woke:"Woken by E-01 (subscribed to new cases). Its view: the complaint, the fault codes, the freeze frames.",
+  n:"An observation is a fact with evidence. No opinion yet.",h:[0,.3,0,0]},
+ {k:"hyp",lab:"E-03 Hyp H1 · Electrical",t:"09:02",who:"Electrical",hi:["elec","e-el","board"],mech:"Entry · refs",
+  c:`{
+  <span class="env">"entry_id": "E-03", "type": "hypothesis", "author": "electrical",</span>
+  <span class="env">"refs": ["E-02"], "confidence": 0.5,</span>
+  <span class="pay">"id": "H1", "claim": "12 V supply dips at the stall;</span>
+  <span class="pay">       the replacement battery may be faulty",</span>
+  <span class="pay">"test_that_would_decide": "battery load test"</span>
+}`,woke:"Same run as E-02. A hypothesis must point to the entries it builds on.",
+  n:"The test that would settle it is part of the entry. That's what makes a hypothesis useful to others.",h:[.5,.3,0,0]},
+ {k:"rul",lab:"E-04 Ruling H2 · Engine",t:"09:03",who:"Engine",hi:["eng","e-en","board"],mech:"Entry · Write rule",
+  c:`{
+  <span class="env">"entry_id": "E-04", "type": "ruling", "author": "engine",</span>
+  <span class="env">"refs": ["E-01"], "evidence_ids": [<span class="cc">"live-5124"</span>],</span>
+  <span class="pay">"target": "H2", "verdict": "unlikely",</span>
+  <span class="pay">"reason": "Fuel rail pressure normal until the voltage fell.</span>
+  <span class="pay">           The engine lost power, not fuel."</span>
+}`,woke:"Woken by E-01. Its view: engine data around each stall.",
+  n:"Engine didn't edit H2. It appended a ruling. H2 still exists, now with evidence against it.",h:[.55,.08,0,0]},
+ {k:"obs",lab:"E-05 Obs · History",t:"09:04",who:"History",hi:["hist","e-hi","board","store","e-st"],mech:"Entry · Claim check",
+  c:`{
+  <span class="env">"entry_id": "E-05", "type": "observation", "author": "history",</span>
+  <span class="env">"evidence_ids": [<span class="cc">"svc-881", "svc-902", "ota-3312"</span>],</span>
+  <span class="pay">"finding": "Battery replaced at visit 2, genuine part.</span>
+  <span class="pay">            No battery registration logged.</span>
+  <span class="pay">            OTA update ECM 3.4 → 3.5, 9 days before first complaint.",</span>
+  <span class="pay">"mentions": {"sw_version": "ECM 3.5"}</span>
+}`,woke:"Woken by E-01. It reads service records and the software log.",
+  n:"The <code>mentions</code> field is structured on purpose. The controller matches subscriptions on it, not on prose.",h:[.55,.08,0,0]},
+ {k:"hyp",lab:"E-06 Hyp H3 · Software",t:"09:06",who:"Software",hi:["sw","e-sw","board","hist"],mech:"Subscription · View",
+  c:`{
+  <span class="env">"entry_id": "E-06", "type": "hypothesis", "author": "software",</span>
+  <span class="env">"refs": ["E-05"], "evidence_ids": [<span class="cc">"rn-ecm-3.5"</span>], "confidence": 0.4,</span>
+  <span class="pay">"id": "H3", "claim": "ECM 3.5 start-stop restarts the engine while</span>
+  <span class="pay">       still rolling below 8 km/h; the restart draws a current peak",</span>
+  <span class="pay">"mentions": {"sw_version": "ECM 3.5", "population": true}</span>
+}`,woke:"Woken by E-05: it subscribes to entries that mention a software version change. No designer drew this edge; History's finding did.",
+  n:"Software read a view: the summary, E-05, and open hypotheses about electrics. Not the whole board.",h:[.55,.08,.4,0]},
+ {k:"obs",lab:"E-07 Obs · Field data",t:"09:09",who:"Field data",hi:["field","e-fd","board","sw"],mech:"Subscription",
+  c:`{
+  <span class="env">"entry_id": "E-07", "type": "observation", "author": "field_data",</span>
+  <span class="env">"refs": ["E-06"], "evidence_ids": [<span class="cc">"fleet-q-77"</span>],</span>
+  <span class="pay">"finding": "Stall complaints per 10,000 cars:</span>
+  <span class="pay">   ECM 3.5 + battery replaced in last 6 months   41</span>
+  <span class="pay">   ECM 3.5 + original battery                     3</span>
+  <span class="pay">   ECM 3.4 + battery replaced                     4"</span>
+}`,woke:"Woken by E-06: it subscribes to hypotheses that name a release or a population.",
+  n:"Neither the software nor a new battery is enough alone. It's the combination.",h:[.3,.05,.35,0]},
+ {k:"hyp",lab:"E-08 Hyp H4 · Critic",t:"09:10",who:"Critic",hi:["critic","e-cr","board"],mech:"Controller · Critic",
+  c:`{
+  <span class="env">"entry_id": "E-08", "type": "hypothesis", "author": "critic",</span>
+  <span class="env">"refs": ["E-02", "E-04", "E-05", "E-06", "E-07"], "confidence": 0.7,</span>
+  <span class="pay">"id": "H4", "claim": "Unregistered battery → charging still tuned to the</span>
+  <span class="pay">   old battery → low charge. ECM 3.5 rolling restart → voltage</span>
+  <span class="pay">   dips below the ECU's reset level → stall.",</span>
+  <span class="pay">"test_that_would_decide": "register battery, repeat the stops"</span>
+}`,woke:"The controller wakes the critic when two hypotheses each explain part of the evidence. The critic proposes; it doesn't decide.",
+  n:"Five earlier entries, cited by ID. Anyone can check the reasoning hop by hop.",h:[.2,.05,.25,.7]},
+ {k:"req",lab:"E-09 Test request · Ctl",t:"09:11",who:"Controller",hi:["ctl","tech","e-bt","board"],mech:"Stop rule: needs a human",
+  c:`{
+  <span class="env">"entry_id": "E-09", "type": "test_request", "author": "controller",</span>
+  <span class="env">"refs": ["E-08"], "needs_car": true,</span>
+  <span class="pay">"steps": ["register battery with diagnostic tool",</span>
+  <span class="pay">          "3 cold stops with start-stop on, log voltage"]</span>
+}`,woke:"Rule: when the leading hypothesis has a test that needs the car, pause. No agent runs while the case waits for the technician.",
+  n:"The board isn't burning tokens overnight. A paused case costs nothing.",h:[.2,.05,.25,.7]},
+ {k:"res",lab:"E-10 Test result · Tech",t:"Tue 10:30",who:"Technician",hi:["tech","e-bt","board"],mech:"Write rule · evidence weight",
+  c:`{
+  <span class="env">"entry_id": "E-10", "type": "test_result", "author": "technician:dlr-4471",</span>
+  <span class="env">"refs": ["E-09"], "evidence_ids": [<span class="cc">"test-6610"</span>],</span>
+  <span class="pay">"result": "After registration: 3 of 3 stops, no stall.</span>
+  <span class="pay">           Lowest voltage 11.4 V (was 9.6 V)."</span>
+}`,woke:"Only a human with the car may write a physical test result. It outranks any inferred hypothesis.",
+  n:"H1 falls: the battery itself is fine. It just wasn't registered.",h:[.05,.03,.2,.93]},
+ {k:"dec",lab:"E-11 Decision · Ctl",t:"10:32",who:"Controller",hi:["ctl","down","e-bd","board"],mech:"Exit · Pass at the edge",
+  c:`{
+  <span class="env">"entry_id": "E-11", "type": "decision", "author": "controller",</span>
+  <span class="env">"refs": ["E-08", "E-10"], "stop_rule": "lead ≥ 0.9 with passing test",</span>
+  <span class="pay">"root_cause": "H4", "case_status": "closed",</span>
+  <span class="pay">"handoffs": [</span>
+  <span class="pay">  {"to": "warranty", "contract": "RepairOut v2", "labour_op": "battery registration"},</span>
+  <span class="pay">  {"to": "quality",  "contract": "FieldIssue v1", "cohort": "ECM 3.5 + replaced battery"},</span>
+  <span class="pay">  {"to": "dealers",  "contract": "Bulletin draft", "topic": "register replaced batteries"}]</span>
+}`,woke:"Stop rule met. The board closes; three consumers each get a passed message with its own contract.",
+  n:"Warranty never reads the board. It gets the same kind of brief as in the passing-data walkthrough.",h:[.05,.03,.2,.93]}];
+const HN=["H1 battery faulty","H2 fuel pump (dealer)","H3 ECM 3.5 alone","H4 combination"];
+const SAMPLE=WK.slice(0,5);
+let ws=0;
+
+/* ---------- insets ---------- */
+const I={};
+I.a1=()=>`<h3>Same car domain, different shape of work</h3><div class="two"><div class="panel"><span class="tag t-acc">Warranty claim: pass</span><p style="margin-top:6px">Order known up front: diagnose, check coverage, price, approve. Each result has a known consumer.</p><pre class="code">intake → diagnostics → coverage
+       → estimator → human</pre></div><div class="panel"><span class="tag t-pay">Technical case: share</span><p style="margin-top:6px">Order unknown. Whether Software or Field data matter depends on what History finds.</p><pre class="code">everyone reads the board
+whoever a finding concerns
+  reacts to it</pre></div></div><div class="tablewrap" style="margin-top:10px"><table class="tbl"><thead><tr><th>Question</th><th>Claim</th><th>Case</th></tr></thead><tbody><tr><td>Next step known in advance?</td><td>Yes</td><td>No</td></tr><tr><td>Who must hear a finding?</td><td>Named consumers</td><td>Whoever it turns out to concern</td></tr><tr><td>Agents build on each other's partial work?</td><td>Rarely</td><td>Constantly</td></tr></tbody></table></div>`;
+const ETYPES=[
+ ["Observation",`{ <span class="env">"type": "observation", "author", "evidence_ids": [≥1]</span>,
+  <span class="pay">"finding": "…", "mentions": {…}</span> }`,"A fact with evidence. No opinion."],
+ ["Hypothesis",`{ <span class="env">"type": "hypothesis", "refs": [≥1], "confidence"</span>,
+  <span class="pay">"id": "H3", "claim": "…", "test_that_would_decide": "…"</span> }`,"A claim others can test. Must cite what it builds on."],
+ ["Ruling",`{ <span class="env">"type": "ruling", "refs", "evidence_ids"</span>,
+  <span class="pay">"target": "H2", "verdict": "unlikely" | "ruled_out" | "supports"</span> }`,"Evidence for or against someone else's hypothesis. Never an edit to it."],
+ ["Test request",`{ <span class="env">"type": "test_request", "author": "controller"</span>,
+  <span class="pay">"needs_car": true, "steps": […]</span> }`,"Asks the world for evidence. May pause the case."],
+ ["Test result",`{ <span class="env">"type": "test_result", "author": "technician:…"</span>,
+  <span class="pay">"result": "…"</span> }`,"Physical evidence. Highest weight."],
+ ["Decision",`{ <span class="env">"type": "decision", "author": "controller", "stop_rule"</span>,
+  <span class="pay">"root_cause", "handoffs": […]</span> }`,"Closes the case and starts the passed messages."]];
+I.a2=()=>{L(()=>chips("#xa2",i=>{document.getElementById("xa2o").innerHTML=`<pre class="code">${ETYPES[i][1]}</pre><p class="hint" style="margin:8px 0 0">${ETYPES[i][2]}</p>`},0));
+ return `<h3>Every entry: one envelope, a typed body</h3><div class="legend"><span><span class="env">■</span> envelope (same for all)</span><span><span class="pay">■</span> body (by type)</span></div><pre class="code"><span class="env">entry_id, case_id, type, author, at,
+evidence_ids, refs, trust</span></pre><p class="hint" style="margin:10px 0 6px">Tap an entry type.</p>${row("xa2",ETYPES,e=>e[0])}<div id="xa2o"></div>`};
+I.a3=()=>`<h3>Who may append what</h3><div class="tablewrap"><table class="tbl"><thead><tr><th>Author</th><th>Obs.</th><th>Hyp.</th><th>Ruling</th><th>Test req.</th><th>Test result</th><th>Decision</th></tr></thead><tbody>
+<tr><td>Specialist agents</td><td>✓</td><td>✓</td><td>✓</td><td>–</td><td>–</td><td>–</td></tr>
+<tr><td>Critic</td><td>–</td><td>✓</td><td>✓</td><td>–</td><td>–</td><td>–</td></tr>
+<tr><td>Controller (code)</td><td>–</td><td>–</td><td>–</td><td>✓</td><td>–</td><td>✓</td></tr>
+<tr><td>Technician (human)</td><td>✓</td><td>–</td><td>–</td><td>–</td><td>✓</td><td>–</td></tr>
+<tr><td>Dealer intake</td><td colspan="6">only <code>case_opened</code>, with text labelled untrusted</td></tr></tbody></table></div>
+<h3 style="margin-top:14px">Fixing a mistake</h3><pre class="code">{ <span class="env">"entry_id": "E-12", "type": "supersede", "author": "history",</span>
+  <span class="pay">"supersedes": "E-05",
+  "reason": "svc-902 belongs to a different VIN"</span> }</pre><p class="hint" style="margin:8px 0 0">E-05 stays on the board, marked superseded. Any entry that cited it is flagged for review.</p>`;
+I.a4=()=>{L(()=>chips("#xa4",i=>{const all=i===0;document.getElementById("xa4o").innerHTML=`<pre class="code">${all?`E-01 … E-24, every entry, every author
+full evidence text for each
+every open and closed hypothesis`:`case summary (written by the controller)
+entries with mentions.sw_version
+open hypotheses about electrics or software
+H-ids only for everything else`}</pre>${bars([bar("Context",all?.92:.12,"w",all?"~14k":"~1.8k"),bar("Cost per wake",all?.85:.12,"w",all?"high":"low"),bar("Anchoring risk",all?.8:.35,"w",all?"high":"medium")])}`},1));
+ return `<h3>Discover: what does Software read?</h3>${row("xa4",["Whole board","Software's view"])}<div class="panel" id="xa4o"></div><p class="hint" style="margin:8px 0 0">The view is declared in code next to the agent, so you can see exactly what each agent can read. A shared database never told you that.</p>`};
+I.a5=()=>`<h3>Subscriptions, matched by code</h3><pre class="code">on observation  where mentions.sw_version    → wake software
+on hypothesis   where mentions.population    → wake field_data
+on hypothesis   where system == "electrical" → wake electrical
+on two partial explanations, or every 3 rounds → wake critic
+on test_request where needs_car              → pause, notify technician</pre>
+<h3 style="margin-top:14px">Budgets</h3><pre class="code">max_rounds      6
+max_tool_calls  40 per case
+one run per agent per triggering entry</pre><p class="hint" style="margin:8px 0 0">Subscriptions match on structured fields like <code>mentions</code>, not on prose. That's why the envelope has them.</p>`;
+I.a6=()=>{L(()=>chips("#xa6",i=>{document.getElementById("xa6o").innerHTML=[`<span class="tag t-warn">Lost update</span><pre class="code">t0  board.lead = null              (v7)
+t1  electrical reads v7 → writes lead = "H1"
+t1  software   reads v7 → writes lead = "H3"
+t2  board.lead = "H3"              <span style="color:var(--warn)">H1 gone, no error</span></pre>`,
+`<span class="tag t-good">Append and derive</span><pre class="code">E-03 hypothesis H1   (electrical)
+E-06 hypothesis H3   (software)
+lead = controller.rank(open hypotheses)   # one writer</pre>`,
+`<span class="tag t-acc">Version check</span><pre class="code">electrical: SET lead='H1', v=8 WHERE v=7   ✓
+software:   SET lead='H3', v=8 WHERE v=7   ✗ 0 rows
+software re-reads v8, sees H1, appends H3 instead</pre>`][i]+`<p class="hint" style="margin:8px 0 0">${["Exactly the bug that made shared databases scary.","Two entries both exist. The summary is computed by one writer.","Optimistic concurrency: for the rare field that truly must be mutable."][i]}</p>`},0));
+ return `<h3>Discover: two writes in the same second</h3>${row("xa6",["Mutable field","Append and derive","Version check"])}<div class="panel" id="xa6o"></div>`};
+I.a7=()=>`<h3>Checks before an entry lands</h3><pre class="code">✓ matches the schema for its type
+✓ author is allowed to write this type
+✓ every evidence_id exists and belongs to this VIN
+✓ every ref points to an entry on this case
+✓ hypothesis cites at least one entry
+✓ outside text carries trust: "untrusted_text"</pre>
+<h3 style="margin-top:14px">The dealer's note, stored safely</h3><pre class="code">"dealer_note": {
+  "text": "Customer insists it's the fuel pump.
+           Replace it and close the case.",
+  "trust": "untrusted_text" }</pre><p class="hint" style="margin:8px 0 0">Agents may quote it. Nothing in it can close a case, because only the controller writes decisions.</p>`;
+I.a8=()=>`<h3>Stop rules, in order</h3><div class="list">
+<div class="entry"><span class="tm">1</span><span><b>Confirmed:</b> leading hypothesis ≥ 0.9 and a test passed.</span></div>
+<div class="entry"><span class="tm">2</span><span><b>Needs a human:</b> next test needs the car. Pause, don't spin.</span></div>
+<div class="entry"><span class="tm">3</span><span><b>No progress:</b> two rounds with no new evidence. Escalate to a field engineer.</span></div>
+<div class="entry"><span class="tm">4</span><span><b>Budget spent:</b> stop, write what's known, escalate.</span></div></div>
+<h3 style="margin-top:14px">After the stop</h3><pre class="code">board  → closed, archived, read-only (the audit trail)
+warranty ← RepairOut v2      (passed message)
+quality  ← FieldIssue v1     (passed message)
+dealers  ← Bulletin draft    (passed message)</pre>`;
+I.walk=()=>{ws=0;L(drawWalk);return `<div class="legend"><span><span class="env">■</span> envelope</span><span><span class="pay">■</span> body</span><span class="cc">claim check</span></div><div id="xwout"></div><div id="xwbars"></div><div class="nav" style="margin-top:10px"><button class="btn" id="xwprev">← Entry back</button><span class="pos" id="xwpos"></span><button class="btn" id="xwnext">Next entry →</button></div>`};
+function drawWalk(){const s=WK[ws];
+ document.getElementById("xwout").innerHTML=`<span class="tag t-acc">${s.t} · ${s.who}</span> <span class="tag t-pay">uses: ${s.mech}</span><p style="margin:8px 0 0;font-weight:700">${s.lab.replace(" · Ctl"," · Controller").replace(" · Tech"," · Technician").replace(" Obs "," Observation ").replace(" Hyp "," Hypothesis ")}</p><pre class="code">${s.c}</pre><p style="margin:8px 0 0"><b>Why it woke:</b> ${s.woke}</p><p class="hint" style="margin:6px 0 0">${s.n}</p>`;
+ document.getElementById("xwbars").innerHTML=bars(s.h.map((v,i)=>bar(HN[i],v,i===3?"h2":"",v?v.toFixed(2):"–")))+(ws===WK.length-1?`<p style="margin:10px 0 0">Questions forming? Probably: why not just pass messages, isn't this a shared database, what if two agents write at once, how does it stop. The next part takes them one at a time.</p>`:"");
+ document.getElementById("xwpos").textContent=(ws+1)+" / "+WK.length;
+ paintRows(WK.slice(0,ws+1),s);paint(s.hi,{focus:true});
+ const p=document.getElementById("xwprev"),n=document.getElementById("xwnext");p.disabled=ws===0;n.disabled=ws===WK.length-1;
+ p.onclick=()=>{ws=Math.max(0,ws-1);drawWalk()};n.onclick=()=>{ws=Math.min(WK.length-1,ws+1);drawWalk()};}
+
+I.q1=()=>{L(()=>chips("#xq1",i=>{paint(i===0?["elec","eng","sw"]:["hist","sw","field","critic","tech"],{focus:true});document.getElementById("xq1o").innerHTML=i===0?`<pre class="code">case → electrical → engine → software → close</pre><p style="margin-top:8px"><b>What it misses:</b> History never runs, so nobody learns about the OTA update or the missing battery registration. Field data isn't in the pipeline at all; nobody knew a population check would be needed. The pipeline closes on H1, "faulty battery", and the car comes back a fourth time.</p>`:`<div class="list">
+<div class="entry"><span class="tm">E-05</span><span>History → Software: <i>an entry mentioned a version change</i></span></div>
+<div class="entry"><span class="tm">E-06</span><span>Software → Field data: <i>a hypothesis named a release</i></span></div>
+<div class="entry"><span class="tm">E-07</span><span>Field data → Critic: <i>two partial explanations</i></span></div>
+<div class="entry latest"><span class="tm">E-08</span><span>Critic → Technician: <i>the decisive test needs the car</i></span></div></div><p class="hint" style="margin:8px 0 0">Four edges, all decided by findings. The designer wrote the subscription rules, not the route.</p>`},0));
+ return `<h3>Discover: design the route in advance, or let it emerge</h3>${row("xq1",["Fixed pipeline","Board"])}<div class="panel" id="xq1o"></div>`};
+I.q2=()=>`<h3>Discover: the shared-database problems, one by one</h3><div class="tablewrap"><table class="tbl"><thead><tr><th>Shared DB problem</th><th>Case board's answer</th></tr></thead><tbody>
+<tr><td>Many teams depend on one schema</td><td>One owning team, one case type. Other teams get passed messages.</td></tr>
+<tr><td>Anyone updates any row</td><td>Append-only; write rules per entry type.</td></tr>
+<tr><td>Lost updates</td><td>Appends don't conflict; derived fields have one writer.</td></tr>
+<tr><td>Hidden coupling through reads</td><td>Views are declared per agent, in code.</td></tr>
+<tr><td>Lives forever, grows forever</td><td>Lives for one case; archived read-only on close.</td></tr>
+<tr><td>No idea who changed what</td><td>Every entry has author, evidence and refs.</td></tr></tbody></table></div><p class="hint" style="margin:8px 0 0">Drop any of these and you're back to the shared database, with LLMs as the clients.</p>`;
+I.q3=()=>{L(()=>chips("#xq3",i=>{document.getElementById("xq3o").innerHTML=[`<pre class="code">class CaseState(TypedDict):
+    lead_hypothesis: str   # no reducer
+# electrical and software both return it
+# in the same superstep</pre><p style="margin-top:8px">In LangGraph, two parallel nodes writing a key with no reducer raises an <code>InvalidUpdateError</code>. Loud is good. A hand-rolled dict would just keep the last write.</p>`,
+`<pre class="code">class CaseState(TypedDict):
+    entries: Annotated[list[Entry], operator.add]
+    lead: str   # written only by the controller node</pre><p style="margin-top:8px">The reducer makes <code>entries</code> append-only. <code>lead</code> is derived by one node after the parallel step.</p>`,
+`<pre class="code">UPDATE cases SET lead = 'H1', version = 8
+ WHERE case_id = 'TC-7712' AND version = 7;
+-- 0 rows → re-read, then append instead</pre><p style="margin-top:8px">If the board lives in Postgres, this is plain optimistic locking, the same as in a Spring Boot service with <code>@Version</code>.</p>`][i]},0));
+ return `<h3>Discover: the same fix in three places</h3>${row("xq3",["LangGraph, no reducer","LangGraph, reducer","Postgres board"])}<div class="panel" id="xq3o"></div>`};
+I.q4=()=>{L(()=>chips("#xq4",i=>{const d=[[.92,.85,.8,"~14k","high","high"],[.12,.12,.35,"~1.8k","low","medium"],[.1,.1,.1,"~1.2k","low","low"]][i];document.getElementById("xq4o").innerHTML=`<p>${["Software reads all 24 entries, including Electrical's 'battery faulty, 0.5'.","Software reads the summary, E-05 and open electrical hypotheses.","Software first posts its own observation from its own data, then reads others' hypotheses."][i]}</p>${bars([bar("Context",d[0],"w",d[3]),bar("Cost per wake",d[1],"w",d[4]),bar("Anchoring",d[2],"w",d[5])])}`},0));
+ return `<h3>Discover: three ways to let Software read</h3>${row("xq4",["Whole board","View","Blind first pass"])}<div class="panel" id="xq4o"></div><p class="hint" style="margin:8px 0 0">Long cases also need <b>compaction</b>: the controller rewrites the case summary every few rounds so views stay small. The log itself is never rewritten.</p>`};
+const SCH=[["LLM supervisor picks","Flexible, reads the whole board each turn.","Expensive per turn; hard to test; one model's blind spot steers the case.","Small boards, early prototypes"],
+ ["Agents pick themselves","No central component.","Duplicate work on the same entry, ping-pong loops, no budget owner.","Rarely in production"],
+ ["Code rules + LLM critic","Deterministic, testable, cheap. Critic covers what rules miss.","Rules need maintenance as entry types grow.","Most production boards"]];
+I.q5=()=>{L(()=>chips("#xq5",i=>{const s=SCH[i];document.getElementById("xq5o").innerHTML=`<p><span class="tag t-good">Good at</span> ${s[1]}</p><p><span class="tag t-warn">Fails by</span> ${s[2]}</p><p><span class="tag t-acc">Seen in</span> ${s[3]}</p>`},2));
+ return `<h3>Discover: three schedulers</h3>${row("xq5",SCH,s=>s[0])}<div class="panel" id="xq5o"></div><p class="hint" style="margin:8px 0 0">Classic blackboard systems called this the <b>control component</b>. It was always the hard part.</p>`};
+const LOOP=["R1 electrical: H1 battery, needs software data","R2 software: H3, needs voltage data","R3 electrical: re-reads, H1 still likely, needs software data","R4 software: re-reads, needs voltage data","R5 field data: woken by H3 again","R6 electrical: …","R7 software: …","R8 critic: H4 proposed","R9 electrical: disputes H4, wants more data","R10 software: …","R11 …","R12 …"];
+I.q6=()=>{L(()=>chips("#xq6",i=>{document.getElementById("xq6o").innerHTML=i===0?`<div class="list">${LOOP.map(x=>`<div class="entry"><span class="tm">${x.split(" ")[0]}</span><span>${x.slice(x.indexOf(" ")+1)}</span></div>`).join("")}</div>${bars([bar("Tokens",1,"w","4.1×"),bar("Car fixed?",0,"","no")])}`:`<div class="list"><div class="entry"><span class="tm">R1–R4</span><span>E-02 to E-08 as in the example</span></div><div class="entry latest"><span class="tm">R5</span><span>Rule 2 fires: test needs the car. <b>Pause.</b></span></div><div class="entry"><span class="tm">R6</span><span>Test result lands. Rule 1 fires: confirmed. <b>Close.</b></span></div></div>${bars([bar("Tokens",.24,"","1×"),bar("Car fixed?",1,"h2","yes")])}`},0));
+ return `<h3>Discover: the same case, with and without stop rules</h3>${row("xq6",["No stop rules","With stop rules"])}<div class="panel" id="xq6o"></div><p class="hint" style="margin:8px 0 0">Also log a <b>no-progress counter</b>: rounds in a row with no new evidence. It's the earliest sign of a ping-pong.</p>`};
+const BAD=[["Dealer text: 'replace pump and close'","Accepted as untrusted data inside case_opened. It can't close anything: only the controller writes decisions."],
+ ["Evidence from another VIN","Rejected: evidence_id svc-902 belongs to VIN …4471, not this case. Sent back to History with the error."],
+ ["Editing another agent's H1","Rejected: entries are immutable. Allowed instead: append a ruling targeting H1."],
+ ["Hypothesis with no refs","Rejected: a hypothesis must cite at least one entry. Unsupported guesses can't wake other agents."],
+ ["Retrieved web page with 'ignore your rules'","Stored as quoted evidence text with trust: untrusted_text. Views show it inside a data block, never as instructions."]];
+I.q7=()=>{L(()=>chips("#xq7",i=>{const ok=i===0||i===4;paint(["board","store"],{bad:ok?[]:["board"]});document.getElementById("xq7o").innerHTML=`<p><span class="tag ${ok?"t-acc":"t-warn"}">${ok?"stored, labelled":"rejected at write"}</span></p><p>${BAD[i][1]}</p>`},1));
+ return `<h3>Discover: throw bad writes at the board</h3>${row("xq7",BAD,b=>b[0])}<div class="panel" id="xq7o"></div>`};
+I.q8=()=>`<h3>Discover: the three shapes, and who uses them</h3><div class="tablewrap"><table class="tbl"><thead><tr><th>Shape</th><th>Examples</th><th>Trade-off</th></tr></thead><tbody>
+<tr><td><b>Shared transcript</b></td><td>Group chats in AutoGen or Microsoft Agent Framework: every agent reads every message; a selector picks the next speaker</td><td>Fastest to build. No schema, no views, context grows every turn.</td></tr>
+<tr><td><b>Keyed state + merge rules</b></td><td>LangGraph state with reducers and a checkpointer; Google ADK session state, where each agent writes its own key via <code>output_key</code></td><td>Good middle ground. Views and write rules are partly on you.</td></tr>
+<tr><td><b>Event log + views</b></td><td>Your own board on Postgres or a Kafka topic, with projections per agent: event sourcing</td><td>Most control: replay, audit, provenance. Most to build.</td></tr></tbody></table></div>
+<p style="margin-top:10px"><b>None of it is new.</b> The blackboard architecture comes from 1970s speech-recognition research (HEARSAY-II): independent knowledge sources, one shared blackboard, a control component deciding who acts. Swap knowledge sources for LLM agents and you have this tab.</p>`;
+const SORT=[["Price the repair after diagnosis","Pass","Known order, known consumer, known contract."],
+ ["Find why 212 cars on ECM 3.5 stall","Share","Who needs a finding depends on the finding."],
+ ["Write one code fix across five files","One agent","Tightly coupled decisions. Parallel agents make conflicting choices however state is shared."],
+ ["Supplier's agent disputes the root cause","Pass","Another company. Cross-company edges are always contracts, never a shared board."],
+ ["Keep every case board as the dealer knowledge base","Neither","A board that outlives its case becomes a shared database. Extract the facts into a store one team owns."]];
+I.q9=()=>{L(()=>chips("#xq9",i=>{const s=SORT[i];document.getElementById("xq9o").innerHTML=`<p><span class="tag ${s[1]==="Share"?"t-pay":s[1]==="Pass"?"t-acc":"t-warn"}">${s[1]}</span></p><p>${s[2]}</p>`},0));
+ return `<h3>Discover: sort these</h3>${row("xq9",SORT,s=>s[0])}<div class="panel" id="xq9o"></div>`};
+
+/* ---------- discovery + ledger ---------- */
+const seen=new Set();
+const $i=id=>document.getElementById(id);
+function question(s){const g=s.guess;return `<div class="card"><div class="kicker" style="margin-bottom:4px">Predict first</div><p class="question">${g.q}</p><div class="guesses" id="shguesses">${g.o.map((o,i)=>`<button class="guess" data-i="${i}">${o}</button>`).join("")}</div><p class="fb" id="shgfb" hidden></p></div>`;}
+function bindQ(s){document.querySelectorAll("#shguesses .guess").forEach(b=>b.onclick=()=>{const i=+b.dataset.i;document.querySelectorAll("#shguesses .guess").forEach(x=>{x.classList.remove("right","wrong");if(+x.dataset.i===s.guess.a)x.classList.add("right")});if(i!==s.guess.a)b.classList.add("wrong");const fb=$i("shgfb");fb.hidden=false;fb.innerHTML=(i===s.guess.a?"<b>Right.</b> ":"<b>Not quite.</b> ")+s.guess.fb+" Now check it below.";});}
+function learn(s){const w=$i("shlearnwrap");if(!s.learn){w.innerHTML="";return}
+ if(seen.has(s.key)){w.innerHTML=`<div class="learn"><div class="lk">Discovery</div><p>${s.learn}</p></div>`;return}
+ w.innerHTML=`<button class="btn" id="shreveal" style="width:100%">Reveal what we learned</button>`;
+ $i("shreveal").onclick=()=>{seen.add(s.key);learn(s);ledger(s.key)};}
+function ledger(nowKey){const basics=S.filter((s,i)=>s.part===0&&i<=cur);const disc=S.filter(s=>s.part===2&&seen.has(s.key));
+ $i("shledger").innerHTML=`<h4>Vocabulary</h4>${basics.length?`<ol>${basics.map(s=>`<li class="${s.key===nowKey?"now":""}">${s.def}</li>`).join("")}</ol>`:""}<h4>Discoveries</h4>${disc.length?`<ol>${disc.map(s=>`<li class="${s.key===nowKey?"now":""}">${s.learn}</li>`).join("")}</ol>`:`<p class="empty">${cur<IX["s-q1"]?"These appear as you answer the questions in Part 3.":"Reveal a discovery to add it here."}</p>`}`;}
+
+/* ---------- render ---------- */
+function render(n,fromHash){cur=Math.max(0,Math.min(S.length-1,n));const s=S[cur];
+ const ps=S.filter(x=>x.part===s.part);const within=ps.indexOf(s)+1;
+ $i("shkicker").textContent=`Shared state · Part ${s.part+1} · ${PT[s.part]}${s.part===1?"":` · ${within} of ${ps.length}`}`;
+ $i("shtitle").textContent=s.part===2?"Q"+within+". "+s.t:s.t;
+ $i("shbody").innerHTML=(s.part===2?question(s):"")+(s.b||"");
+ $i("shmapcap").textContent=s.cap;$i("shmapstep").textContent=(cur+1)+"/"+S.length;$i("shpos").textContent=(cur+1)+" / "+S.length;
+ if(s.part===0)paintRows(cur>=IX["s-a2"]?SAMPLE:[],null);else if(s.part===2)paintRows(WK,null);
+ paint(s.hi||[],{dimAll:s.dimAll});
+ $i("shinset").innerHTML=I[s.inset]();prev=cur;
+ if(s.part===2)bindQ(s);
+ learn(s);ledger(s.key);
+ document.querySelectorAll("#shparts .segs button").forEach(b=>{const i=+b.dataset.i;b.className=i<cur?"done":i===cur?"cur":"";b.setAttribute("aria-current",i===cur?"step":"false")});
+ document.querySelectorAll("#shparts .part").forEach((p,i)=>p.classList.toggle("active",i===s.part));
+ $i("shprev").disabled=cur===0;$i("shnext").textContent=cur===S.length-1?"Start over":cur===IX["s-a8"]?"To the example →":cur===IX["s-b1"]?"To the questions →":"Next →";
+ if(!fromHash&&!$i("view-share").hidden){try{history.replaceState(null,"","#"+s.key)}catch(e){}}}
+$i("shparts").innerHTML=PT.map((p,pi)=>`<div class="part"><span class="pl">${pi+1} · ${p}</span><div class="segs">${S.map((s,i)=>s.part===pi?`<button data-i="${i}" aria-label="${s.t}" title="${s.t}"></button>`:"").join("")}</div></div>`).join("");
+const top=()=>{if(window.innerWidth<900)document.querySelector("#view-share .mapcard").scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"start"})};
+document.querySelectorAll("#shparts .segs button").forEach(b=>b.onclick=()=>{render(+b.dataset.i);top()});
+$i("shprev").onclick=()=>{render(cur-1);top()};
+$i("shnext").onclick=()=>{render(cur===S.length-1?0:cur+1);top()};
+document.addEventListener("keydown",e=>{if(e.target.matches("input")||$i("view-share").hidden)return;if(e.key==="ArrowRight")render(cur+1);if(e.key==="ArrowLeft")render(cur-1)});
+const isShare=()=>{const k=location.hash.slice(1);return k==="share"||k.startsWith("s-")};
+window.shareKey=()=>S[cur].key;
+window.isShareHash=isShare;
+window.addEventListener("hashchange",()=>{if(!isShare())return;showView("share",true);const k=location.hash.slice(1);const n=k in IX?IX[k]:0;if(n!==cur)render(n,true)});
+$i("tab-share").onclick=()=>{showView("share");window.scrollTo({top:0})};
+{const k=location.hash.slice(1);render(k in IX?IX[k]:0,true);}
+if(isShare())showView("share",true);
+})();
+</script>
+
+</body></html>
