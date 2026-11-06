@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>DAS chatbot - agent flow for Priya's request</title>
+<style>
+  :root{
+    --bg:#0b1220; --ink:#e8eefc; --muted:#9fb0d0; --line:#24314d;
+    --red:#e05c6e; --blue:#5b9bd5; --teal:#4fd1c5; --green:#3ec08a;
+    --amber:#d9a441; --violet:#a98bdb; --chip:#111c33;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:28px 26px 40px;background:var(--bg);color:var(--ink);
+       font:13px/1.45 "Segoe UI",system-ui,sans-serif}
+  h1{font-size:17px;margin:0 0 4px}
+  .sub{color:var(--muted);font-size:12px;margin-bottom:22px}
+
+  .layer{margin-bottom:6px}
+  .layer-title{color:var(--muted);font-size:10.5px;letter-spacing:.14em;
+       text-transform:uppercase;margin:16px 0 8px}
+  .row{display:flex;gap:12px;align-items:stretch}
+  .row > *{flex:1}
+
+  .box{background:#0f1830;border:1px solid var(--line);border-radius:8px;
+       padding:11px 12px;position:relative}
+  .box h3{margin:0 0 6px;font-size:12.5px;letter-spacing:.01em}
+  .box p{margin:0;color:var(--muted);font-size:11.5px}
+  .box.red{border-color:var(--red);background:#1a1022}
+  .box.blue{border-color:var(--blue)}
+  .box.green{border-color:var(--green);background:#0d1c1a}
+  .box.violet{border-color:var(--violet);background:#15112a}
+  .box.amber{border-color:var(--amber);background:#1b1508}
+  .box.dash{border-style:dashed}
+
+  .badge{position:absolute;top:-9px;right:-9px;width:19px;height:19px;border-radius:50%;
+       background:var(--red);color:#fff;font-size:11px;font-weight:700;
+       display:flex;align-items:center;justify-content:center}
+
+  .quote{color:#f0a6b2;font-style:italic;font-size:11.5px}
+  .tool{display:inline-block;background:var(--chip);border:1px solid var(--line);
+       border-radius:4px;padding:1px 6px;margin:3px 4px 0 0;font-size:10.5px;
+       font-family:ui-monospace,Consolas,monospace;color:#bcd0f0}
+  .ret{margin-top:7px;font-size:11px;color:var(--teal)}
+  .brief{margin:7px 0 0;padding-left:14px;color:var(--muted);font-size:11px}
+  .brief li{margin:2px 0}
+  .brief b{color:var(--ink);font-weight:600}
+
+  /* coordinator */
+  .coord{border:1px solid var(--red);border-radius:9px;padding:12px;background:#140f24;position:relative}
+  .coord > h2{margin:0 0 3px;font-size:13.5px}
+  .coord > .lead{color:var(--muted);font-size:11.5px;margin:0 0 10px}
+  .owns{margin-top:10px;border-top:1px dashed var(--line);padding-top:8px;
+       color:var(--muted);font-size:11px}
+  .owns b{color:var(--ink)}
+
+  /* arrows */
+  .arrows{display:flex;gap:12px;margin:6px 0}
+  .arrows > div{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px}
+  .glyph{font-size:15px;line-height:1}
+  .m .glyph{color:var(--teal)}
+  .h .glyph{color:var(--violet)}
+  .tag{font-size:10px;letter-spacing:.06em;padding:1px 7px;border-radius:10px;
+       border:1px solid currentColor}
+  .m .tag{color:var(--teal)}
+  .h .tag{color:var(--violet)}
+  .note{font-size:10px;color:var(--muted);text-align:center;max-width:210px}
+
+  .consult{display:flex;align-items:center;gap:8px;margin:7px 0 0;
+       border:1px dashed var(--teal);border-radius:7px;padding:7px 10px;background:#0c1a20}
+  .consult .k{color:var(--teal);font-size:10.5px;letter-spacing:.08em;white-space:nowrap}
+  .consult p{margin:0;color:var(--muted);font-size:11px}
+  .consult code{font-family:ui-monospace,Consolas,monospace;color:#bcd0f0}
+
+  .drift{margin-top:8px;border-left:3px solid var(--amber);background:#1b1508;
+       border-radius:0 6px 6px 0;padding:7px 10px;font-size:11px;color:#f0d8a8}
+  .drift b{color:#ffd98a}
+
+  .baton{border:1px dashed var(--violet);border-radius:7px;padding:8px 11px;
+       background:#15112a;margin:7px 0 0;font-size:11px;color:var(--muted)}
+  .baton b{color:#d9c8f5}
+
+  .legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:22px;padding-top:12px;
+       border-top:1px solid var(--line);font-size:11px;color:var(--muted)}
+  .legend span b{color:var(--ink)}
+  .reply{color:var(--teal);font-size:10.5px;text-align:right;margin:4px 2px 0}
+</style>
+
+<h1>DAS chatbot &mdash; agent flow for one request</h1>
+<div class="sub">Priya's invoice-1234 request &middot; Coordinator + Handoff combination &middot;
+  <span style="color:var(--teal)">M = Manager style (control returns)</span> &nbsp;
+  <span style="color:var(--violet)">H = Handoff (control moves, no return)</span></div>
+
+<!-- 1 -->
+<div class="layer">
+  <div class="layer-title">1 &middot; Channel, identity &amp; guardrails</div>
+  <div class="row">
+    <div class="box red"><span class="badge">1</span>
+      <h3>Priya &middot; Finance Analyst</h3>
+      <p class="quote">"I uploaded 20 invoices yesterday but I can't find invoice 1234 in
+        Finance. If it got rejected, tell me why and get me access to the Compliance
+        archive to re-upload it there."</p>
+    </div>
+    <div class="box blue">
+      <h3>Chat UI</h3>
+      <p>Web portal / Teams bot. Shows answers, status cards, file upload and the
+        approval status of requests.</p>
+    </div>
+    <div class="box blue"><span class="badge">2</span>
+      <h3>API gateway + SSO</h3>
+      <p>Authenticates the user (OIDC / Azure AD), attaches her token with roles
+        (<i>Finance-Reader</i>, <i>Finance-Uploader</i>), rate limits.</p>
+    </div>
+    <div class="box blue">
+      <h3>Input guardrails</h3>
+      <p>Prompt-injection &amp; jailbreak detection, PII redaction, topic filter
+        (archive questions only), size checks on uploaded files.</p>
+    </div>
+    <div class="box dash"><span class="badge">8</span>
+      <h3>Output guardrails</h3>
+      <p>Only show records the user may see: mask PII, block hallucinated record ids
+        (answer must cite a real record), then return the reply to the Chat UI.</p>
+      <div class="reply">&uarr; final reply</div>
+    </div>
+  </div>
+</div>
+
+<!-- 2 -->
+<div class="layer">
+  <div class="layer-title">2 &middot; Orchestration</div>
+  <div class="coord"><span class="badge">3</span>
+    <h2>Coordinator / Supervisor agent</h2>
+    <p class="lead">Reads the request, splits it into tasks, routes them, keeps conversation
+      state and merges the Manager-style results into one answer.</p>
+    <div class="row">
+      <div class="box"><h3>Intent &amp; planner</h3>
+        <p>Three intents: (a) locate invoice 1234, (b) explain the rejection,
+          (c) obtain access + re-upload to Compliance. Plan: a &rarr; b &rarr; c.</p></div>
+      <div class="box"><h3>Router</h3>
+        <p>A and B are independent &rarr; run in parallel. C only after b returns a
+          reason code. D only on a system fault.</p></div>
+      <div class="box"><h3>Session memory</h3>
+        <p>Short-term context (batch id, invoice id, open ticket) so follow-ups like
+          "is it approved yet?" work.</p></div>
+      <div class="box"><h3>Response composer</h3>
+        <p>Stitches A + B into one clear reply with next steps and citations to real
+          records.</p></div>
+    </div>
+    <div class="owns"><b>Owns:</b> Priya's reply for (a) and (b).
+      <b>Does not own:</b> writes into another team's system &mdash; access and re-upload
+      leave via a Handoff.</div>
+  </div>
+</div>
+
+<!-- arrows to layer 3 -->
+<div class="arrows">
+  <div class="m"><span class="tag">M &middot; two-way</span><span class="glyph">&#8597;</span>
+    <span class="note">brief {invoice_id, workspace} &darr; &nbsp; result &uarr;</span></div>
+  <div class="m"><span class="tag">M &middot; two-way</span><span class="glyph">&#8597;</span>
+    <span class="note">brief {invoice_id, batch_date} &darr; &nbsp; result &uarr;</span></div>
+  <div class="h"><span class="tag">H &middot; one-way</span><span class="glyph">&darr;</span>
+    <span class="note">control moves to the owning team &mdash; no return</span></div>
+  <div class="h"><span class="tag">H &middot; fault only</span><span class="glyph">&darr;</span>
+    <span class="note">only if B reports a system fault</span></div>
+</div>
+
+<!-- 3 + 4 side by side -->
+<div class="layer">
+  <div class="row" style="align-items:flex-start">
+
+    <div style="flex:2">
+      <div class="layer-title" style="margin-top:0">3 &middot; Manager-called subagents (control returns)</div>
+      <div class="row">
+        <div class="box green"><span class="badge">4</span>
+          <h3>A &middot; Search &amp; retrieval agent</h3>
+          <p>Hybrid search over the Finance archive: exact metadata match + semantic
+            search on OCR text.</p>
+          <ul class="brief">
+            <li><b>Goal:</b> confirm whether 1234 exists in Priya's Finance workspace.</li>
+            <li><b>Output:</b> <code>{doc_id, workspace, exists, has_access}</code></li>
+            <li><b>Scope:</b> no access requests, no uploads, never replies to Priya.</li>
+          </ul>
+          <div><span class="tool">search_archive()</span><span class="tool">get_record()</span></div>
+          <div class="ret">&rarr; "1234 is not in the Finance archive."</div>
+        </div>
+
+        <div class="box green"><span class="badge">5</span>
+          <h3>B &middot; DebuggerAgent</h3>
+          <p>Reads yesterday's ingestion batch: per-file status and validation result,
+            then turns reason codes into plain language.</p>
+          <ul class="brief">
+            <li><b>Goal:</b> find 1234's status in the batch and why it failed.</li>
+            <li><b>Output:</b> <code>{batch_id, status, reason_code, fault:bool}</code></li>
+            <li><b>Scope:</b> no re-upload, no access request, never replies to Priya.</li>
+          </ul>
+          <div><span class="tool">get_batch_status()</span><span class="tool">get_validation_log()</span><span class="tool">get_reason_code_doc()</span></div>
+          <div class="ret">&rarr; "19/20 archived; 1234 rejected &mdash; missing VAT id / belongs to Compliance class."</div>
+        </div>
+      </div>
+
+      <div class="consult">
+        <span class="k">&#8644; CONSULT (bounded)</span>
+        <p>B may ask A one question only: <code>exists(doc_id, workspace) &rarr; {exists}</code>
+          &mdash; e.g. to re-check after a late sync. No free text, no actions, and every
+          consult is reported upward in the result payload so the Coordinator keeps the
+          full picture.</p>
+      </div>
+
+      <div class="drift"><b>&#9888; Silent-drift spot:</b> the DebuggerAgent answering Priya
+        directly ("your invoice was rejected, I'll re-upload it") instead of returning its
+        JSON. That turns an M call into an unplanned H &mdash; the Coordinator loses the
+        thread and the reply is never composed. Guard: no messaging tool in B's tool set.</div>
+    </div>
+
+    <div style="flex:1">
+      <div class="layer-title" style="margin-top:0">4 &middot; Handoff targets (control moves)</div>
+      <div class="row">
+        <div class="box violet"><span class="badge">6</span>
+          <h3>C &middot; Access &amp; policy agent <span style="color:var(--muted);font-weight:400">(Compliance team owns it)</span></h3>
+          <p>Checks Priya's entitlements against archive policy; if she lacks Compliance
+            write access, raises an approval request and owns it to completion.</p>
+          <div><span class="tool">check_entitlement()</span><span class="tool">create_access_request()</span></div>
+          <div class="ret">&rarr; "Request REQ-xxxx sent to the data owner."</div>
+          <div class="arrows" style="margin:9px 0 6px">
+            <div class="m"><span class="tag">M</span><span class="glyph">&#8597;</span>
+              <span class="note">after approval, inside the Compliance trust domain</span></div>
+          </div>
+          <div class="box green" style="margin-top:0"><span class="badge">7</span>
+            <h3>D &middot; Re-upload agent</h3>
+            <p>Pre-validates the corrected file against the same rules, then uploads it to
+              the Compliance archive and confirms.</p>
+            <div><span class="tool">prevalidate()</span><span class="tool">upload_record()</span></div>
+            <div class="ret">&rarr; "1234 archived in Compliance."</div>
+          </div>
+        </div>
+
+        <div class="box violet" style="flex:0 0 32%">
+          <h3>E &middot; Developer / Platform team</h3>
+          <p>Humans. Taken only when B's reason code is a system fault (archive down,
+            migration mismatch) rather than a user-fixable validation error.</p>
+          <div><span class="tool">open_incident()</span></div>
+          <div class="ret">&rarr; owns the ticket from here; the bot is done.</div>
+        </div>
+      </div>
+
+      <div class="baton"><b>The handoff baton &mdash; what actually transfers on an H arrow:</b>
+        context package (<code>invoice_id, batch_id, reason_code</code>, Priya's identity and
+        token scope) + <b>ownership of the reply</b> + <b>who notifies her next</b>.
+        The Coordinator states this explicitly, then stops tracking the flow.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 5 -->
+<div class="layer">
+  <div class="layer-title">5 &middot; Tool layer</div>
+  <div class="box amber">
+    <h3>Tool gateway (MCP / API layer)</h3>
+    <p>One controlled door to the enterprise systems. Calls run <b>on behalf of the user</b>
+      (her token, never a super-user account), each subagent is granted only the tools in its
+      own brief (least privilege &mdash; A has no <code>create_access_request()</code>, B has no
+      <code>upload_record()</code>), inputs are schema-validated, and write actions need
+      explicit confirmation.</p>
+  </div>
+</div>
+
+<!-- 6 -->
+<div class="layer">
+  <div class="layer-title">6 &middot; Data &amp; enterprise systems</div>
+  <div class="row">
+    <div class="box blue"><h3>Archive storage</h3>
+      <p>Object store (WORM / immutable) with separate Finance and Compliance archives and
+        retention rules.</p></div>
+    <div class="box blue"><h3>Metadata &amp; search index</h3>
+      <p>Record metadata (invoice no., vendor, date, uploader) + vector index on OCR text.</p></div>
+    <div class="box blue"><h3>Ingestion pipeline</h3>
+      <p>Upload &rarr; OCR &rarr; classification &rarr; validation rules &rarr; archive.
+        Writes status + reason codes to the validation log.</p></div>
+    <div class="box blue"><h3>IAM / entitlements</h3>
+      <p>Roles and groups (RBAC / ABAC) per archive: read, upload, admin.</p></div>
+    <div class="box blue"><h3>Policy knowledge base</h3>
+      <p>Archival &amp; retention rules, rejection-code catalogue (RAG source for the plain-language
+        explanations).</p></div>
+    <div class="box blue"><h3>ITSM / access workflow</h3>
+      <p>e.g. ServiceNow: access-request ticket, approval routing, notification.</p></div>
+  </div>
+</div>
+
+<div class="legend">
+  <span><b style="color:var(--teal)">&#8597; M</b> Manager style &mdash; brief down, result up, control returns to the Coordinator.</span>
+  <span><b style="color:var(--violet)">&darr; H</b> Handoff &mdash; control and ownership move; the previous agent is done.</span>
+  <span><b style="color:var(--teal)">&#8644;</b> Bounded consult &mdash; one allowed question between peers, reported upward.</span>
+  <span><b style="color:#ffd98a">&#9888;</b> Silent-drift spot.</span>
+</div>
+</html>
