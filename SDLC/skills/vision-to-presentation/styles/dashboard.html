@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<!--
+TEMPLATE GUIDE - Dashboard style (single screen, explore by clicking)
+Components in this file: header with title; KPI strip (4 placeholder cards, "Target: TBD"); item cards with severity bar (left panel); clickable capability tiles that open a side detail panel (right panel); detail panel with a "Why it matters" line.
+How to add or remove an item: copy or delete a <div class="risk"> block (left) or a <button class="cap"> block (right; keep its data-i number in sequence) and keep the data array in the script in the same order. Each data entry is [title, detail sentence, why it matters]. Change the grid columns in .caps if you use a number of tiles other than 8.
+Speaker notes: none; put talking points in the detail sentences.
+Controls: click or Enter/Space on a tile opens the detail panel; Esc, the close button or a click outside closes it. URL hash #cap3 opens the fourth tile.
+Theme: edit the variables at the top of the style block.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>[Initiative name] - Dashboard</title>
+<style>
+:root{
+/* THEME: edit these values to re-skin the whole file.
+   --bg        page / slide background
+   --surface   card background
+   --surface-2 darker card background (gradient end)
+   --text      main text colour
+   --muted     secondary text colour
+   --border    card and divider lines
+   --accent    the single accent colour
+   --font      font stack (system fonts only) */
+--bg:#1a1d21;--surface:#22262b;--surface-2:#262b31;--text:#e3e7eb;--muted:#8d97a2;--border:#2c3238;--accent:#00adef;
+--font:"Segoe UI",system-ui,"Helvetica Neue",Arial,sans-serif;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font-family:var(--font);display:flex;flex-direction:column;padding:16px 22px 18px;overflow:hidden}
+header{display:flex;justify-content:space-between;align-items:flex-end;padding-bottom:12px;border-bottom:1px solid var(--border)}
+header .eyebrow{color:var(--accent);letter-spacing:.3em;text-transform:uppercase;font-size:.7rem}
+header h1{font-weight:300;font-size:clamp(1.5rem,2.4vw,2.2rem);margin-top:2px}
+header h1 b{font-weight:600}
+header .meta{color:var(--muted);font-size:.85rem;text-align:right}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:14px 0}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;border-left:3px solid var(--accent)}
+.kpi .l{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em}
+.kpi .v{font-size:1.15rem;margin-top:3px;color:#fff}
+.kpi .v span{color:var(--muted);font-size:.85rem;margin-left:6px}
+main{flex:1;min-height:0;display:grid;grid-template-columns:5fr 7fr;gap:16px}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;min-height:0}
+.panel h2{font-size:.8rem;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;display:flex;justify-content:space-between}
+.panel h2 em{font-style:normal;color:var(--accent)}
+.risks{display:flex;flex-direction:column;gap:8px;flex:1;min-height:0}
+.risk{flex:1;background:var(--surface-2);border:1px solid #30363d;border-radius:8px;padding:8px 12px;display:flex;flex-direction:column;justify-content:center;min-height:0}
+.risk p{font-size:clamp(.82rem,1.05vw,.98rem);line-height:1.35;color:#dfe4e9}
+.sev{display:flex;align-items:center;gap:8px;margin-top:6px;font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em}
+.sev .t{flex:1;height:5px;background:#32383f;border-radius:3px;overflow:hidden;max-width:180px}
+.sev .t i{display:block;height:100%;border-radius:3px;background:linear-gradient(90deg,#e0a526,#e0592a)}
+.caps{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(2,1fr);gap:10px;flex:1;min-height:0}
+.cap{background:var(--surface-2);border:1px solid #30363d;border-radius:8px;color:var(--text);text-align:left;font:inherit;padding:12px;cursor:pointer;display:flex;flex-direction:column;justify-content:space-between;transition:border-color .2s,background .2s,transform .2s}
+.cap:hover,.cap:focus-visible{border-color:var(--accent);background:#2a3138;transform:translateY(-2px);outline:none}
+.cap.sel{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 16%,var(--bg))}
+.cap svg{width:26px;height:26px;stroke:var(--accent);fill:none;stroke-width:1.6}
+.cap h3{font-weight:500;font-size:clamp(.95rem,1.25vw,1.15rem)}
+.cap small{color:var(--muted);font-size:.72rem}
+.hintline{color:var(--muted);font-size:.8rem;margin-top:10px}
+.detail{position:fixed;top:0;right:0;bottom:0;width:min(420px,92vw);background:var(--bg);border-left:1px solid var(--accent);padding:28px 26px;z-index:40;transform:translateX(105%);transition:transform .35s ease;box-shadow:-20px 0 40px rgba(0,0,0,.45);overflow:auto}
+.detail.open{transform:none}
+.detail .x{position:absolute;top:14px;right:16px;background:none;border:1px solid #38404a;color:#c3ccd5;width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:1.1rem}
+.detail .x:hover{border-color:var(--accent);color:var(--accent)}
+.detail .eyebrow{color:var(--accent);letter-spacing:.25em;text-transform:uppercase;font-size:.7rem}
+.detail h2{font-weight:300;font-size:2rem;margin:6px 0 16px}
+.detail p{font-size:1.1rem;font-weight:300;line-height:1.5;color:#dfe4e9}
+.detail .why{margin-top:26px;padding-top:18px;border-top:1px solid var(--border)}
+.detail .why h4{font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;color:#e0a526;margin-bottom:8px;font-weight:500}
+.detail .why p{font-size:1rem;color:#c3ccd5}
+.detail .esc{margin-top:30px;color:#6f7984;font-size:.8rem}
+@media (max-width:1100px){body{overflow:auto;height:auto}main{grid-template-columns:1fr}.caps{grid-template-columns:repeat(2,1fr);grid-auto-rows:110px}.kpis{grid-template-columns:repeat(2,1fr)}.risk{flex:none}}
+</style>
+</head>
+<body>
+<header>
+<div><div class="eyebrow">[Organisation] &middot; [Briefing type]</div><h1><b>[Initiative name]</b> &ndash; [One-line promise]</h1></div>
+<div class="meta">[Subtitle]<br>Click a capability for details</div>
+</header>
+
+<div class="kpis">
+<div class="kpi"><div class="l">[KPI 1 name]</div><div class="v">Target: TBD</div></div>
+<div class="kpi"><div class="l">[KPI 2 name]</div><div class="v">Target: TBD</div></div>
+<div class="kpi"><div class="l">[KPI 3 name]</div><div class="v">Target: TBD</div></div>
+<div class="kpi"><div class="l">[KPI 4 name]</div><div class="v">Target: TBD</div></div>
+</div>
+
+<main>
+<div class="panel">
+<h2>[Left panel heading] <em>[n items]</em></h2>
+<div class="risks">
+<div class="risk"><p>[Challenge 1: one plain sentence.]</p><div class="sev">Severity<span class="t"><i style="width:70%"></i></span>[Severity]</div></div>
+<div class="risk"><p>[Challenge 2: one plain sentence.]</p><div class="sev">Severity<span class="t"><i style="width:60%"></i></span>[Severity]</div></div>
+<div class="risk"><p>[Challenge 3: one plain sentence.]</p><div class="sev">Severity<span class="t"><i style="width:95%"></i></span>[Severity]</div></div>
+<div class="risk"><p>[Challenge 4: one plain sentence.]</p><div class="sev">Severity<span class="t"><i style="width:80%"></i></span>[Severity]</div></div>
+<div class="risk"><p>[Challenge 5: one plain sentence.]</p><div class="sev">Severity<span class="t"><i style="width:65%"></i></span>[Severity]</div></div>
+</div>
+</div>
+<div class="panel">
+<h2>[Right panel heading] <em>[n items]</em></h2>
+<div class="caps" id="caps">
+<button class="cap" data-i="0"><svg viewBox="0 0 32 32"><rect x="5" y="7" width="22" height="19" rx="2"/><path d="M5 13h22M12 18h8"/></svg><h3>[Capability 1]</h3><small>View details</small></button>
+<button class="cap" data-i="1"><svg viewBox="0 0 32 32"><path d="M16 4l10 4v8c0 6-4 10-10 12C10 26 6 22 6 16V8z"/></svg><h3>[Capability 2]</h3><small>View details</small></button>
+<button class="cap" data-i="2"><svg viewBox="0 0 32 32"><circle cx="14" cy="14" r="8"/><path d="M20 20l8 8"/></svg><h3>[Capability 3]</h3><small>View details</small></button>
+<button class="cap" data-i="3"><svg viewBox="0 0 32 32"><path d="M3 16s5-9 13-9 13 9 13 9-5 9-13 9S3 16 3 16z"/><circle cx="16" cy="16" r="4"/></svg><h3>[Capability 4]</h3><small>View details</small></button>
+<button class="cap" data-i="4"><svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="11"/><path d="M10 16l4 4 8-8"/></svg><h3>[Capability 5]</h3><small>View details</small></button>
+<button class="cap" data-i="5"><svg viewBox="0 0 32 32"><path d="M8 9h16M12 9V5h8v4M10 9l1 18h10l1-18M14 14v8M18 14v8"/></svg><h3>[Capability 6]</h3><small>View details</small></button>
+<button class="cap" data-i="6"><svg viewBox="0 0 32 32"><circle cx="8" cy="16" r="4"/><circle cx="24" cy="8" r="4"/><circle cx="24" cy="24" r="4"/><path d="M12 14l8-4M12 18l8 4"/></svg><h3>[Capability 7]</h3><small>View details</small></button>
+<button class="cap" data-i="7"><svg viewBox="0 0 32 32"><rect x="4" y="5" width="10" height="10" rx="1"/><rect x="18" y="5" width="10" height="10" rx="1"/><rect x="4" y="19" width="24" height="8" rx="1"/></svg><h3>[Capability 8]</h3><small>View details</small></button>
+</div>
+</div>
+</main>
+
+<aside class="detail" id="detail" aria-hidden="true">
+<button class="x" id="close" aria-label="Close">&times;</button>
+<div class="eyebrow">Capability</div>
+<h2 id="dt"></h2>
+<p id="dd"></p>
+<div class="why"><h4>Why it matters</h4><p id="dw"></p></div>
+<div class="esc">Press Esc to close</div>
+</aside>
+
+<script>
+(function(){
+var data=[
+["[Capability 1]","[Detail sentence.]","[Why it matters: one factual sentence derived from the challenges.]"],
+["[Capability 2]","[Detail sentence.]","[Why it matters: one factual sentence derived from the challenges.]"],
+["[Capability 3]","[Detail sentence.]","[Why it matters: one factual sentence derived from the challenges.]"],
+["[Capability 4]","[Detail sentence.]","[Why it matters: one factual sentence derived from the challenges.]"],
+["[Capability 5]","[Detail sentence.]","[Why it matters: one factual sentence derived from the challenges.]"],
+["[Capability 6]","[Detail sentence.]","[Why it matters: one factual sentence derived from the challenges.]"],
+["[Capability 7]","[Detail sentence.]","[Why it matters: one factual sentence derived from the challenges.]"],
+["[Capability 8]","[Detail sentence.]","[Why it matters: one factual sentence derived from the challenges.]"]
+];
+var caps=[].slice.call(document.querySelectorAll('.cap'));
+var panel=document.getElementById('detail');
+function open(i){
+document.getElementById('dt').textContent=data[i][0];
+document.getElementById('dd').textContent=data[i][1];
+document.getElementById('dw').textContent=data[i][2];
+caps.forEach(function(c,j){c.classList.toggle('sel',i===j)});
+panel.classList.add('open');panel.setAttribute('aria-hidden','false');
+}
+function close(){panel.classList.remove('open');panel.setAttribute('aria-hidden','true');caps.forEach(function(c){c.classList.remove('sel')})}
+caps.forEach(function(c){c.addEventListener('click',function(e){e.stopPropagation();open(+c.getAttribute('data-i'))})});
+document.getElementById('close').addEventListener('click',close);
+document.addEventListener('keydown',function(e){if(e.key==='Escape')close()});
+document.addEventListener('click',function(e){if(!panel.contains(e.target))close()});
+var m=location.hash.match(/^#cap(\d)$/);if(m&&data[+m[1]])open(+m[1]);
+})();
+</script>
+</body>
+</html>
