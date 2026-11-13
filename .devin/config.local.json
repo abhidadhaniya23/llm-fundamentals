@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Exec(Select-Object)",
+      "Exec(Format-Hex)",
+      "Exec(.venv/Scripts/mypy)",
+      "Exec(.venv/Scripts/python)",
+      "Exec(.venv/Scripts/ruff format)"
+    ]
+  }
+}
