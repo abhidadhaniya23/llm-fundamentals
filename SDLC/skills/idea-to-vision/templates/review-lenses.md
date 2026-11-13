@@ -9,10 +9,14 @@ Every question carries a priority tag. A lens may be marked "Not applicable" as 
 ### 1. Scope & Stakeholders
 - Are all user and stakeholder groups named, including indirect ones (administrators, auditors, support, external users)? (High)
 - Are the sponsor, decision-maker and owner named? (High)
-- Does every goal have at least one must-have that delivers it? (High)
-- What is explicitly out of scope? (High)
-- Are the core user journeys covered end to end (start → main use → finish / exit)? (Medium)
-- Does each goal have a success measure and an owner? (Medium)
+- Does every goal have at least one Must scope item that delivers it? (High)
+- Is / Is not / Does / Does not: what the initiative is and is not, what it does and deliberately does not do. (High)
+- Prioritise the scope items as Must / Should / Could / Won't, with rough value and risk. (High)
+- Is the key journey of the main persona covered end to end (start → main use → finish / exit)? (High)
+- Personas: 1–3 key personas with goal, pain and need. (Medium)
+- Does each goal have a success measure and an owner; are objectives and key results wanted? (Medium)
+- Team roles and who is responsible / accountable for the key decisions (RACI). (Medium)
+- Communication channels and cadence. (Low)
 
 ### 2. Value & Risks
 - What are the expected benefits, and for whom? (High)
@@ -20,6 +24,10 @@ Every question carries a priority tag. A lens may be marked "Not applicable" as 
 - What are the top risks and their impact? (High)
 - What are the rough effort, cost or budget, if known? (Medium)
 - Which assumptions are riskiest, and how can they be validated? (Medium)
+- Which teams, systems, decisions or suppliers does it depend on? (High)
+- What would expand the scope, and who decides on scope changes? (Medium)
+- What should the first release (MVP) prove, and how will we know? (High)
+- Best case and worst case: what do success and failure look like? (Medium)
 - Adoption & change: who must work differently, what training and communication are needed? (High for process / operating change and organisational initiatives, otherwise Medium)
 
 ### 3. Constraints

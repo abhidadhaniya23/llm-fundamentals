@@ -55,6 +55,7 @@ Setup batch (asked once, only for what is not already known; recommended default
    - Print the key messages as 5–7 visible bullets in your reply.
    - Offer **3 outline options**, e.g. short pitch (10–12 slides), standard (14–16 slides), standard plus backup appendix. Mark your recommendation with a one-line reason based on audience and purpose.
    - Core slides in every option: title, executive summary & ask, problem, what's at stake, vision, what it delivers, who benefits, how it works, roadmap, top risks, success measures, decisions needed.
+   - "What it delivers" shows the Must (and Should) scope items from the source's prioritised scope; Won't items appear as "Not in scope". "Who benefits" uses the source's personas where present.
    - Initiative-specific slides: one per item in the source's "Initiative-Specific Content" section and per other specific ask in the source, in the source's own terms. They are core in every outline option and are never summarised away into the key messages.
    - Optional slides only if the source covers them (e.g. value & investment, why build or buy, regulations, platform model, security).
    - For the recommended option, print a table as visible text: slide number, title, key message, interactive element.

@@ -150,7 +150,11 @@ Bad example (avoid):
 - [ ] No invented numbers, dates or names; metrics without user data are `TBD`.
 - [ ] Every selected review area completed, with agreed items added and rejected items logged.
 - [ ] Change history up to date; approved version recorded.
-- [ ] Value & options, top risks and key assumptions filled or marked TBD.
+- [ ] Value & options, top risks, key assumptions and dependencies filled or marked TBD.
+- [ ] Scope shown as Is / Is not / Does / Does not, and every scope item has a MoSCoW priority with value and risk.
+- [ ] 1–3 personas and the key journey filled, or marked TBD / "Not applicable".
+- [ ] Roles & responsibilities (team, RACI for key decisions, communication) filled or marked TBD.
+- [ ] MVP canvas filled (goal / hypothesis, persona, Must items, assumptions to test, validation metrics, timebox, decision after the MVP) or marked TBD; best and worst case stated.
 - [ ] Sponsor, decision-maker and owner named or listed in Open Questions.
 - [ ] Interpretations of unclear wording and of the user's own terms confirmed by the user; possible gaps in user-given sets asked, not added silently.
 - [ ] Numbering and cross-references between sections are consistent.

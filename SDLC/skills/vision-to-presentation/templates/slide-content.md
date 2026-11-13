@@ -69,6 +69,7 @@ Each slide lists: title, content, interactive element, and speaker notes (if req
 | Phase | Name | What it delivers |
 |---|---|---|
 | 1 | [Name] | [Scope] |
+- MVP: [What the first release should prove] – measured by [validation metric, target to be defined]
 - Interaction: click a phase for details
 - Notes: [Speaker note]
 

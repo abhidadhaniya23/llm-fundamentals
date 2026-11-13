@@ -80,6 +80,7 @@ Apply to any initiative. Use only what the source justifies; mark anything infer
 1. **Understand the source, drivers, principles and views (approval gate 1)**
    - Read the full vision and the epic or feature list. Ask the setup batch (section 4) if needed.
    - List the architecture drivers in a table: driver, source section, type (regulation / quality goal / constraint / business capability). Use the generic architecture driver checklist above.
+   - Use the source's prioritised scope: building blocks serve Must items first; Should / Could items are tagged as later phases; Won't items are listed under Out of Scope. Dependencies from the source become drivers or risks.
    - Every item in the source's "Initiative-Specific Content" section, and every other specific ask in the source, becomes a driver in its own terms. Never drop or merge one away.
    - Propose 6–10 principles, each with "What" and "Why" (the driver it serves). Keep only principles the source justifies.
    - Propose the top 3–5 measurable quality goals (quality attribute, scenario, measure / target, driver). Targets stay TBD unless the source gives numbers.
