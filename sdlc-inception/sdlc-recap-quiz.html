@@ -119,7 +119,7 @@
 <p>Each skill reads the files of the step before it and writes its own, so the chain stays traceable.</p></div></details>
 <details><summary>17. What is the difference between an output and an outcome?</summary><div class="a">
 <p>An output is a thing you shipped. An outcome is a measurable change in user or business behaviour.</p>
-<p>"The system is deployed" is an output. "Average handling time per case drops from 25 days to 5" is an outcome. Inception agrees the outcomes, because outputs are not success.</p></div></details>
+<p>"The system is deployed" is an output. "Average time to resolve a customer case drops from 10 days to 3" is an outcome. Inception agrees the outcomes, because outputs are not success.</p></div></details>
 <details><summary>18. What belongs on a NOT list, and why is it one of the highest-value hours of the week?</summary><div class="a">
 <p>Everything deliberately not delivered in this horizon: deferred features, future-phase ideas and explicit non-goals.</p>
 <p>It is high value because it kills <b>false consensus</b>. Stakeholders who all nodded at the vision often had different products in their heads; the NOT list is where that surfaces - in a workshop, rather than in sprint 9.</p></div></details>
@@ -165,7 +165,8 @@
 <details><summary>31. Name the sections of a good epic.</summary><div class="a">
 <p>Title, problem / context, outcome and success metrics, users / personas, scope and out of scope, epic acceptance criteria, NFRs, dependencies and risks, size, milestone.</p></div></details>
 <details><summary>32. How do you tell an epic from a story, and what size should an epic be?</summary><div class="a">
-<p>An epic delivers a whole capability and spans several sprints; a story is one slice of it that fits inside a single sprint. If it cannot be finished in one sprint, it is an epic.</p>
+<p>An epic delivers a whole capability and spans several sprints; a story is one slice of it that fits inside a single sprint.</p>
+<p>Careful with the reverse test: a story that will not fit in one sprint is usually an <i>oversized story to split</i>, not an epic. Promote it only when it turns out to cover a whole capability that yields several independently valuable slices. Splitting is the default; promoting is the exception.</p>
 <p>Sized in T-shirts: anything reaching XL is a signal to split. A useful cross-check is that the epic's size should roughly match the sum of its stories' points - if an epic is sized M but its stories total 60 points, one of the two estimates is wrong.</p></div></details>
 <details><summary>33. Why does every epic need an explicit out-of-scope section?</summary><div class="a">
 <p>Because neighbouring epics overlap, and without a boundary two teams either build the same thing twice or both assume the other is doing it.</p>
@@ -177,7 +178,14 @@
 <p>The 3 Cs: Card (short description), Conversation (discussion), Confirmation (acceptance criteria).</p></div></details>
 <details><summary>35. What does INVEST stand for?</summary><div class="a"><ul>
 <li>Independent</li><li>Negotiable</li><li>Valuable</li><li>Estimable</li><li>Small</li><li>Testable</li></ul>
-<p>If a story fails Estimable, run a spike. Fails Small, split it. Fails Testable, the acceptance criteria are missing.</p></div></details>
+<p>Each failing letter has its own remedy:</p><ul>
+<li><b>Independent</b> - it only works if another story ships first. Merge the two, or re-slice so each delivers on its own.</li>
+<li><b>Negotiable</b> - it reads as a solution spec, not a need. Strip the prescribed implementation and restate the outcome.</li>
+<li><b>Valuable</b> - no persona is better off. Usually a technical enabler in disguise: fold it into the first story that proves it.</li>
+<li><b>Estimable</b> - run a spike with a stated question and a timebox.</li>
+<li><b>Small</b> - split it (see SPIDR).</li>
+<li><b>Testable</b> - the acceptance criteria are missing or unmeasurable.</li></ul>
+<p><b>Valuable is the letter most real stories fail</b>, and it is the one teams notice least - which is exactly how backlogs fill up with "build the database" dressed as a story.</p></div></details>
 <details><summary>36. What is the Given / When / Then format used for?</summary><div class="a">
 <p>Acceptance criteria. They cover the happy path, edge cases and errors, and become test cases directly.</p></div></details>
 <details><summary>37. What must a story's acceptance criteria cover before it is Ready?</summary><div class="a">
@@ -190,20 +198,43 @@
 <details><summary>38. How do you cross-check an epic's size against its stories?</summary><div class="a">
 <p>Add up the stories' points and divide by the team's velocity: that gives the number of sprints, which should match the epic's T-shirt size.</p>
 <p>For example, an epic broken into six stories totalling 34 points, at a velocity of about 20 per sprint, is roughly two sprints - consistent with an L. If the two numbers disagree, either the epic is mis-sized or stories are missing. Doing this early is cheaper than discovering it in sprint planning.</p></div></details>
-<details><summary>39. At what size should a story be split, and name three splitting patterns.</summary><div class="a">
-<p>At 13 points or more. Patterns: by workflow step, by data or type, by business rule, by interface, happy path first, spike.</p></div></details>
-<details><summary>40. What is the difference between the Definition of Ready and the Definition of Done?</summary><div class="a">
+<details><summary>39. When should a story be split, and what are the SPIDR patterns?</summary><div class="a">
+<p>Split when it will not fit in one sprint - that is the <i>Small</i> test from INVEST. A story at 13 points or more is a common warning sign, but it is a prompt to look, not a threshold that forces a split.</p>
+<p><b>SPIDR</b> (Mike Cohn):</p><ul>
+<li><b>S</b>pike - only when the team cannot estimate without learning something first. A spike states its question and a timebox.</li>
+<li><b>P</b>aths - take the basic path first, then the alternatives and error cases.</li>
+<li><b>I</b>nterfaces - one channel or one client at a time.</li>
+<li><b>D</b>ata - one data type or one variation at a time.</li>
+<li><b>R</b>ules - the simple rule first, then the complicated ones.</li></ul>
+<p>Preference order in practice: Paths, then Rules, then Data, then Interfaces. Reach for a Spike last - it delivers learning, not working software.</p></div></details>
+<details><summary>40. What are the three types of story, and which of them belong in a product backlog?</summary><div class="a"><ul>
+<li><b>Functional story</b> - a user-facing capability that changes what a persona can do. Directly affects the user experience.</li>
+<li><b>Non-functional requirement (NFR)</b> - a quality attribute: performance, security, scalability, compliance. Affects the experience indirectly.</li>
+<li><b>Technical story</b> - internal engineering work that improves infrastructure or maintainability without changing behaviour. Scheduled against tech debt and system health, not user value.</li></ul>
+<p>Keep the backlog biased towards <b>functional and valuable</b>, sliced as small as it will go. Technical work is normally a task <i>inside</i> a story, not a story of its own - because a backlog of technical stories cannot be prioritised against user value.</p></div></details>
+<details><summary>41. You identify an NFR while writing a story. What are your two options, and who decides?</summary><div class="a"><ul>
+<li><b>Fold it in</b> - add it as an acceptance criterion on the functional story it affects. Keeps the story honest, but gates that story on whoever must sign the NFR off.</li>
+<li><b>Raise it separately</b> - a standalone NFR story with its own testable criteria, able to be sequenced and approved independently.</li></ul>
+<p>The product owner decides, not the author - so surface the NFR and <i>ask</i> rather than silently picking one. Two things to weigh: folding in can make an early story depend on a late sign-off (security or privacy review), while splitting out can let a quality attribute slip past the release that first exposes it to real users.</p>
+<p>Either way the NFR must end up <b>testable</b>. "Feels fast" and "looks human" are not acceptance criteria; a stated threshold or a defined review method is.</p></div></details>
+<details><summary>42. Why must you never split a story by technical layer?</summary><div class="a">
+<p>Because no layer delivers anything a user can see. The classic anti-pattern splits one story into "fetch the details", "display the details", "confirm the action" - none of which can be demonstrated, accepted or prioritised on its own, and all of which must ship together to be worth anything.</p>
+<p>Split <b>vertically</b> instead: each slice goes through every layer and leaves a persona able to do something new. Compare:</p><ul>
+<li>Bad: "Fetch payment data", "Render payment table", "Add confirm button"</li>
+<li>Good: "Show the upfront payment and instalment amount", then "Show the instalment schedule", then "Show the total interest"</li></ul>
+<p>Same rule applies one level up, when slicing releases into epics. If a slice has no demonstrable result, it is a task, whatever it is called.</p></div></details>
+<details><summary>43. What is the difference between the Definition of Ready and the Definition of Done?</summary><div class="a">
 <p>DoR protects developers from vague stories (story format, G/W/T criteria, NFRs, estimated, dependencies known, small enough). DoD protects users from half-done work (reviewed PR merged, criteria pass, tests green, no critical findings, gates pass, docs updated, PO accepted).</p></div></details>
 
 <h2>6. Dev cycle: Plan, Code, Review</h2>
-<details><summary>41. What is the gate at each step of Plan, Code, Review and Test?</summary><div class="a"><ul>
+<details><summary>44. What is the gate at each step of Plan, Code, Review and Test?</summary><div class="a"><ul>
 <li>Plan: tech lead approves the plan before code</li>
 <li>Code: developer steers and checks each phase</li>
 <li>Review: reviewer approves the PR</li>
 <li>Test: QA confirms the tests prove the acceptance criteria</li></ul></div></details>
-<details><summary>42. Why must tests come from the acceptance criteria and not from the code?</summary><div class="a">
+<details><summary>45. Why must tests come from the acceptance criteria and not from the code?</summary><div class="a">
 <p>Otherwise the AI "tests its own homework": it generates tests that just confirm whatever the code does.</p></div></details>
-<details><summary>43. Which AI skill is used at each step from idea to review?</summary><div class="a"><ul>
+<details><summary>46. Which AI skill is used at each step from idea to review?</summary><div class="a"><ul>
 <li>Idea to Vision: <code>idea-to-vision</code></li>
 <li>Vision to Epic: <code>epic-creation</code></li>
 <li>Epic to Stories: <code>story-mode</code></li>
@@ -212,33 +243,33 @@
 <li>Code to Review: <code>review-mode</code></li></ul></div></details>
 
 <h2>7. Sprints and milestones</h2>
-<details><summary>44. Name the five sprint ceremonies and their purpose.</summary><div class="a"><ul>
+<details><summary>47. Name the five sprint ceremonies and their purpose.</summary><div class="a"><ul>
 <li>Sprint Planning: pick stories, commit to a sprint goal</li>
 <li>Daily Stand-up: sync, surface blockers</li>
 <li>Backlog Refinement: prepare upcoming stories (DoR)</li>
 <li>Sprint Review: demo working software, get feedback</li>
 <li>Retrospective: improve the process</li></ul></div></details>
-<details><summary>45. What is velocity, and what should you never do with it?</summary><div class="a">
+<details><summary>48. What is velocity, and what should you never do with it?</summary><div class="a">
 <p>Story points completed per sprint (average of the last 3). It is a planning tool for the team. Never use it as a performance metric or compare it across teams.</p></div></details>
-<details><summary>46. What is a milestone, and what must every milestone have?</summary><div class="a">
+<details><summary>49. What is a milestone, and what must every milestone have?</summary><div class="a">
 <p>A business checkpoint - <b>not a date on its own</b>. Every milestone needs a goal, a scope of users, and <b>exit criteria</b> you can objectively test.</p>
 <p>A common progression is MVP (prove the value, often on replayed or historic data), then Pilot (real users, but a limited group), then GA (everyone, fully supported and auditable). If you cannot state how you would know a milestone is finished, it is a wish, not a milestone.</p></div></details>
-<details><summary>47. What determines the order of epics across milestones?</summary><div class="a"><ul>
+<details><summary>50. What determines the order of epics across milestones?</summary><div class="a"><ul>
 <li><b>Dependency:</b> anything other epics need to finish must come first.</li>
 <li><b>Risk:</b> the riskiest assumption is tested as early as possible, so a failure is cheap.</li>
 <li><b>Exposure:</b> any control that protects a real user - review, approval, permissions, privacy - must land <i>before</i> the milestone that first puts real users in front of the system.</li></ul>
 <p>That third one catches teams out. A safeguard scheduled after the pilot is a safeguard that arrived too late.</p></div></details>
-<details><summary>48. Why do platform and enabler epics cluster in the MVP?</summary><div class="a">
+<details><summary>51. Why do platform and enabler epics cluster in the MVP?</summary><div class="a">
 <p>Because on a self-hosted or greenfield stack the shared foundations - connectors and integrations, identity, data access, the review and approval path - have to exist before any user-facing epic can be <i>finished</i>.</p>
 <p>The trap is that a milestone full of platform work delivers no visible value. So pair each enabler with the first feature that proves it, and keep the MVP honest: it must still demonstrate something to a user.</p></div></details>
-<details><summary>49. What does traceability give you?</summary><div class="a">
+<details><summary>52. What does traceability give you?</summary><div class="a">
 <p>Every artifact links to the one before it: Idea &rarr; Vision &rarr; Epic &rarr; Story &rarr; Plan &rarr; Commit / PR &rarr; Tests &rarr; Done.</p>
 <p>It means anyone - an auditor, a new joiner, the team in six months - can walk backwards from a line of code to the user problem that justified it, and forwards from a problem to the evidence it was solved. In regulated or audited contexts it is not just good practice, it is a product requirement: every decision must be traceable to a named approver.</p></div></details>
 
 <h2>Wrap-up</h2>
-<details><summary>50. What stays with people, even when AI accelerates every step?</summary><div class="a">
+<details><summary>53. What stays with people, even when AI accelerates every step?</summary><div class="a">
 <p>Accountability. A human gate approves at every step.</p></div></details>
-<details><summary>51. Retro: where did AI help most, where did it get it wrong, and who caught it?</summary><div class="a">
+<details><summary>54. Retro: where did AI help most, where did it get it wrong, and who caught it?</summary><div class="a">
 <p>Open question for your team. Typically AI finds consistency issues, while humans find "this isn't what the PO meant".</p></div></details>
 
 <script>
