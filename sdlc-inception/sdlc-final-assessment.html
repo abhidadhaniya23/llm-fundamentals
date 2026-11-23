@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SDLC: From Idea to Done - Final assessment</title>
+<style>
+  body{font:16px/1.5 "Segoe UI",system-ui,sans-serif;max-width:820px;margin:0 auto;padding:28px 18px 60px;color:#1c2333;background:#f7f8fb}
+  h1{font-size:24px;margin:0 0 4px}
+  h2{font-size:15px;text-transform:uppercase;letter-spacing:.08em;color:#4a5a8a;margin:30px 0 10px}
+  .sub{color:#5b6477;margin:0 0 16px}
+  .bar{display:flex;gap:8px;margin-bottom:6px;flex-wrap:wrap}
+  button{font:inherit;padding:6px 14px;border:1px solid #b9c2d9;border-radius:6px;background:#fff;cursor:pointer}
+  button:hover{background:#eef2fb}
+  details{background:#fff;border:1px solid #dfe4f0;border-radius:8px;margin:8px 0;padding:10px 14px}
+  summary{cursor:pointer;font-weight:600}
+  details[open] summary{margin-bottom:8px}
+  .a{border-left:3px solid #4fb59a;padding-left:12px;color:#26324a}
+  .a p{margin:0 0 6px}
+  .a ul{margin:4px 0 0;padding-left:20px}
+  .a li{margin:2px 0}
+  code{background:#eef1f8;padding:1px 5px;border-radius:4px;font-size:.92em}
+  .note{background:#eef4ff;border:1px solid #d3e0f8;border-radius:8px;padding:10px 14px;margin:0 0 18px;color:#3a4766;font-size:15px}
+  @media print{details{break-inside:avoid}.bar{display:none}}
+</style>
+</head>
+<body>
+<h1>SDLC: From Idea to Done - Final assessment</h1>
+<p class="sub">Covers the whole course, from the definition of SDLC through to traceability. Answer each question first, then click it to check yourself.</p>
+<div class="note">This is the end-of-course assessment. It is deliberately broader than the section recap: it covers every concept topic in order, including the parts that are easy to skip - the five delivery models, what Waterfall <i>buys</i> you, and the detail of the dev cycle.</div>
+<div class="bar">
+  <button onclick="toggleAll(true)">Show all answers</button>
+  <button onclick="toggleAll(false)">Hide all answers</button>
+</div>
+
+<h2>1. SDLC foundations</h2>
+<details><summary>1. What does SDLC stand for, and what does it give a team?</summary><div class="a">
+<p>Software Development Life Cycle: a structured process to plan, build, test, deliver and maintain software, so the team builds the right product, builds it right, and delivers it predictably.</p>
+<p>What it replaces:</p><ul>
+<li>Shared understanding, instead of unclear requirements</li>
+<li>Predictable delivery, instead of surprise delays</li>
+<li>Quality built in, instead of defects found late</li>
+<li>Traceability, instead of "who decided this?"</li>
+<li>A repeatable team process, instead of hero developers</li></ul></div></details>
+<details><summary>2. Name the seven SDLC phases in order, and what each one answers.</summary><div class="a"><ul>
+<li><b>Requirements</b> - what, and for whom</li>
+<li><b>Analysis</b> - feasibility and risk</li>
+<li><b>Design</b> - architecture</li>
+<li><b>Implementation</b> - code</li>
+<li><b>Testing</b> - verification</li>
+<li><b>Deployment</b> - release</li>
+<li><b>Maintenance</b> - operate and improve</li></ul>
+<p>Requirements and analysis define the problem; design and implementation create the solution; testing, deployment and maintenance keep it alive.</p></div></details>
+<details><summary>3. "The phases never disappear." What does that mean across delivery models?</summary><div class="a">
+<p>Whether you run Waterfall, Agile or anything between, the same seven activities happen. Only their <b>order and their size</b> change.</p>
+<p>Waterfall does each one once, in sequence, at full size. Agile does all seven inside every sprint, in miniature. Nobody skips design or testing - they either do it deliberately or do it accidentally.</p></div></details>
+<details><summary>4. What artifact does each phase produce, and why does that matter?</summary><div class="a"><ul>
+<li>Requirements: vision, epics, stories with acceptance criteria</li>
+<li>Analysis: feasibility notes, risk list, estimates</li>
+<li>Design: architecture diagram, interface and data contracts</li>
+<li>Implementation: working code and a reviewed pull request</li>
+<li>Testing: test cases traced to the acceptance criteria, and test reports</li>
+<li>Deployment: a released increment, runbook, release notes</li>
+<li>Maintenance: monitoring, defect reports, change requests</li></ul>
+<p>If a phase produces no artifact, you cannot show it happened - and you cannot trace a decision back to it later.</p></div></details>
+<details><summary>5. Name the six roles and the handover each one owns.</summary><div class="a"><ul>
+<li><b>Product Owner</b>: vision, priorities, acceptance - owns Idea &rarr; Epic</li>
+<li><b>Business Analyst</b>: requirements, stories - owns Epic &rarr; Story</li>
+<li><b>Architect</b>: solution design, NFRs - owns Story &rarr; Plan</li>
+<li><b>Developer</b>: plan, code, unit tests - owns Plan &rarr; Code</li>
+<li><b>QA / Tester</b>: test strategy, verification - owns Code &rarr; Test</li>
+<li><b>Release / Ops</b>: deployment, operations - owns Test &rarr; Live</li></ul></div></details>
+<details><summary>6. "A role is not a job title." Explain.</summary><div class="a">
+<p>A role is <b>who is accountable when that artifact is wrong</b>, not what is written on someone's contract.</p>
+<p>So: one owner per artifact, not one owner per person. In a small team one person wears several hats, and that is fine - as long as each artifact still has exactly one name against it. And AI assists a role; it never owns the accountability.</p></div></details>
+
+<h2>2. Delivery models and choosing between them</h2>
+<details><summary>7. Name the five SDLC models, with one line each.</summary><div class="a"><ul>
+<li><b>Waterfall</b> - sequential, phase by phase, each signed off</li>
+<li><b>V-Model</b> - Waterfall with a test level mirrored to each design level</li>
+<li><b>Iterative</b> - build in pieces, refine each round</li>
+<li><b>Spiral</b> - risk-driven iterations</li>
+<li><b>Agile</b> - short cycles, working software early, change welcome</li></ul></div></details>
+<details><summary>8. What four forces do you weigh when choosing a model?</summary><div class="a"><ul>
+<li><b>Predictability</b> - how fixed is the scope?</li>
+<li><b>Risk control</b> - how early do you need feedback?</li>
+<li><b>Speed of learning</b> - how short must the loop be?</li>
+<li><b>Cost of change</b> - how late is too late to change your mind?</li></ul>
+<p>The honest summary: choose by how much you already know. Certainty favours Waterfall; uncertainty favours Agile.</p></div></details>
+<details><summary>9. How does Waterfall work, and what does it cost you?</summary><div class="a">
+<p>Phases run in sequence and each is signed off before the next starts. Change after sign-off is a change request.</p>
+<p>What it costs:</p><ul>
+<li>Feedback arrives only at acceptance testing</li>
+<li>Change after sign-off is expensive</li>
+<li>Testing gets squeezed at the end</li>
+<li>Risk is discovered late</li>
+<li>Handovers lose context</li></ul></div></details>
+<details><summary>10. What does Waterfall buy you? Name its genuine strengths.</summary><div class="a">
+<p>Waterfall is <b>not bad - it is built for a stable problem</b>. It buys:</p><ul>
+<li>Clear scope and a plan you can contract on</li>
+<li>Strong documentation</li>
+<li>Easy management with fixed-price suppliers</li>
+<li>A good fit for stable, regulated work</li>
+<li>Predictable staffing</li></ul>
+<p>The failure is not using Waterfall. The failure is using it on a problem nobody understands yet.</p></div></details>
+<details><summary>11. What is the V-Model, and where is it still common?</summary><div class="a">
+<p>Waterfall with a test level mirrored to each design level - unit tests against detailed design, integration tests against architecture, acceptance tests against requirements.</p>
+<p>Still common in regulated and automotive contexts, where every requirement must have a demonstrable matching test.</p></div></details>
+<details><summary>12. Compare Waterfall and Agile across the seven dimensions.</summary><div class="a"><ul>
+<li><b>Planning</b>: upfront and complete / rolling, just in time</li>
+<li><b>Delivery</b>: once, at the end / every sprint</li>
+<li><b>Change</b>: a change request / welcome, reprioritise</li>
+<li><b>Feedback</b>: late, at acceptance testing / continuous, at sprint review</li>
+<li><b>Documentation</b>: heavy / lightweight and living</li>
+<li><b>Risk</b>: discovered late / discovered early</li>
+<li><b>Best for</b>: stable, fixed scope / uncertain, evolving scope</li></ul></div></details>
+<details><summary>13. Under each model, when does the first real user feedback arrive?</summary><div class="a">
+<p>Waterfall: not until acceptance testing, near the end - on a 30-week project, around week 28. A misunderstanding made in the requirements phase stays invisible until then, which is exactly why it is so expensive to fix.</p>
+<p>Agile: at the first sprint review, around week 4, and every two weeks after. The same total work, but the feedback loop is weeks rather than months.</p></div></details>
+<details><summary>14. Name the four Agile Manifesto values. What does "over" mean?</summary><div class="a"><ul>
+<li>Individuals and interactions <b>over</b> processes and tools</li>
+<li>Working software <b>over</b> comprehensive documentation</li>
+<li>Customer collaboration <b>over</b> contract negotiation</li>
+<li>Responding to change <b>over</b> following a plan</li></ul>
+<p>"Over" does not mean "instead of". The items on the right still have value - they are just not what you optimise for when the two conflict.</p></div></details>
+
+<h2>3. Inception</h2>
+<details><summary>15. What is an agile inception, how long should it take, and what is the real output?</summary><div class="a">
+<p>A collaborative project-launch workshop run at the start of delivery, in 1 to 5 days, uniting stakeholders, product owners and the team to agree a shared vision, scope and plan.</p>
+<p>Days, not months. And the output is not a document set - it is a room full of people who agree on the same MVP. A team that produces every artifact but changes no outcome has failed.</p></div></details>
+<details><summary>16. Name the ten activities of the Agile Inception Deck.</summary><div class="a"><ul>
+<li>Why are we here? (vision / business case)</li>
+<li>The elevator pitch</li>
+<li>The product box (or cover story)</li>
+<li>The NOT list (out of scope)</li>
+<li>User personas and roles</li>
+<li>Feature discovery and user story mapping</li>
+<li>Technical solutions and architecture</li>
+<li>What keeps us up at night? (risk assessment)</li>
+<li>Trade-off sliders (scope vs time vs budget vs quality)</li>
+<li>Sizing and the first release (MVP definition)</li></ul></div></details>
+<details><summary>17. For three inception activities, name the data collected and the expected outcome.</summary><div class="a"><ul>
+<li><b>Why are we here?</b> Data: business drivers, problem statement, KPIs, strategic objectives. Outcome: shared understanding of why the project exists and what success looks like.</li>
+<li><b>NOT list.</b> Data: deferred features, future-phase ideas, non-goals. Outcome: scope creep prevented, false consensus eliminated.</li>
+<li><b>Trade-off sliders.</b> Data: fixed-vs-flexible positions for scope, cost, time, quality, partners. Outcome: agreed rules of engagement for future trade-off decisions.</li></ul>
+<p>The pattern: every activity has a deliverable. Nothing is a discussion that ends in nothing.</p></div></details>
+<details><summary>18. Which artifact does each inception activity produce?</summary><div class="a"><ul>
+<li>Stakeholder identification: stakeholder map</li>
+<li>Persona creation: personas (plus empathy map)</li>
+<li>Current-state mapping: as-is journey map</li>
+<li>Problem definition: problem statement / "How might we" questions</li>
+<li>Visioning and goal setting: product vision, goals and success metrics</li>
+<li>Scope boundaries: in / out of scope, the NOT list</li>
+<li>Future-state design: to-be journey map and service blueprint</li>
+<li>Feature discovery: user story map</li>
+<li>Release slicing: MVP definition and release plan</li>
+<li>Epic definition: epics, cut from the map's release slices</li>
+<li>Risk identification: RAID log</li></ul></div></details>
+<details><summary>19. What is the difference between an output and an outcome?</summary><div class="a">
+<p>An output is a thing you shipped. An outcome is a measurable change in user or business behaviour.</p>
+<p>"The system is deployed" is an output. "Average handling time drops from 25 days to 5" is an outcome. Inception agrees the outcomes, because outputs are not success.</p></div></details>
+<details><summary>20. What belongs on a NOT list, and why is it one of the highest-value hours of the week?</summary><div class="a">
+<p>Everything deliberately not delivered in this horizon: deferred features, future-phase ideas and explicit non-goals.</p>
+<p>It is high value because it kills <b>false consensus</b>. Stakeholders who all nodded at the vision often had different products in their heads; the NOT list is where that surfaces - in a workshop, not in sprint 9.</p></div></details>
+<details><summary>21. What is an MVP, and what is a learning goal?</summary><div class="a">
+<p>An MVP is the smallest thing you build in order to <i>learn</i> whether it is worth continuing. It is not "version one with fewer features", and it is not a prototype.</p>
+<p>Every MVP therefore carries learning goals - the assumptions it is designed to test, written as questions. If you cannot say what you would learn, you have a release, not an MVP.</p></div></details>
+<details><summary>22. How does a risk identified at inception become work?</summary><div class="a">
+<p>Each risk is named, given a severity and probability, and paired with a mitigation - and that mitigation becomes an epic or a story with an owner.</p>
+<p>That is how inception feeds the backlog: the epic map is not invented, it is derived from scope plus risks. <b>A risk with no epic is a risk nobody owns.</b></p></div></details>
+<details><summary>23. What is a proto-persona, and what is the risk of using one?</summary><div class="a">
+<p>A persona built from the team's own knowledge - a process document and a workshop - rather than from user research.</p>
+<p>A legitimate starting point when there is no research, provided it is labelled as such. The risk is assumptions hardening into fact: nobody remembers which parts were evidence. Mark every unvalidated figure and validate it early.</p></div></details>
+<details><summary>24. Name the traceability ID chain carried through the inception artifacts.</summary><div class="a">
+<p>Stakeholder &rarr; persona &rarr; pain point &rarr; as-is step &rarr; goal / capability &rarr; to-be step &rarr; story-map card &rarr; epic &rarr; user story.</p>
+<p>Typically <code>SH-</code>, <code>P-</code>, <code>PP-</code>, <code>A-</code>, <code>G-</code> / <code>C-</code>, <code>T-</code>, <code>S-</code>, <code>E-</code>, <code>US-</code>.</p></div></details>
+
+<h2>4. Epic map, estimation and epics</h2>
+<details><summary>25. What is an epic map, and what is it used for?</summary><div class="a">
+<p>A visual map of all epics, arranged by capability left to right and by priority or release top to bottom. It shows the whole product at a glance, instead of 300 loose stories, and is used to slice releases horizontally and to make gaps and dependencies visible.</p></div></details>
+<details><summary>26. Which estimation technique is used for epics, and which for stories?</summary><div class="a"><ul>
+<li>Epics: T-shirt sizing (XS, S, M, L, XL)</li>
+<li>Stories: story points with Planning Poker (1, 2, 3, 5, 8, 13)</li></ul>
+<p>An XL epic is a signal to split. Story points measure complexity, effort and uncertainty relative to a reference story - they are not hours.</p></div></details>
+<details><summary>27. What do you do with an epic you cannot estimate confidently?</summary><div class="a">
+<p>Record the low confidence rather than hiding it behind a number, and ask what the estimate depends on - usually an unproven capability or data that does not exist yet.</p>
+<p>Then plan a <b>spike</b> early to retire the uncertainty, flag the epic as a risk, and give a confidence range instead of a single figure. An estimate nobody believes is worse than an admitted unknown.</p></div></details>
+<details><summary>28. What is an epic, and where does it sit in the hierarchy?</summary><div class="a">
+<p>A large body of work that delivers one clear business outcome, too big for a single sprint, broken down into stories.</p>
+<p>Hierarchy: Initiative / Theme &rarr; Epic &rarr; Story &rarr; Task.</p></div></details>
+<details><summary>29. Why do epics matter?</summary><div class="a">
+<p>Alignment, prioritisation, roadmap and funding, traceability (idea to epic to story to commit to test), and scope control. They are the level at which the business can actually have a conversation about value.</p></div></details>
+<details><summary>30. Name the sections of a good epic.</summary><div class="a">
+<p>Title, problem / context, outcome and success metrics, users / personas, scope and out of scope, epic acceptance criteria, NFRs, dependencies and risks, size, milestone.</p></div></details>
+<details><summary>31. How do you tell an epic from a story, and why does an epic need an out-of-scope section?</summary><div class="a">
+<p>An epic delivers a whole capability across several sprints; a story is one slice that fits inside a single sprint. If it cannot be finished in one sprint, it is an epic.</p>
+<p>It needs an out-of-scope section because neighbouring epics overlap - without a boundary, two teams either build the same thing twice or both assume the other is doing it. Naming what the epic does <i>not</i> cover, and which epic covers it instead, is the NOT list applied one level down.</p></div></details>
+
+<h2>5. Stories</h2>
+<details><summary>32. What is the user story format, and what are the 3 Cs?</summary><div class="a">
+<p><b>As a</b> persona <b>I want</b> capability <b>so that</b> benefit. The "so that" is the most important part - it is the only bit that states the value.</p>
+<p>The 3 Cs: Card (short description), Conversation (the discussion it triggers), Confirmation (acceptance criteria).</p></div></details>
+<details><summary>33. What does INVEST stand for, and what do you do when a story fails one of the letters?</summary><div class="a"><ul>
+<li><b>I</b>ndependent, <b>N</b>egotiable, <b>V</b>aluable, <b>E</b>stimable, <b>S</b>mall, <b>T</b>estable</li></ul>
+<p>Fails <b>Estimable</b>: run a spike. Fails <b>Small</b>: split it. Fails <b>Testable</b>: the acceptance criteria are missing. Fails <b>Valuable</b>: it is probably a task, not a story.</p></div></details>
+<details><summary>34. What is Given / When / Then used for, and what must the criteria cover?</summary><div class="a">
+<p>Acceptance criteria - written so each one becomes a test case directly.</p>
+<p>A complete set covers the <b>happy path</b>, <b>edge cases</b> (empty, partial, duplicate, boundary), <b>errors</b> (what the user sees when a dependency fails), and the <b>negative case</b> - what must <i>not</i> happen, such as nothing being sent or saved until a person approves. The negative case is the one teams forget, and usually the one that matters for safety.</p></div></details>
+<details><summary>35. When should a story be split, and what are the SPIDR patterns?</summary><div class="a">
+<p>At 13 points or more, or whenever it cannot finish inside one sprint.</p>
+<p><b>SPIDR</b>: Spike, Path, Interface, Data, Rules. Also useful: by workflow step, and happy path first.</p></div></details>
+<details><summary>36. Where does slicing happen?</summary><div class="a">
+<p>At <b>two levels</b> - epic and story. It is not a single step.</p><ul>
+<li><b>Epic level.</b> Release slices are drawn on the story map: each horizontal line cuts through every journey step and becomes an MVP or a release. Epics are cut from those slices, which is what makes them vertical by design.</li>
+<li><b>Story level.</b> Stories are split again <i>inside</i> each epic, using SPIDR or by workflow step, data type or business rule.</li></ul></div></details>
+<details><summary>37. Why must you never slice by technical layer?</summary><div class="a">
+<p>Because "the database story", "the API story" and "the UI story" each deliver nothing on their own. None can be demonstrated, none can be accepted, and none can be dropped without breaking the others - so you lose the ability to reprioritise, which is the whole point of a backlog.</p>
+<p>Every epic and every story must deliver something a user can see working.</p></div></details>
+<details><summary>38. How do you cross-check an epic's size against its stories?</summary><div class="a">
+<p>Add the stories' points and divide by velocity: that gives the number of sprints, which should match the epic's T-shirt size.</p>
+<p>For example six stories totalling 34 points, at a velocity of about 20, is roughly two sprints - consistent with an L. If the two disagree, either the epic is mis-sized or stories are missing.</p></div></details>
+<details><summary>39. What is the difference between the Definition of Ready and the Definition of Done?</summary><div class="a">
+<p><b>DoR protects developers</b> from vague stories: story format, Given/When/Then criteria, NFRs identified, estimated, dependencies known, small enough.</p>
+<p><b>DoD protects users</b> from half-done work: reviewed PR merged, criteria pass, tests green, no critical findings, quality gates pass, docs updated, Product Owner accepted.</p></div></details>
+
+<h2>6. The dev cycle: Plan, Code, Review, Test</h2>
+<details><summary>40. Put the dev cycle in order, and name the human gate at each step.</summary><div class="a"><ul>
+<li><b>Story (Ready)</b> - passes the DoR</li>
+<li><b>Plan</b> (design and tasks) - gate: the tech lead approves</li>
+<li><b>Code</b> (small diffs) - gate: the developer steers and checks each phase</li>
+<li><b>Review</b> - gate: a human reviewer approves the pull request</li>
+<li><b>Test</b> (from the criteria) - gate: QA confirms the tests prove the criteria</li>
+<li><b>Done</b> - gate: the Product Owner accepts</li></ul>
+<p>AI assists every step; a person approves every gate.</p></div></details>
+<details><summary>41. Why plan before generating, and what must a plan contain?</summary><div class="a">
+<p>A plan is <b>the contract you give the agent</b>. It names the files, the phases and the tests; the agent follows it and you check each phase against it.</p>
+<p>Building it: understand the story and its acceptance criteria, explore the codebase to see what exists and what changes, then break the work into phases and name the risks and test strategy. Fifteen minutes of planning saves hours of rework.</p></div></details>
+<details><summary>42. Why generate in small steps, and what is wrong with a 1,000-line commit?</summary><div class="a">
+<p>Because <b>small diffs are reviewable diffs</b>. A thousand-line change gets approved without being read; a hundred-line change gets reviewed.</p>
+<p>So: implement phase by phase from the approved plan, work on a feature branch with small focused commits, and write tests alongside the code or before it. A 1,000-line commit means nobody really reviewed it - the gate was technically passed and actually skipped.</p></div></details>
+<details><summary>43. What is the split between an AI review and a human review?</summary><div class="a">
+<p><b>AI finds patterns; humans find intent.</b></p>
+<p>The AI review is good at consistency and known pitfalls, and it should run first so the human is not spending attention on them. The human review knows what the Product Owner actually meant - which no model can check. Human approval is mandatory, and a gate is never bypassed.</p></div></details>
+<details><summary>44. In what order should a review check things?</summary><div class="a">
+<p>Acceptance criteria <b>first</b> - does this actually do what the story asked? Only then design, readability, tests, security and performance.</p>
+<p>Reviews that start with style spend all their attention there and approve code that solves the wrong problem.</p></div></details>
+<details><summary>45. Why must tests come from the acceptance criteria rather than from the code?</summary><div class="a">
+<p>Otherwise the AI is <b>testing its own homework</b>: tests written from the code prove only that the code does what it does, whatever that is. That is not evidence, it is a tautology.</p>
+<p>Derive tests from the criteria, then work outwards: unit, then integration, then end to end.</p></div></details>
+<details><summary>46. What does test coverage actually tell you?</summary><div class="a">
+<p>Coverage is <b>a hint, not proof</b>. It tells you which lines were executed, not whether the behaviour is right.</p>
+<p>100% coverage can still miss every edge case that matters - and a suite derived from the acceptance criteria at 70% is worth more than a generated suite at 100%.</p></div></details>
+<details><summary>47. Which AI skill supports each step, and who is the human gate?</summary><div class="a"><ul>
+<li>Idea &rarr; Vision: <code>idea-to-vision</code> - Product Owner</li>
+<li>Vision &rarr; Epic: <code>epic-creation</code> - Product Owner</li>
+<li>Epic &rarr; Stories: <code>story-mode</code> - refinement</li>
+<li>Story &rarr; Plan: <code>plan-mode</code> - tech lead</li>
+<li>Plan &rarr; Code: <code>code-generation</code> - developer</li>
+<li>Code &rarr; Review: <code>review-mode</code> - reviewer</li></ul>
+<p>The skill does the typing. The gate is where the thinking shows up.</p></div></details>
+<details><summary>48. Is rework a failure?</summary><div class="a">
+<p>No - rework is normal, and the loop back from review to code exists for exactly that reason.</p>
+<p>What is <i>not</i> normal is discovering the need for rework <b>after</b> the review gate. That means the gate did not do its job, and the cost multiplies the further downstream it surfaces.</p></div></details>
+<details><summary>49. Name the three phases of the AI-first development process, and the artifact each one produces.</summary><div class="a"><ul>
+<li><b>Think First</b> &rarr; an <b>implementation plan</b> you review and approve</li>
+<li><b>Build Small</b> &rarr; <b>code and tests</b>, one phase at a time</li>
+<li><b>Focus on Quality</b> &rarr; <b>clean code and tests</b> in the repo</li></ul>
+<p>It is the same dev cycle as Plan / Code / Review / Test, expressed as the habits you follow at the keyboard.</p></div></details>
+<details><summary>50. Walk through "Think First". What is the failure mode it exists to prevent?</summary><div class="a">
+<p>Explain the requirements &rarr; let the AI ask clarifying questions &rarr; review and refine the implementation plan.</p>
+<p>It exists to prevent the most common failure in AI-assisted work: <b>a one-line prompt turning straight into code</b>. The clarifying questions are not a formality - they are where the gaps in your own understanding surface. The plan is approved before any code exists.</p></div></details>
+<details><summary>51. What is the inner loop in "Build Small", and how often does it run?</summary><div class="a"><ul>
+<li>Ask the AI to implement <b>one step</b> of the plan</li>
+<li><b>Verify</b> it has actually run the tests</li>
+<li><b>Review</b> the code and tests against the plan</li>
+<li><b>Commit locally</b></li></ul>
+<p>It repeats <b>for each phase in the plan</b>, not once for the whole story. That cadence is what keeps diffs small enough to genuinely review, and it gives you a local commit to fall back to when a phase goes wrong.</p></div></details>
+<details><summary>52. Why is the step "verify that it has run the tests" rather than "run the tests"?</summary><div class="a">
+<p>Because an agent can report success without having executed anything. A confident summary is not evidence.</p>
+<p>Open the actual test output and check it ran, and that it ran the tests you expected. Trust the evidence, not the claim - the same principle as "do not let it test its own homework", applied one level up.</p></div></details>
+<details><summary>53. What are the four steps of "Focus on Quality", and which one is skipped most often?</summary><div class="a"><ul>
+<li>Code review and refactor</li>
+<li>Run all tests</li>
+<li>Test manually</li>
+<li>Push into the repo</li></ul>
+<p><b>Test manually</b> is the one that gets skipped, because the tests are green and it feels redundant. It is not: green tests prove the cases you thought of, and using the thing yourself is how you find the ones you did not. Note also that refactoring comes <i>before</i> the final test run, not after.</p></div></details>
+
+<h2>7. Sprints, milestones and traceability</h2>
+<details><summary>54. Name the five sprint ceremonies and where they sit in a two-week sprint.</summary><div class="a"><ul>
+<li><b>Sprint planning</b> (day 1): pick stories, set the goal</li>
+<li><b>Daily stand-up</b> (every day): sync and surface blockers</li>
+<li><b>Refinement</b> (mid-sprint): prepare the next sprint's stories to the DoR</li>
+<li><b>Sprint review</b> (day 10): demo working software, get feedback</li>
+<li><b>Retrospective</b> (day 10): improve how the team works</li></ul>
+<p>The sprint is a fixed, protected box of time. Scope can change between sprints, never inside one.</p></div></details>
+<details><summary>55. What is velocity, what is capacity, and what must you never do with velocity?</summary><div class="a">
+<p><b>Velocity</b>: story points completed per sprint, averaged over the last three. <b>Capacity</b>: people-days actually available this sprint.</p>
+<p>Velocity tells <i>this</i> team how much to pull into the next sprint and says nothing about another team. Never use it as a performance metric, and never compare it across teams - both guarantee inflated estimates within two sprints.</p></div></details>
+<details><summary>56. What does a burn-up chart show that a burn-down does not?</summary><div class="a">
+<p>A burn-up plots the <b>completed line and the total-scope line together</b>, so scope growth is visible as a rising ceiling rather than hidden inside a flattening curve.</p>
+<p>If the team is delivering steadily but the gap is not closing, the problem is scope, not pace - and only the burn-up shows you that.</p></div></details>
+<details><summary>57. What is a milestone, and what must every milestone have?</summary><div class="a">
+<p>A business checkpoint - <b>not a date on its own</b>. Every milestone needs a goal, a scope of users, and exit criteria you can objectively test.</p>
+<p>A common progression is MVP (prove the value, often on replayed data), Pilot (real users, limited group), GA (everyone, fully auditable). "End of Q3" is not an exit criterion.</p></div></details>
+<details><summary>58. What determines the order of epics across milestones?</summary><div class="a"><ul>
+<li><b>Dependency</b>: anything other epics need must come first</li>
+<li><b>Risk</b>: the riskiest assumption is tested as early as possible, so failure is cheap</li>
+<li><b>Exposure</b>: any control protecting a real user - review, approval, permissions, privacy - must land <i>before</i> the milestone that first puts real users in front of the system</li></ul>
+<p>A safeguard scheduled after the pilot is a safeguard that arrived too late.</p></div></details>
+<details><summary>59. Why do platform and enabler epics cluster in the MVP, and what is the trap?</summary><div class="a">
+<p>Because the shared foundations - connectors and integrations, identity, data access, the review and approval path - must exist before any user-facing epic can be <i>finished</i>.</p>
+<p>The trap: a milestone full of platform work delivers nothing visible. Pair each enabler with the first feature that proves it, and keep the MVP honest - it must still demonstrate something to a user.</p></div></details>
+<details><summary>60. What does traceability give you, and why does it make AI assistance safe?</summary><div class="a">
+<p>Every artifact links to the one before it: Idea &rarr; Vision &rarr; Epic &rarr; Story &rarr; Plan &rarr; Commit / PR &rarr; Tests &rarr; Done.</p>
+<p>Anyone - an auditor, a new joiner, the team in six months - can walk backwards from a line of code to the problem that justified it. It makes AI assistance safe because <b>each step has a written input and a named approver</b>: the chain, not the model, is what you trust.</p></div></details>
+
+<h2>Synthesis</h2>
+<details><summary>61. Across the whole lifecycle, where are the human gates - and what is the one rule?</summary><div class="a">
+<p>Vision (PO), epic (PO), stories (refinement), plan (tech lead), code (developer), review (reviewer), test (QA), done (PO).</p>
+<p>The rule: <b>AI prepares the evidence; people make the decisions.</b> AI accelerates every step, and never owns one.</p></div></details>
+<details><summary>62. What stays with people, even when AI accelerates every step?</summary><div class="a">
+<p>Accountability. Speed changes; responsibility does not. Every gate is a named person, and "the AI wrote it" has never been an acceptable answer to "why does this code exist?".</p></div></details>
+<details><summary>63. Retro: where did AI help most, where did it get it wrong, and who caught it?</summary><div class="a">
+<p>An open question for your team. Typically AI finds consistency issues and known pitfalls, while humans find "this isn't what the Product Owner meant" - which is exactly the split the gates are designed around.</p></div></details>
+
+<script>
+  function toggleAll(open){document.querySelectorAll("details").forEach(function(d){d.open=open})}
+</script>
+</body>
+</html>

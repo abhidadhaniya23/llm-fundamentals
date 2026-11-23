@@ -241,35 +241,58 @@
 <li>Story to Plan: <code>plan-mode</code></li>
 <li>Plan to Code: <code>code-generation</code></li>
 <li>Code to Review: <code>review-mode</code></li></ul></div></details>
+<details><summary>47. Name the three phases of the AI-first development process and the artifact each produces.</summary><div class="a"><ul>
+<li><b>Think First</b> &rarr; an <b>implementation plan</b> that you review and approve</li>
+<li><b>Build Small</b> &rarr; <b>code and tests</b>, one phase at a time</li>
+<li><b>Focus on Quality</b> &rarr; <b>clean code and tests</b> in the repo</li></ul>
+<p>It is the same dev cycle, written as what you actually do at the keyboard.</p></div></details>
+<details><summary>48. What happens in "Think First", and what must never happen?</summary><div class="a">
+<p>Explain the requirements, let the AI ask clarifying questions, then review and refine the implementation plan.</p>
+<p>What must never happen: letting the agent start coding from a one-line prompt. The plan is approved <b>before</b> any code exists - that approval is the first human gate.</p></div></details>
+<details><summary>49. What is the inner loop in "Build Small", and how often does it run?</summary><div class="a"><ul>
+<li>Ask the AI to implement <b>one step</b> of the plan</li>
+<li><b>Verify</b> that it has actually run the tests</li>
+<li><b>Review</b> the code and tests against the implementation plan</li>
+<li><b>Commit locally</b></li></ul>
+<p>It repeats <b>for each phase in the plan</b> - not once for the whole story. That is what keeps diffs small enough to review.</p></div></details>
+<details><summary>50. Why "verify that it has run the tests" rather than just "run the tests"?</summary><div class="a">
+<p>Because an agent can report success without having executed anything - a confident summary is not evidence.</p>
+<p>Check the actual test output. Trust the evidence, not the claim.</p></div></details>
+<details><summary>51. What are the four steps of "Focus on Quality", and which one gets skipped?</summary><div class="a"><ul>
+<li>Code review and refactor</li>
+<li>Run all tests</li>
+<li>Test manually</li>
+<li>Push into the repo</li></ul>
+<p><b>Test manually</b> is the one that gets skipped. Green tests prove the cases you thought of; using the thing yourself is how you find the ones you did not.</p></div></details>
 
 <h2>7. Sprints and milestones</h2>
-<details><summary>47. Name the five sprint ceremonies and their purpose.</summary><div class="a"><ul>
+<details><summary>52. Name the five sprint ceremonies and their purpose.</summary><div class="a"><ul>
 <li>Sprint Planning: pick stories, commit to a sprint goal</li>
 <li>Daily Stand-up: sync, surface blockers</li>
 <li>Backlog Refinement: prepare upcoming stories (DoR)</li>
 <li>Sprint Review: demo working software, get feedback</li>
 <li>Retrospective: improve the process</li></ul></div></details>
-<details><summary>48. What is velocity, and what should you never do with it?</summary><div class="a">
+<details><summary>53. What is velocity, and what should you never do with it?</summary><div class="a">
 <p>Story points completed per sprint (average of the last 3). It is a planning tool for the team. Never use it as a performance metric or compare it across teams.</p></div></details>
-<details><summary>49. What is a milestone, and what must every milestone have?</summary><div class="a">
+<details><summary>54. What is a milestone, and what must every milestone have?</summary><div class="a">
 <p>A business checkpoint - <b>not a date on its own</b>. Every milestone needs a goal, a scope of users, and <b>exit criteria</b> you can objectively test.</p>
 <p>A common progression is MVP (prove the value, often on replayed or historic data), then Pilot (real users, but a limited group), then GA (everyone, fully supported and auditable). If you cannot state how you would know a milestone is finished, it is a wish, not a milestone.</p></div></details>
-<details><summary>50. What determines the order of epics across milestones?</summary><div class="a"><ul>
+<details><summary>55. What determines the order of epics across milestones?</summary><div class="a"><ul>
 <li><b>Dependency:</b> anything other epics need to finish must come first.</li>
 <li><b>Risk:</b> the riskiest assumption is tested as early as possible, so a failure is cheap.</li>
 <li><b>Exposure:</b> any control that protects a real user - review, approval, permissions, privacy - must land <i>before</i> the milestone that first puts real users in front of the system.</li></ul>
 <p>That third one catches teams out. A safeguard scheduled after the pilot is a safeguard that arrived too late.</p></div></details>
-<details><summary>51. Why do platform and enabler epics cluster in the MVP?</summary><div class="a">
+<details><summary>56. Why do platform and enabler epics cluster in the MVP?</summary><div class="a">
 <p>Because on a self-hosted or greenfield stack the shared foundations - connectors and integrations, identity, data access, the review and approval path - have to exist before any user-facing epic can be <i>finished</i>.</p>
 <p>The trap is that a milestone full of platform work delivers no visible value. So pair each enabler with the first feature that proves it, and keep the MVP honest: it must still demonstrate something to a user.</p></div></details>
-<details><summary>52. What does traceability give you?</summary><div class="a">
+<details><summary>57. What does traceability give you?</summary><div class="a">
 <p>Every artifact links to the one before it: Idea &rarr; Vision &rarr; Epic &rarr; Story &rarr; Plan &rarr; Commit / PR &rarr; Tests &rarr; Done.</p>
 <p>It means anyone - an auditor, a new joiner, the team in six months - can walk backwards from a line of code to the user problem that justified it, and forwards from a problem to the evidence it was solved. In regulated or audited contexts it is not just good practice, it is a product requirement: every decision must be traceable to a named approver.</p></div></details>
 
 <h2>Wrap-up</h2>
-<details><summary>53. What stays with people, even when AI accelerates every step?</summary><div class="a">
+<details><summary>58. What stays with people, even when AI accelerates every step?</summary><div class="a">
 <p>Accountability. A human gate approves at every step.</p></div></details>
-<details><summary>54. Retro: where did AI help most, where did it get it wrong, and who caught it?</summary><div class="a">
+<details><summary>59. Retro: where did AI help most, where did it get it wrong, and who caught it?</summary><div class="a">
 <p>Open question for your team. Typically AI finds consistency issues, while humans find "this isn't what the PO meant".</p></div></details>
 
 <script>
